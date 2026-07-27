@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      # astro check first: a type error should fail before a build that would
+      # succeed anyway and hide it.
+      - run: npm run check
+
+      # A build that produces no pages is green and useless — Astro will happily
+      # emit an empty site if the content collection is misconfigured. Assert the
+      # landing page exists and carries its content.
+      - name: Assert the site is not empty
+        run: |
+          test -f dist/index.html || { echo "::error::no index.html was built"; exit 1; }
+          grep -q "Kolonie AI" dist/index.html || { echo "::error::index.html does not mention the Colony"; exit 1; }
+          echo "dist/index.html: $(wc -c < dist/index.html) bytes"
