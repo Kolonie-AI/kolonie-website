@@ -46,11 +46,31 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # The deploy host pulls this image with the deploy workflow's own
-      # GITHUB_TOKEN. That only works once kolonie-infra has been granted read
-      # access under the package's "Manage Actions access" — the same step the
-      # api and verifier-runner images needed (kolonie-infra#1). Until then the
-      # image builds and nothing deploys it.
-      - name: Remind about package access
-        run: |
-          echo "::notice::Grant kolonie-infra read access under Manage Actions access on the kolonie-website package, and add --profile website to detect_profile() in kolonie-infra/scripts/deploy.sh."
+  # The step that was missing here, and that kolonie-platform's workflows have
+  # had since kolonie-infra#14. Pushing the image was the end of this workflow,
+  # so the site rebuilt on every commit and production kept serving whatever had
+  # last been deployed for some other reason. Found by shipping /academy, seeing
+  # the image build green, and then reading a 404 off kolonie.ai/academy/.
+  #
+  # The comment this replaces named the two prerequisites — package read access
+  # for kolonie-infra, and `--profile website` in `detect_profile()`. Both are
+  # done, so what was left was nobody calling the deploy.
+  #
+  # `version: github.sha` rather than `latest` for the same reason the platform
+  # workflows pass it: deploying `latest` ships whatever finished building most
+  # recently, which need not be this commit. Naming the tag this job just pushed
+  # makes what runs a function of a commit again.
+  deploy:
+    name: deploy ghcr.io/kolonie-ai/kolonie-website:${{ github.sha }} to the VPS
+    needs: build
+    uses: Kolonie-AI/kolonie-infra/.github/workflows/deploy.yml@main
+    with:
+      service: website
+      version: ${{ github.sha }}
+    # Named, not inherited: the called workflow declares exactly these two.
+    secrets:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+    permissions:
+      contents: read
+      packages: read
