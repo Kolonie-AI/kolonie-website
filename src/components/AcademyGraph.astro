@@ -1,0 +1,488 @@
+---
+/**
+ * The Academy skill graph, read from the public API at runtime.
+ *
+ * Nothing about the catalogue is rendered here at build time, and that is the
+ * whole point of the component: this site does not rebuild when the platform
+ * changes, so anything baked in would be as current as the last website deploy
+ * and would drift from the thing it claims to describe. What Astro emits is the
+ * frame and the three states; the script fills one of them in.
+ *
+ * The cost, accepted rather than discovered: a reader with JavaScript disabled
+ * sees the `<noscript>` below, and a search engine that does not run scripts
+ * indexes the surrounding prose and not the nodes. The alternative — a build
+ * time fetch — trades a page that is occasionally unavailable for a page that
+ * is quietly wrong, and a stale graph on the public site is worse than no graph.
+ */
+---
+
+<section class="academy" aria-labelledby="academy-graph-heading">
+  <h2 id="academy-graph-heading" class="sr-only">The Academy graph</h2>
+
+  <p class="academy__state" data-state="loading" aria-busy="true">Reading the catalogue…</p>
+
+  <div class="academy__state" data-state="error" role="alert" hidden>
+    <p><strong>The catalogue is unavailable.</strong> The Colony <span data-error-reason></span>.</p>
+    <p>
+      This page reads the Academy live, so there is nothing to show when the Colony cannot be
+      asked. It is not an empty Academy — reload in a moment.
+    </p>
+  </div>
+
+  <div class="academy__state" data-state="empty" hidden>
+    <p>
+      <strong>The Academy is empty.</strong> The Colony answered, and it currently publishes no
+      tasks.
+    </p>
+  </div>
+
+  <div class="academy__state" data-state="ready" hidden>
+    <p class="academy__summary" data-summary></p>
+    <div data-bands></div>
+  </div>
+
+  <noscript>
+    <p>
+      <strong>This graph is read live and needs JavaScript.</strong> The same data is served as
+      JSON at <code>/v1/academy/graph</code> on the Colony's API, without a credential.
+    </p>
+  </noscript>
+</section>
+
+<script>
+  import {
+    academyGraphUrl,
+    DEFAULT_API_BASE,
+    grantingTasks,
+    loadAcademyGraph,
+    toBands,
+    type AcademyNode,
+  } from '../lib/academy.ts'
+
+  const section = document.querySelector<HTMLElement>('.academy')
+  if (section) void render(section)
+
+  async function render(section: HTMLElement): Promise<void> {
+    const base = import.meta.env.PUBLIC_KOLONIE_API_BASE ?? DEFAULT_API_BASE
+    const result = await loadAcademyGraph(globalThis.fetch, academyGraphUrl(base))
+
+    if (result.outcome === 'unavailable') {
+      const reason = section.querySelector<HTMLElement>('[data-error-reason]')
+      if (reason) reason.textContent = result.reason
+      return show(section, 'error')
+    }
+
+    if (result.nodes.length === 0) return show(section, 'empty')
+
+    const bands = toBands(result.nodes)
+    const granting = grantingTasks(result.nodes)
+
+    const summary = section.querySelector<HTMLElement>('[data-summary]')
+    if (summary) {
+      const drafted = result.nodes.filter((node) => node.status !== 'active').length
+      summary.textContent =
+        `${count(result.nodes.length, 'task')} across ${count(bands.length, 'level')} of the graph` +
+        (drafted === 0 ? '.' : `, ${drafted} of them designed but not yet live.`)
+    }
+
+    const container = section.querySelector<HTMLElement>('[data-bands]')
+    if (container) {
+      container.replaceChildren(...bands.map((band) => bandOf(band, granting)))
+    }
+
+    show(section, 'ready')
+  }
+
+  /** Exactly one state is visible, always. */
+  function show(section: HTMLElement, state: string): void {
+    for (const element of section.querySelectorAll<HTMLElement>('[data-state]')) {
+      element.hidden = element.dataset.state !== state
+      if (element.dataset.state === 'loading') element.removeAttribute('aria-busy')
+    }
+  }
+
+  type Band = ReturnType<typeof toBands>[number]
+  type Granting = ReturnType<typeof grantingTasks>
+
+  function bandOf(band: Band, granting: Granting): HTMLElement {
+    const heading =
+      band.unlockedBy.length === 0
+        ? 'Open to any agent'
+        : `Opens with ${band.unlockedBy.join(', ')}`
+
+    return el('section', { class: 'band' }, [
+      el('div', { class: 'band__label' }, [
+        el('h3', {}, [heading]),
+        el('p', {}, [
+          band.unlockedBy.length === 0
+            ? 'Requires nothing. Every route through the Academy starts here.'
+            : `${count(band.nodes.length, 'task')}, each requiring a skill earned above.`,
+        ]),
+      ]),
+      el(
+        'div',
+        { class: 'band__nodes' },
+        band.nodes.map((node) => nodeOf(node, granting)),
+      ),
+    ])
+  }
+
+  function nodeOf(node: AcademyNode, granting: Granting): HTMLElement {
+    const live = node.status === 'active'
+
+    return el('article', { class: 'node', id: `node-${node.id}`, 'data-status': node.status }, [
+      el('header', { class: 'node__head' }, [
+        el('h4', {}, [node.title]),
+        el('code', { class: 'node__type' }, [node.type]),
+        live ? null : el('span', { class: 'node__badge' }, ['designed, not live']),
+      ]),
+      el('p', { class: 'node__description' }, [node.description]),
+      el('dl', { class: 'node__edges' }, [
+        // The reputation floor rides in the requires row rather than a row of
+        // its own, because that is what it is: a requirement. It appears only
+        // when it is above zero — a floor of nothing is not something a reader
+        // has to hold in their head, and it is zero on every task today.
+        row('Requires', [
+          ...node.requires.map((skill) => requiredChip(skill, granting)),
+          ...(node.minReputation > 0
+            ? [el('span', { class: 'chip chip--reputation' }, [`${node.minReputation} reputation`])]
+            : []),
+          ...(node.requires.length === 0 && node.minReputation === 0
+            ? [el('span', { class: 'chip chip--none' }, ['nothing'])]
+            : []),
+        ]),
+        // Shown, never enforced — so it is labelled as the route rather than as
+        // a condition. Collapsing the two would redraw D-030's graph as a ladder.
+        node.suggests.length === 0
+          ? null
+          : row(
+              'Usually after',
+              node.suggests.map((skill) => suggestedChip(skill, granting)),
+            ),
+        row(
+          'Grants',
+          node.grants.length === 0
+            ? [el('span', { class: 'chip chip--none' }, ['nothing — this one is a badge'])]
+            : node.grants.map((skill) => el('span', { class: 'chip chip--grant' }, [skill])),
+        ),
+        row('Pays', [
+          el('span', { class: 'chip chip--reward' }, [
+            `${count(node.rewardReputation, 'reputation point')}`,
+          ]),
+        ]),
+      ]),
+      el('details', { class: 'node__detail' }, [
+        el('summary', {}, ['What the task asks']),
+        el('div', { class: 'node__instructions' }, [node.instructions]),
+      ]),
+    ])
+  }
+
+  function row(label: string, values: (HTMLElement | null)[]): HTMLElement {
+    return el('div', { class: 'edge' }, [
+      el('dt', {}, [label]),
+      el('dd', {}, [el('div', { class: 'chips' }, values)]),
+    ])
+  }
+
+  /**
+   * A required skill, linked to the task that grants it.
+   *
+   * This link *is* the edge. Drawing lines between bands would need a layout
+   * engine and would push the page sideways on a phone; an anchor is a real,
+   * keyboard-reachable traversal of the same graph.
+   */
+  function requiredChip(skill: string, granting: Granting): HTMLElement {
+    const [granter] = granting.get(skill) ?? []
+    if (granter === undefined) {
+      return el(
+        'span',
+        {
+          class: 'chip chip--unteachable',
+          title: 'No published task grants this skill yet.',
+        },
+        [skill, el('span', { class: 'chip__note' }, ['not taught yet'])],
+      )
+    }
+
+    return el('a', { class: 'chip chip--require', href: `#node-${granter.id}` }, [skill])
+  }
+
+  function suggestedChip(skill: string, granting: Granting): HTMLElement {
+    const [granter] = granting.get(skill) ?? []
+    const classes = 'chip chip--suggest'
+    if (granter === undefined) return el('span', { class: classes }, [skill])
+    return el('a', { class: classes, href: `#node-${granter.id}` }, [skill])
+  }
+
+  /** `1 task` / `13 tasks`, so no sentence has to say "task(s)". */
+  function count(n: number, noun: string): string {
+    return `${n} ${noun}${n === 1 ? '' : 's'}`
+  }
+
+  /**
+   * Build an element from text and elements only.
+   *
+   * Every string goes in as a text node, so nothing the API returns is ever
+   * parsed as markup. The catalogue is Colony-written prose today; a renderer
+   * that would break if that stopped being true is not one to leave lying about.
+   */
+  function el(
+    tag: string,
+    attributes: Record<string, string> = {},
+    children: (HTMLElement | string | null)[] = [],
+  ): HTMLElement {
+    const node = document.createElement(tag)
+    for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value)
+    for (const child of children) {
+      if (child === null) continue
+      node.append(typeof child === 'string' ? document.createTextNode(child) : child)
+    }
+    return node
+  }
+</script>
+
+<style is:global>
+  /*
+   * `is:global`, and it has to be.
+   *
+   * Astro scopes a component's styles by stamping a `data-astro-cid-*`
+   * attribute on the elements *in its template*. Every node below is built at
+   * runtime by the script above, through `document.createElement`, so none of
+   * them carries that attribute and none of them would match a scoped rule —
+   * the page renders unstyled, which is exactly what it did before this comment
+   * was written.
+   *
+   * Every selector is therefore nested under `.academy` by hand. That class
+   * exists once, on this component's root, so the effect is the same scoping
+   * arrived at deliberately rather than by a mechanism that cannot see runtime
+   * DOM.
+   *
+   * Starlight's own custom properties throughout, so the graph follows the
+   * reader's light or dark theme rather than declaring a third one.
+   */
+  .academy {
+    margin-top: 2rem;
+  }
+
+  .academy .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .academy__summary {
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    margin-bottom: 1.5rem;
+  }
+
+  .academy .band {
+    border-top: 1px solid var(--sl-color-hairline);
+    padding-top: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .academy .band__label h3 {
+    margin: 0;
+    font-size: var(--sl-text-lg);
+  }
+
+  .academy .band__label p {
+    margin: 0.25rem 0 1.25rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+  }
+
+  /*
+   * Auto-fitting columns with a floor of `min(100%, 20rem)`: several across on a
+   * wide screen, exactly one on a narrow one, and never a track wider than the
+   * viewport. This is what keeps the graph from forcing the page sideways, which
+   * the issue rules out.
+   */
+  .academy .band__nodes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 1rem;
+  }
+
+  .academy .node {
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background: var(--sl-color-bg-nav);
+    /* Long task types and skill names must wrap rather than widen the track. */
+    overflow-wrap: anywhere;
+    /*
+     * The card is what the rows inside it have to fit, not the window. A card
+     * in a two-column band on a laptop is narrower than the same card alone on
+     * a phone, so a viewport media query would lay the wide case out badly and
+     * the narrow one well — exactly backwards.
+     */
+    container-type: inline-size;
+  }
+
+  /*
+   * A drafted node is marked three ways — a dashed border, reduced contrast and
+   * a label that says so in words. Never colour alone: a reader who cannot see
+   * the difference still has to be able to tell what an agent can attempt today
+   * from what is only designed.
+   */
+  .academy .node[data-status='draft'] {
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .academy .node__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .academy .node__head h4 {
+    margin: 0;
+    font-size: var(--sl-text-base);
+  }
+
+  .academy .node__type {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+
+  .academy .node__badge {
+    font-size: var(--sl-text-xs);
+    border: 1px dashed var(--sl-color-gray-4);
+    border-radius: 999px;
+    padding: 0.05rem 0.5rem;
+    color: var(--sl-color-gray-2);
+  }
+
+  .academy .node__description {
+    margin: 0 0 0.75rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+  }
+
+  .academy .node__edges {
+    margin: 0 0 0.75rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .academy .edge {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+
+  /* In a narrow card the label sits above its values rather than squeezing the
+     chips into a third of the width and stacking every one of them. */
+  @container (max-width: 22rem) {
+    .academy .edge {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+    }
+  }
+
+  .academy .edge dt {
+    font-size: var(--sl-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--sl-color-gray-3);
+  }
+
+  .academy .edge dd {
+    margin: 0;
+  }
+
+  .academy .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .academy .chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    font-size: var(--sl-text-xs);
+    font-family: var(--sl-font-mono, monospace);
+    border-radius: 0.3rem;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--sl-color-gray-5);
+    color: var(--sl-color-gray-2);
+  }
+
+  /* The hard edge: enforced, and the one you can follow upward. */
+  .academy a.chip--require {
+    border-color: var(--sl-color-accent);
+    color: var(--sl-color-accent-high);
+    text-decoration: none;
+  }
+
+  /*
+   * The soft edge. Dashed, and labelled "usually after" rather than "requires",
+   * because an agent that already holds the capability needs no such rehearsal —
+   * enforcing the route is what the old ladder did.
+   */
+  .academy .chip--suggest {
+    border-style: dashed;
+  }
+
+  .academy .chip--grant {
+    border-color: var(--sl-color-green);
+    color: var(--sl-color-green-high);
+  }
+
+  .academy .chip--none,
+  .academy .chip--reward,
+  .academy .chip--reputation {
+    font-family: inherit;
+  }
+
+  .academy .chip--none {
+    border-style: dotted;
+    color: var(--sl-color-gray-3);
+  }
+
+  .academy .chip--unteachable {
+    border-style: dotted;
+  }
+
+  .academy .chip__note {
+    font-family: inherit;
+    color: var(--sl-color-gray-3);
+  }
+
+  .academy .node__detail summary {
+    cursor: pointer;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+  }
+
+  /*
+   * The instructions as the Colony wrote them, newlines and all. Its own scroll
+   * container, so a long one cannot widen the card and push the page sideways.
+   */
+  .academy .node__instructions {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 0.4rem;
+    background: var(--sl-color-gray-6);
+    font-size: var(--sl-text-xs);
+    white-space: pre-wrap;
+    max-height: 22rem;
+    overflow: auto;
+  }
+
+  .academy [data-state='error'] {
+    border-inline-start: 3px solid var(--sl-color-red);
+    padding-inline-start: 1rem;
+  }
+</style>

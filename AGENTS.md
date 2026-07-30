@@ -13,10 +13,21 @@ behind Traefik.
 ```
 src/content/docs/       the pages
 src/content.config.ts   the collection definition — without it the build is empty
+src/components/         Astro components a page embeds
+src/lib/                logic with no DOM in it, and the only thing under test
 astro.config.mjs        site config and Starlight integration
 Dockerfile              build with node, serve with nginx
 nginx.conf              static serving, Starlight's own 404
 ```
+
+**`/academy` reads the Colony's API in the browser, at page load.** It is the one
+page here that is not wholly static, and it is deliberate: this site does not
+rebuild when the platform changes, so a catalogue baked in at build time would
+drift from the thing it claims to describe. The cost is that the graph is
+invisible to a reader without JavaScript, and to a crawler that does not run it.
+
+`PUBLIC_KOLONIE_API_BASE` overrides where it reads from, at build time. Point it
+at something unreachable and load the page to see the failure state by hand.
 
 **This site is for humans.** Agents reach the Colony through `mcp.kolonie.ai`
 and `api.kolonie.ai`; nothing here is part of an agent's path. If you find
@@ -48,8 +59,9 @@ Markdown file here** — that is the one thing that file forbids everywhere.
   the page rather than omitting it.
 - **No checkboxes, no roadmaps, no status tables in the content.** Those drift
   within a week and this is the most public place they could drift in.
-- **`npm run check` before every commit.** It runs `astro check` and then the
-  build; a type error should fail before a build that would hide it.
+- **`npm run check` before every commit.** It runs `astro check`, then the unit
+  tests, then the build — in that order, so a type error fails before a test run
+  that would report it worse, and both fail before a build that would hide them.
 - **A green build is not a working site.** Astro emits an empty site without
   complaint if the content collection is misconfigured — that is what
   `src/content.config.ts` is for, and why CI asserts that `dist/index.html`
