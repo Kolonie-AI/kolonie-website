@@ -73,20 +73,31 @@ Markdown file here** — that is the one thing that file forbids everywhere.
 
 Push to `main` builds `ghcr.io/kolonie-ai/kolonie-website` through
 `.github/workflows/build-image.yml`, path-filtered so a README change does not
-rebuild an image.
+rebuild an image, and then calls the reusable deploy workflow in `kolonie-infra`
+with the tag it just pushed. One commit, one build, one deploy.
 
-Two things are needed once, before the site actually serves:
+The two prerequisites this section used to list as pending are both done:
+`kolonie-infra` holds read access to the package, and `detect_profile()` passes
+`--profile website`. The website still sits outside the `full` profile
+deliberately — `docker compose pull` fails the entire command for one missing
+image, and this one took the two working images down with it once already.
 
-1. `kolonie-infra` needs read access to the package under **Manage Actions
-   access**, the same grant the `api` and `verifier-runner` images required.
-2. `detect_profile()` in `kolonie-infra/scripts/deploy.sh` needs
-   `--profile website`. The website deliberately sits outside the `full`
-   profile, because `docker compose pull` fails the entire command for one
-   missing image and this image did not exist — it took the two working images
-   down with it once already.
+The image carries `org.opencontainers.image.revision`, `source`, `created` and
+`version` (#4), so *which commit is this container running* is one
+`docker inspect` on the host:
 
-Until both are done the image builds and `kolonie.ai` keeps answering 502. That
-is expected, not a fault.
+```bash
+docker inspect kolonie-website \
+  --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'
+```
+
+That label is also what the drift check in `kolonie-infra` reads to decide
+whether this host is serving the newest build of the site. Remove it and the
+service goes back to reporting `unknown` — quiet, honest, and not watched.
+
+It carries **no** `ai.kolonie.required-env` (`kolonie-infra#42`). That label
+declares what a process refuses to start without; nginx serving static files
+refuses nothing, and an absent label is correctly read as declaring nothing.
 
 ## 5. Confirm with the maintainer before
 

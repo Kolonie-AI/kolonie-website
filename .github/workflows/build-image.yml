@@ -36,6 +36,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # One timestamp for the run. `github.event.repository.updated_at` is the
+      # expression that looks right for `created` and is not: it is when the
+      # repository record last changed, which is neither this build nor
+      # necessarily this commit.
+      - id: built-at
+        run: echo "iso=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -43,6 +50,26 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:${{ github.sha }}
+          # Provenance, so the image can say which commit built it (#4).
+          #
+          # Without these, *which build is this container running* is answerable
+          # only by listing GHCR versions and matching digests — registry access
+          # rather than a shell, and the wrong shape of answer during a partial
+          # deploy, when somebody has to find out per service what shipped.
+          #
+          # It is also what kolonie-infra#44's drift check reads. Until now this
+          # service reported `unknown` on every run: honest, quiet, and not
+          # covered — if the site fell a build behind, the check would have said
+          # exactly what it said when everything was fine. This is the service
+          # that failure has actually happened to (kolonie-infra#11).
+          #
+          # Same four labels and the same shape as kolonie-platform's three
+          # builds, so the two repositories say the same thing the same way.
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.created=${{ steps.built-at.outputs.iso }}
+            org.opencontainers.image.version=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
