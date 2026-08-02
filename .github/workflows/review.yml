@@ -1,0 +1,55 @@
+name: Reviewer Agent
+
+# The review a citizen's pull request gets without waiting for the operator
+# (kolonie-docs#42, extended here by kolonie-docs#123). The rules live once, in
+# kolonie-docs, same as `triage.yml` beside this file.
+#
+# `workflow_run` on CI, so `review-guidelines.md`'s *"CI must pass before review
+# begins"* is structural rather than requested — there is no path here that runs
+# before a build has a verdict. It also picks up every push to the branch for
+# free, because CI does.
+#
+# ## Why this repository and not the other three
+#
+# `kolonie-docs#123` found the reviewer running in `kolonie-platform` alone. Of the
+# four repositories that were missing it, this is the only one where the trigger
+# above is available: `ci.yml` here is named `CI` and runs on **every** pull
+# request. Measured 2026-08-02:
+#
+#   kolonie-docs      Check Red Lines — path-filtered to six files; Rehearse —
+#                     path-filtered to .github/**. A pull request editing a
+#                     document runs neither.
+#   kolonie-infra     Rehearse — path-filtered to scripts/** and
+#                     docker-compose.yml. A pull request touching traefik/ runs
+#                     nothing.
+#   kolonie-openclaw  no check of any kind.
+#
+# So in those three there is no build for a reviewer to hang off, and the fix is
+# a check that runs on an arbitrary pull request — not a copy of this file.
+#
+# `secrets: inherit` rather than naming one: the called workflow declares
+# OPENROUTER_API_KEY as optional, and inheriting means adding the secret is the
+# only step needed to switch the reviewer on. Without it the job logs that it has
+# no key and exits clean — which is the state of this repository today, and is
+# deliberately visible in the run log rather than silent.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+  actions: read
+
+jobs:
+  review:
+    uses: Kolonie-AI/kolonie-docs/.github/workflows/review-pull-request.yml@main
+    secrets: inherit
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      actions: read
