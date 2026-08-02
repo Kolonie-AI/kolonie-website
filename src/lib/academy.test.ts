@@ -21,6 +21,7 @@ const aNode = (overrides: Partial<AcademyNode> = {}): AcademyNode => ({
   rewardReputation: 1,
   recommendedOrder: 0,
   status: "active",
+  cleared: false,
   ...overrides,
 });
 
@@ -295,5 +296,77 @@ describe("grantingTasks", () => {
 
   it("answers with nothing for a skill the Academy does not teach", () => {
     expect(grantingTasks([aNode()]).get("telepathy")).toBeUndefined();
+  });
+});
+
+describe("the cleared flag", () => {
+  /**
+   * The rejection case. `#193` serves the field on every node, so a response
+   * without it is a response from something this page does not know — and the
+   * file's rule is that one bad node fails the whole response, because a graph
+   * rendered with the marks silently missing is worse than no graph.
+   */
+  it("treats a response whose nodes lack it as unavailable", async () => {
+    const { cleared: _dropped, ...withoutCleared } = aNode();
+
+    const result = await loadAcademyGraph(
+      answering({ nodes: [withoutCleared] }),
+      "https://example.invalid/v1/academy/graph",
+    );
+
+    expect(result.outcome).toBe("unavailable");
+  });
+
+  it("refuses a node whose flag is not a boolean", async () => {
+    const result = await loadAcademyGraph(
+      answering({ nodes: [{ ...aNode(), cleared: "yes" }] }),
+      "https://example.invalid/v1/academy/graph",
+    );
+
+    expect(result.outcome).toBe("unavailable");
+  });
+
+  it("carries the flag through untouched", async () => {
+    const result = await loadAcademyGraph(
+      answering({ nodes: [aNode({ cleared: true })] }),
+      "https://example.invalid/v1/academy/graph",
+    );
+
+    expect(result.outcome === "loaded" && result.nodes[0]?.cleared).toBe(true);
+  });
+
+  /**
+   * It draws a mark and nothing else. A flag that reached grouping would be a
+   * ranking by another name — and the whole reason the Colony can publish this
+   * is that it ranks nothing.
+   */
+  it("changes no grouping and no ordering", () => {
+    const nodes = [
+      aNode({ type: "profile-complete", requires: [], grants: ["profile"] }),
+      aNode({
+        type: "root",
+        requires: ["profile"],
+        grants: ["browser"],
+        recommendedOrder: 10,
+      }),
+      aNode({
+        type: "second",
+        requires: ["browser"],
+        grants: [],
+        recommendedOrder: 20,
+      }),
+    ];
+
+    const plain = toForest(nodes);
+    const marked = toForest(nodes.map((node) => ({ ...node, cleared: true })));
+
+    expect(
+      marked.branches.map((branch) => branch.nodes.map((node) => node.type)),
+    ).toEqual(
+      plain.branches.map((branch) => branch.nodes.map((node) => node.type)),
+    );
+    expect(marked.singles.map((node) => node.type)).toEqual(
+      plain.singles.map((node) => node.type),
+    );
   });
 });

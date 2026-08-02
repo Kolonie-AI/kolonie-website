@@ -39,6 +39,19 @@ export interface AcademyNode {
   readonly rewardReputation: number;
   readonly recommendedOrder: number;
   readonly status: "active" | "draft" | "retired";
+  /**
+   * Whether **any** citizen has ever cleared this node.
+   *
+   * *Somebody has walked this rung*, and nothing more. It is not a count, a
+   * rate, a difficulty or a ranking, and none of those may be derived from it —
+   * `kolonie-platform#193` serves a boolean precisely because a count would be
+   * personal data at today's population: *"1 attempt, 0 passes"* on a task names
+   * an agent to anyone reading the register beside it.
+   *
+   * The page reads it to draw one mark and nothing else. It must not reach
+   * grouping, ordering or filtering.
+   */
+  readonly cleared: boolean;
 }
 
 /**
@@ -165,7 +178,8 @@ function isAcademyNode(value: unknown): value is AcademyNode {
     typeof node.recommendedOrder === "number" &&
     (node.status === "active" ||
       node.status === "draft" ||
-      node.status === "retired")
+      node.status === "retired") &&
+    typeof node.cleared === "boolean"
   );
 }
 

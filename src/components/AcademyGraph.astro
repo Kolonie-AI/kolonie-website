@@ -191,6 +191,7 @@
         el('h4', {}, [node.title]),
         el('code', { class: 'node__type' }, [node.type]),
         live ? null : el('span', { class: 'node__badge' }, ['designed, not live']),
+        clearedMark(node),
       ]),
       el('p', { class: 'node__description' }, [node.description]),
       el('dl', { class: 'node__edges' }, [
@@ -227,6 +228,37 @@
           ]),
         ]),
       ]),
+    ])
+  }
+
+  /**
+   * The mark on a rung somebody has already walked, or nothing at all.
+   *
+   * **Nothing, and not a greyed-out twin.** An uncleared node renders no slot,
+   * no placeholder and no tooltip explaining the absence — a mark that appears
+   * in both states is a two-valued display of a fact the page has decided to
+   * state only in one direction, and it would read as *nobody has done this*,
+   * which is not what `false` means. `false` means the Colony is saying nothing.
+   *
+   * **A symbol and a name, never colour alone.** The glyph is decorative and
+   * hidden from assistive technology; the sentence beside it is what a screen
+   * reader announces and what makes the mark legible with colour removed.
+   *
+   * **A draft never carries it.** A drafted node cannot be attempted, so it
+   * cannot have been cleared — the API guarantees `false` there, and this is the
+   * second guard, because the two markings sit in the same header and a reader
+   * has to be able to tell them apart.
+   *
+   * No count, rate or ranking is derived from this, here or anywhere. That is
+   * not an implementation detail — it is the condition on which the flag is
+   * publishable at all.
+   */
+  function clearedMark(node: AcademyNode): HTMLElement | null {
+    if (!node.cleared || node.status === 'draft') return null
+
+    return el('span', { class: 'node__cleared' }, [
+      el('span', { class: 'node__cleared-glyph', 'aria-hidden': 'true' }, ['\u2713']),
+      el('span', { class: 'node__cleared-text' }, ['cleared by a citizen']),
     ])
   }
 
@@ -433,6 +465,26 @@
   .academy .node__type {
     font-size: var(--sl-text-xs);
     color: var(--sl-color-gray-3);
+  }
+
+  /*
+   * The mark on a walked rung. Border and glyph carry it, so it survives with
+   * colour removed; the accent tint is a second signal rather than the signal.
+   */
+  .academy .node__cleared {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.05rem 0.45rem;
+    border: 1px solid var(--sl-color-accent);
+    border-radius: 999px;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-accent-high);
+    background: var(--sl-color-accent-low);
+  }
+
+  .academy .node__cleared-glyph {
+    font-weight: 700;
   }
 
   .academy .node__badge {
