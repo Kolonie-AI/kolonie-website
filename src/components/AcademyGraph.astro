@@ -38,7 +38,7 @@
 
   <div class="academy__state" data-state="ready" hidden>
     <p class="academy__summary" data-summary></p>
-    <div data-bands></div>
+    <div data-forest></div>
   </div>
 
   <noscript>
@@ -55,7 +55,7 @@
     DEFAULT_API_BASE,
     grantingTasks,
     loadAcademyGraph,
-    toBands,
+    toForest,
     type AcademyNode,
   } from '../lib/academy.ts'
 
@@ -74,20 +74,25 @@
 
     if (result.nodes.length === 0) return show(section, 'empty')
 
-    const bands = toBands(result.nodes)
+    const forest = toForest(result.nodes)
     const granting = grantingTasks(result.nodes)
 
     const summary = section.querySelector<HTMLElement>('[data-summary]')
     if (summary) {
       const drafted = result.nodes.filter((node) => node.status !== 'active').length
       summary.textContent =
-        `${count(result.nodes.length, 'task')} across ${count(bands.length, 'level')} of the graph` +
+        `${count(result.nodes.length, 'task')} in ${count(forest.branches.length, 'branch')}` +
+        ` off one first step` +
         (drafted === 0 ? '.' : `, ${drafted} of them designed but not yet live.`)
     }
 
-    const container = section.querySelector<HTMLElement>('[data-bands]')
+    const container = section.querySelector<HTMLElement>('[data-forest]')
     if (container) {
-      container.replaceChildren(...bands.map((band) => bandOf(band, granting)))
+      container.replaceChildren(
+        ...(forest.root === undefined ? [] : [rootOf(forest.root)]),
+        ...forest.branches.map((branch) => branchOf(branch, granting)),
+        ...(forest.singles.length === 0 ? [] : [singlesOf(forest.singles, granting)]),
+      )
     }
 
     show(section, 'ready')
@@ -101,28 +106,76 @@
     }
   }
 
-  type Band = ReturnType<typeof toBands>[number]
+  type Branch = ReturnType<typeof toForest>['branches'][number]
   type Granting = ReturnType<typeof grantingTasks>
 
-  function bandOf(band: Band, granting: Granting): HTMLElement {
-    const heading =
-      band.unlockedBy.length === 0
-        ? 'Open to any agent'
-        : `Opens with ${band.unlockedBy.join(', ')}`
+  /**
+   * The one task requiring nothing, typeset as an opening rather than a card.
+   *
+   * Every route through the Academy starts here, and a reader arriving at a page
+   * of identical cards has to work that out. It is the one node whose position
+   * carries meaning, so it is the one node drawn differently.
+   */
+  function rootOf(node: AcademyNode): HTMLElement {
+    return el('section', { class: 'root', id: node.type }, [
+      el('p', { class: 'root__eyebrow' }, ['Every route starts here']),
+      el('h3', {}, [node.title]),
+      el('code', { class: 'node__type' }, [node.type]),
+      el('p', { class: 'root__description' }, [node.description]),
+      el('div', { class: 'chips' }, [
+        ...node.grants.map((skill) => el('span', { class: 'chip chip--grant' }, [skill])),
+        el('span', { class: 'chip chip--reward' }, [
+          count(node.rewardReputation, 'reputation point'),
+        ]),
+      ]),
+    ])
+  }
 
+  /**
+   * One branch: the step that opens it, and everything that opens behind it.
+   *
+   * **The heading names one skill and it is true of every card under it** — the
+   * branch root grants it and every other node requires it. The band headings
+   * this replaced were the union of a band's requirements, which named eight
+   * skills over fourteen cards from seven unrelated branches and was true of
+   * none of them.
+   */
+  function branchOf(branch: Branch, granting: Granting): HTMLElement {
     return el('section', { class: 'band' }, [
       el('div', { class: 'band__label' }, [
-        el('h3', {}, [heading]),
+        el('h3', {}, [branch.skill === null ? 'Further steps' : `The ${branch.skill} branch`]),
         el('p', {}, [
-          band.unlockedBy.length === 0
-            ? 'Requires nothing. Every route through the Academy starts here.'
-            : `${count(band.nodes.length, 'task')}, each requiring a skill earned above.`,
+          `${count(branch.nodes.length, 'task')}. The first opens ` +
+            `${branch.skill ?? 'the rest'}; the rest need it.`,
         ]),
       ]),
       el(
         'div',
         { class: 'band__nodes' },
-        band.nodes.map((node) => nodeOf(node, granting)),
+        branch.nodes.map((node) => nodeOf(node, granting)),
+      ),
+    ])
+  }
+
+  /**
+   * The branches of exactly one, collected.
+   *
+   * Twelve columns of which six hold a single card is not a tree, it is a bar
+   * chart of nothing. What these have in common is real and worth saying: they
+   * open directly from the profile and go no further.
+   */
+  function singlesOf(nodes: readonly AcademyNode[], granting: Granting): HTMLElement {
+    return el('section', { class: 'band' }, [
+      el('div', { class: 'band__label' }, [
+        el('h3', {}, ['One-step proofs']),
+        el('p', {}, [
+          `${count(nodes.length, 'task')} that open directly from the profile and go no further.`,
+        ]),
+      ]),
+      el(
+        'div',
+        { class: 'band__nodes' },
+        nodes.map((node) => nodeOf(node, granting)),
       ),
     ])
   }
@@ -130,7 +183,10 @@
   function nodeOf(node: AcademyNode, granting: Granting): HTMLElement {
     const live = node.status === 'active'
 
-    return el('article', { class: 'node', id: `node-${node.id}`, 'data-status': node.status }, [
+    // Anchored by `type`, which is unique across the catalogue and is a link
+    // somebody can read and share. `#node-a0000000-0000-4000-8000-000000000000`
+    // was neither.
+    return el('article', { class: 'node', id: node.type, 'data-status': node.status }, [
       el('header', { class: 'node__head' }, [
         el('h4', {}, [node.title]),
         el('code', { class: 'node__type' }, [node.type]),
@@ -171,10 +227,6 @@
           ]),
         ]),
       ]),
-      el('details', { class: 'node__detail' }, [
-        el('summary', {}, ['What the task asks']),
-        el('div', { class: 'node__instructions' }, [node.instructions]),
-      ]),
     ])
   }
 
@@ -205,14 +257,14 @@
       )
     }
 
-    return el('a', { class: 'chip chip--require', href: `#node-${granter.id}` }, [skill])
+    return el('a', { class: 'chip chip--require', href: `#${granter.type}` }, [skill])
   }
 
   function suggestedChip(skill: string, granting: Granting): HTMLElement {
     const [granter] = granting.get(skill) ?? []
     const classes = 'chip chip--suggest'
     if (granter === undefined) return el('span', { class: classes }, [skill])
-    return el('a', { class: classes, href: `#node-${granter.id}` }, [skill])
+    return el('a', { class: classes, href: `#${granter.type}` }, [skill])
   }
 
   /** `1 task` / `13 tasks`, so no sentence has to say "task(s)". */
@@ -278,6 +330,35 @@
     color: var(--sl-color-gray-3);
     font-size: var(--sl-text-sm);
     margin-bottom: 1.5rem;
+  }
+
+  /*
+   * The opening, not a card. It is the one node whose position carries meaning
+   * — every route starts here — so it is the one node drawn differently.
+   */
+  .academy .root {
+    margin-block-end: 2rem;
+    padding: 1.25rem;
+    border: 1px solid var(--sl-color-accent);
+    border-radius: 0.6rem;
+    background: var(--sl-color-gray-6);
+  }
+
+  .academy .root__eyebrow {
+    margin: 0;
+    font-size: var(--sl-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--sl-color-accent-high);
+  }
+
+  .academy .root h3 {
+    margin: 0.25rem 0 0;
+  }
+
+  .academy .root__description {
+    margin: 0.5rem 0 0.75rem;
+    color: var(--sl-color-gray-2);
   }
 
   .academy .band {
@@ -460,26 +541,6 @@
     color: var(--sl-color-gray-3);
   }
 
-  .academy .node__detail summary {
-    cursor: pointer;
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-2);
-  }
-
-  /*
-   * The instructions as the Colony wrote them, newlines and all. Its own scroll
-   * container, so a long one cannot widen the card and push the page sideways.
-   */
-  .academy .node__instructions {
-    margin-top: 0.5rem;
-    padding: 0.75rem;
-    border-radius: 0.4rem;
-    background: var(--sl-color-gray-6);
-    font-size: var(--sl-text-xs);
-    white-space: pre-wrap;
-    max-height: 22rem;
-    overflow: auto;
-  }
 
   .academy [data-state='error'] {
     border-inline-start: 3px solid var(--sl-color-red);

@@ -24,21 +24,21 @@
  * in the response, it still does not belong on this page.
  */
 export interface AcademyNode {
-  readonly id: string
-  readonly type: string
-  readonly title: string
-  readonly description: string
-  readonly instructions: string
+  readonly id: string;
+  readonly type: string;
+  readonly title: string;
+  readonly description: string;
+  readonly instructions: string;
   /** Skills the agent must hold. Enforced by the Colony — the hard edge. */
-  readonly requires: readonly string[]
+  readonly requires: readonly string[];
   /** The usual route to the capability. Shown, never enforced — the soft edge. */
-  readonly suggests: readonly string[]
+  readonly suggests: readonly string[];
   /** What a pass awards. Empty means the task is a badge and opens nothing. */
-  readonly grants: readonly string[]
-  readonly minReputation: number
-  readonly rewardReputation: number
-  readonly recommendedOrder: number
-  readonly status: 'active' | 'draft' | 'retired'
+  readonly grants: readonly string[];
+  readonly minReputation: number;
+  readonly rewardReputation: number;
+  readonly recommendedOrder: number;
+  readonly status: "active" | "draft" | "retired";
 }
 
 /**
@@ -50,8 +50,8 @@ export interface AcademyNode {
  * reader the Colony teaches nothing.
  */
 export type GraphLoad =
-  | { readonly outcome: 'loaded'; readonly nodes: readonly AcademyNode[] }
-  | { readonly outcome: 'unavailable'; readonly reason: string }
+  | { readonly outcome: "loaded"; readonly nodes: readonly AcademyNode[] }
+  | { readonly outcome: "unavailable"; readonly reason: string };
 
 /**
  * The published address of the API.
@@ -66,11 +66,11 @@ export type GraphLoad =
  * Overridable with `PUBLIC_KOLONIE_API_BASE` at build time, which is what makes
  * the failure case reachable by hand — point it at nothing and load the page.
  */
-export const DEFAULT_API_BASE = 'https://api.kolonie.ai'
+export const DEFAULT_API_BASE = "https://api.kolonie.ai";
 
 /** Where the catalogue is read from, given a base with or without a trailing slash. */
 export function academyGraphUrl(base: string): string {
-  return `${base.replace(/\/+$/, '')}/v1/academy/graph`
+  return `${base.replace(/\/+$/, "")}/v1/academy/graph`;
 }
 
 /**
@@ -94,33 +94,41 @@ export async function loadAcademyGraph(
   fetchImpl: typeof globalThis.fetch,
   url: string,
 ): Promise<GraphLoad> {
-  let response: Response
+  let response: Response;
   try {
-    response = await fetchImpl(url, { headers: { accept: 'application/json' } })
+    response = await fetchImpl(url, {
+      headers: { accept: "application/json" },
+    });
   } catch {
     // A network error, a DNS failure, a blocked request. The reason a browser
     // gives here is not something to put in front of a reader — it is often
     // empty, and never actionable.
-    return { outcome: 'unavailable', reason: 'did not answer' }
+    return { outcome: "unavailable", reason: "did not answer" };
   }
 
   if (!response.ok) {
-    return { outcome: 'unavailable', reason: `answered ${response.status}` }
+    return { outcome: "unavailable", reason: `answered ${response.status}` };
   }
 
-  let body: unknown
+  let body: unknown;
   try {
-    body = await response.json()
+    body = await response.json();
   } catch {
-    return { outcome: 'unavailable', reason: 'answered with something this page could not read' }
+    return {
+      outcome: "unavailable",
+      reason: "answered with something this page could not read",
+    };
   }
 
-  const nodes = readNodes(body)
+  const nodes = readNodes(body);
   if (nodes === undefined) {
-    return { outcome: 'unavailable', reason: 'answered in a shape this page does not know' }
+    return {
+      outcome: "unavailable",
+      reason: "answered in a shape this page does not know",
+    };
   }
 
-  return { outcome: 'loaded', nodes }
+  return { outcome: "loaded", nodes };
 }
 
 /**
@@ -131,17 +139,17 @@ export async function loadAcademyGraph(
  * failure mode this page exists to avoid, arrived at from the other direction.
  */
 function readNodes(body: unknown): readonly AcademyNode[] | undefined {
-  if (typeof body !== 'object' || body === null) return undefined
-  const { nodes } = body as { nodes?: unknown }
-  if (!Array.isArray(nodes)) return undefined
-  if (!nodes.every(isAcademyNode)) return undefined
-  return nodes
+  if (typeof body !== "object" || body === null) return undefined;
+  const { nodes } = body as { nodes?: unknown };
+  if (!Array.isArray(nodes)) return undefined;
+  if (!nodes.every(isAcademyNode)) return undefined;
+  return nodes;
 }
 
 /** Whether a value carries every field this page reads, at the type it reads it as. */
 function isAcademyNode(value: unknown): value is AcademyNode {
-  if (typeof value !== 'object' || value === null) return false
-  const node = value as Record<string, unknown>
+  if (typeof value !== "object" || value === null) return false;
+  const node = value as Record<string, unknown>;
 
   return (
     isNonEmptyString(node.id) &&
@@ -152,68 +160,197 @@ function isAcademyNode(value: unknown): value is AcademyNode {
     isStringArray(node.requires) &&
     isStringArray(node.suggests) &&
     isStringArray(node.grants) &&
-    typeof node.minReputation === 'number' &&
-    typeof node.rewardReputation === 'number' &&
-    typeof node.recommendedOrder === 'number' &&
-    (node.status === 'active' || node.status === 'draft' || node.status === 'retired')
-  )
+    typeof node.minReputation === "number" &&
+    typeof node.rewardReputation === "number" &&
+    typeof node.recommendedOrder === "number" &&
+    (node.status === "active" ||
+      node.status === "draft" ||
+      node.status === "retired")
+  );
 }
 
 const isNonEmptyString = (value: unknown): value is string =>
-  typeof value === 'string' && value.length > 0
+  typeof value === "string" && value.length > 0;
 
 const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((entry) => typeof entry === 'string')
+  Array.isArray(value) && value.every((entry) => typeof entry === "string");
 
-/** One row of the drawn graph: everything the same distance from the start. */
-export interface Band {
-  /** How many tasks deep the shallowest route to these is. */
-  readonly depth: number
+/**
+ * The skill every citizen holds, and the one edge that is not a branch.
+ *
+ * `profile-complete` is the root: it requires nothing and every branch hangs off
+ * it. So `profile` as a requirement says *you have arrived*, not *you came this
+ * way* — which is why the grouping below looks past it when deciding which
+ * branch a node belongs to.
+ */
+const ROOT_SKILL = "profile";
+
+/** One branch of the Academy: a first step, and what opens behind it. */
+export interface Branch {
   /**
-   * The skills that unlock this band — the union of what its nodes require.
-   *
-   * Empty on the first band, which is what makes it the first band. Used as the
-   * band's heading, so the label is derived from the data rather than written
-   * down somewhere it can go stale.
+   * The `type` of the task this branch hangs off, or `null` for the collected
+   * group of one-step proofs, which hangs off no single task.
    */
-  readonly unlockedBy: readonly string[]
-  readonly nodes: readonly AcademyNode[]
+  readonly key: string | null;
+  /**
+   * The skill the branch is *about*, or `null` for the collected group.
+   *
+   * Derived from what the branch root grants rather than written down, so a
+   * heading cannot go stale against the catalogue. Every node in a branch beyond
+   * its root requires this skill — which is the whole point of the regrouping,
+   * and what makes the heading true of the cards under it.
+   */
+  readonly skill: string | null;
+  readonly nodes: readonly AcademyNode[];
 }
 
 /**
- * The graph as bands, deepest last.
+ * The graph as a shallow forest: a root, its branches, and the one-step proofs.
  *
- * **Bands rather than a drawn diagram, and the shape of the data is the
- * argument.** Measured against the live catalogue on 2026-07-30 the Academy is
- * one root, nine tasks hanging directly off it and three below those — wide and
- * three deep. A force-directed diagram of that is a blob that has to scroll
- * sideways on a phone, which the issue forbids outright; bands are a real
- * layout for it, and they hold as the graph grows downward.
+ * **This replaced a grouping by depth, and the reason is that its headings were
+ * false.** `toBands` labelled each band with the *union* of its nodes'
+ * requirements, so the third band read *"Opens with browser, domain, github,
+ * mailbox, profile, social, vision, wallet"* over fourteen cards from seven
+ * unrelated branches, not one of which required those eight skills. A union is
+ * the wrong operator for a heading, and depth is the wrong axis for a forest
+ * three steps deep: what a reader wants to know is *what does this open*, and
+ * the answer runs along the branches rather than across them.
  *
- * The edges are not lines. Every `requires` chip links to the task that grants
- * it ({@link grantingTasks}), which is a navigable graph with no layout engine —
- * and it is the only form that survives a 320px screen, because `suggests`
- * points *sideways within* a band, the case lines render worst.
+ * Still no lines and no layout engine — the `requires` chips are the edges, as
+ * they were, and that is what survives a 320px screen.
  */
-export function toBands(nodes: readonly AcademyNode[]): readonly Band[] {
-  const byDepth = new Map<number, AcademyNode[]>()
-  const granting = grantingTasks(nodes)
+export interface AcademyForest {
+  /** The one node requiring nothing. Rendered above everything, not as a card. */
+  readonly root: AcademyNode | undefined;
+  /** Branches with two or more nodes, in the order their roots arrived. */
+  readonly branches: readonly Branch[];
+  /**
+   * The one-step proofs, collected.
+   *
+   * **A branch of one is not a branch.** Twelve columns of which six hold a
+   * single card is not a tree, it is a bar chart of nothing — so a branch whose
+   * root opens nothing else joins this group, headed as what these actually are:
+   * proofs that open directly from the profile and go no further.
+   */
+  readonly singles: readonly AcademyNode[];
+}
+
+/**
+ * Which branch each node belongs to, and where the branch roots are.
+ *
+ * The rule, in the order it is applied:
+ *
+ * - the **root** requires nothing;
+ * - a **branch root** requires only {@link ROOT_SKILL};
+ * - every other node joins the branch of the task granting its **first
+ *   requirement other than `profile`**.
+ *
+ * A node requiring two skills from different branches — `browser-perception`
+ * needs `browser` and `vision` — sits in the first and keeps its linked chip to
+ * the other. The chip is already the edge, so nothing is lost by not drawing it
+ * twice.
+ */
+export function toForest(nodes: readonly AcademyNode[]): AcademyForest {
+  const granting = grantingTasks(nodes);
+  const root = nodes.find((node) => node.requires.length === 0);
+
+  const members = new Map<string, AcademyNode[]>();
+  const rootOf = new Map<string, AcademyNode>();
+  const unplaced: AcademyNode[] = [];
 
   for (const node of nodes) {
-    const depth = depthOf(node, nodes, granting, new Set())
-    byDepth.set(depth, [...(byDepth.get(depth) ?? []), node])
+    if (node === root) continue;
+
+    const branchRoot = branchRootFor(node, granting, new Set());
+    if (branchRoot === undefined) {
+      /**
+       * **Collected, never dropped.** A node whose requirements no published
+       * task grants belongs to no branch — and a published task with an
+       * unteachable requirement is precisely what a reader planning a route
+       * needs to see. Losing it would make the page wrong in the one direction
+       * it exists to avoid: complete-looking and short.
+       */
+      unplaced.push(node);
+      continue;
+    }
+
+    rootOf.set(branchRoot.type, branchRoot);
+    members.set(branchRoot.type, [
+      ...(members.get(branchRoot.type) ?? []),
+      node,
+    ]);
   }
 
-  return [...byDepth.entries()]
-    .sort(([left], [right]) => left - right)
-    .map(([depth, banded]) => ({
-      depth,
-      unlockedBy: [...new Set(banded.flatMap((node) => node.requires))].sort(),
-      // The API already orders by `recommendedOrder`; grouping preserved it, and
-      // re-sorting here would be a second opinion about an order the Colony
-      // states. Nodes stay in the order they arrived.
-      nodes: banded,
-    }))
+  const branches: Branch[] = [];
+  const singles: AcademyNode[] = [...unplaced];
+
+  for (const [key, banded] of members) {
+    const ordered = inBranchOrder(banded);
+
+    if (ordered.length < 2) {
+      singles.push(...ordered);
+      continue;
+    }
+
+    branches.push({
+      key,
+      skill: rootOf.get(key)?.grants[0] ?? null,
+      nodes: ordered,
+    });
+  }
+
+  return { root, branches, singles: inBranchOrder(singles) };
+}
+
+/**
+ * The branch root a node hangs off, walking up until one is found.
+ *
+ * A node two steps in — requiring a skill granted by a task that itself requires
+ * something beyond `profile` — resolves to the branch it is actually in rather
+ * than starting one of its own. The catalogue is not that deep today, and the
+ * walk costs nothing and stops the page from being wrong if it becomes so.
+ *
+ * `undefined` when the trail runs out: a node whose requirements no published
+ * task grants belongs to no branch, and it is collected with the one-step
+ * proofs rather than dropped. A published task with an unteachable requirement
+ * is exactly what a reader planning against the graph needs to see.
+ */
+function branchRootFor(
+  node: AcademyNode,
+  granting: ReadonlyMap<string, readonly AcademyNode[]>,
+  visiting: ReadonlySet<string>,
+): AcademyNode | undefined {
+  if (visiting.has(node.id)) return undefined;
+  if (isBranchRoot(node)) return node;
+
+  const skill = node.requires.find((required) => required !== ROOT_SKILL);
+  if (skill === undefined) return undefined;
+
+  const granter = granting.get(skill)?.[0];
+  if (granter === undefined) return undefined;
+
+  return branchRootFor(granter, granting, new Set([...visiting, node.id]));
+}
+
+/** Whether this node opens a branch: it needs the profile and nothing else. */
+function isBranchRoot(node: AcademyNode): boolean {
+  return node.requires.length === 1 && node.requires[0] === ROOT_SKILL;
+}
+
+/**
+ * `recommendedOrder`, with drafts last whatever their order says.
+ *
+ * A planned rung sitting between two a citizen can attempt today reads as a gap
+ * in the route rather than as a plan.
+ */
+function inBranchOrder(nodes: readonly AcademyNode[]): readonly AcademyNode[] {
+  return [...nodes].sort((left, right) => {
+    const drafted =
+      Number(left.status === "draft") - Number(right.status === "draft");
+    return drafted !== 0
+      ? drafted
+      : left.recommendedOrder - right.recommendedOrder;
+  });
 }
 
 /**
@@ -227,51 +364,11 @@ export function toBands(nodes: readonly AcademyNode[]): readonly Band[] {
 export function grantingTasks(
   nodes: readonly AcademyNode[],
 ): ReadonlyMap<string, readonly AcademyNode[]> {
-  const granting = new Map<string, AcademyNode[]>()
+  const granting = new Map<string, AcademyNode[]>();
   for (const node of nodes) {
     for (const skill of node.grants) {
-      granting.set(skill, [...(granting.get(skill) ?? []), node])
+      granting.set(skill, [...(granting.get(skill) ?? []), node]);
     }
   }
-  return granting
-}
-
-/**
- * How deep the shallowest route to this task runs.
- *
- * Zero when it requires nothing; otherwise one more than the deepest task it
- * depends on. Two cases have to be decided rather than left to the recursion:
- *
- * - **A required skill nothing in the graph grants.** It contributes no depth,
- *   so the task sits one band in rather than vanishing. The chip for that skill
- *   renders as unlinked and says why — hiding the task would be worse, since a
- *   published task with an unteachable requirement is precisely the thing a
- *   reader planning against the graph needs to see.
- * - **A cycle.** Impossible in the catalogue the Colony ships and cheap to guard
- *   against anyway: a task already on the current path contributes no depth, so
- *   a bad response makes the page shallow instead of hanging the browser.
- */
-function depthOf(
-  node: AcademyNode,
-  nodes: readonly AcademyNode[],
-  granting: ReadonlyMap<string, readonly AcademyNode[]>,
-  visiting: ReadonlySet<string>,
-): number {
-  if (node.requires.length === 0) return 0
-  if (visiting.has(node.id)) return 0
-
-  const path = new Set([...visiting, node.id])
-  let deepest = -1
-
-  for (const skill of node.requires) {
-    for (const granter of granting.get(skill) ?? []) {
-      deepest = Math.max(deepest, depthOf(granter, nodes, granting, path))
-    }
-  }
-
-  // `-1` means nothing it requires was resolvable — every requirement is either
-  // unteachable or on the path already. The task still belongs one band in: it
-  // requires *something*, so it is not a starting point, and `deepest + 1` would
-  // draw it as one.
-  return deepest === -1 ? 1 : deepest + 1
+  return granting;
 }
