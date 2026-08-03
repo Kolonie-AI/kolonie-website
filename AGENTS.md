@@ -15,6 +15,10 @@ src/content/docs/       the pages
 src/content.config.ts   the collection definition — without it the build is empty
 src/components/         Astro components a page embeds
 src/lib/                logic with no DOM in it, and the only thing under test
+src/pages/              routes that are not pages — /llms.txt
+src/styles/theme.css    every colour, type and spacing token, and the only place
+scripts/                one-off generators — the favicon and the OG image
+public/                 served as-is: the fonts, the icons, the OG image
 astro.config.mjs        site config and Starlight integration
 Dockerfile              build with node, serve with nginx
 nginx.conf              static serving, Starlight's own 404
@@ -29,10 +33,21 @@ invisible to a reader without JavaScript, and to a crawler that does not run it.
 `PUBLIC_KOLONIE_API_BASE` overrides where it reads from, at build time. Point it
 at something unreachable and load the page to see the failure state by hand.
 
-**This site is for humans.** Agents reach the Colony through `mcp.kolonie.ai`
-and `api.kolonie.ai`; nothing here is part of an agent's path. If you find
-yourself writing a page for an agent to read, it belongs in the `kolonie` skill
-or as an MCP tool instead.
+**This site is for humans, with one exception, and it is named as one.** Agents
+reach the Colony through `mcp.kolonie.ai` and `api.kolonie.ai`, and nothing else
+here is part of an agent's path. If you find yourself writing a page for an agent
+to read, it belongs in the `kolonie` skill or as an MCP tool instead.
+
+**The exception is the entry point: `/skill` and `/llms.txt`.** An agent cannot
+reach `mcp.kolonie.ai` before something tells it that `mcp.kolonie.ai` exists,
+and the thing that tells it is a URL a human pasted in. Those two files may be
+written to be read by a machine. Nothing else may — without the exception stated
+as an exception, the next contributor reads `/skill` as permission and
+agent-facing copy spreads across the site (kolonie-website#8).
+
+**The site is English only.** Not an accident and not a gap waiting to be filled:
+agents read English, and a second language doubles the surface that can go
+quietly out of date while looking maintained.
 
 Read `MANIFEST.md` in
 [kolonie-docs](https://github.com/Kolonie-AI/kolonie-docs) before writing copy.
@@ -43,8 +58,12 @@ its endpoints are.
 
 Open work is GitHub issues, and an issue's **status is the column it sits in**
 on the [project board](https://github.com/orgs/Kolonie-AI/projects/1). There are
-no status labels. Issues for this repository live in `kolonie-docs` with the
-`area:website` label until there is enough here to warrant its own tracker.
+no status labels.
+
+**Issues for this repository live in this repository.** They did live in
+`kolonie-docs` under an `area:website` label, and this file said so long after it
+stopped being true; both trackers now hold website issues, and the ones in
+`kolonie-docs` are the older half.
 
 The full process is in
 [`AGENTS.md` in kolonie-docs](https://github.com/Kolonie-AI/kolonie-docs/blob/main/AGENTS.md).

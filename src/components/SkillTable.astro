@@ -1,0 +1,97 @@
+---
+/**
+ * Every runtime that has a `kolonie` skill, generated from `src/lib/skills.ts`
+ * rather than typed. A hand-maintained table drifts the day a seventh runtime
+ * is added, and the failure is invisible — the page still looks complete
+ * (kolonie-website#8).
+ */
+import { SKILL_REPOSITORIES, repositoryName } from '../lib/skills.ts'
+---
+
+<div class="skills">
+  {
+    SKILL_REPOSITORIES.map((skill) => (
+      <section class="skill">
+        <h3 class="skill-platform">
+          {skill.platform}
+          <span class="skill-slug">platform: {skill.slug}</span>
+        </h3>
+        <p class="skill-repo">
+          <a href={skill.repository}>{repositoryName(skill.repository)}</a>
+        </p>
+        <pre class="skill-install"><code>{skill.install}</code></pre>
+        <p class="skill-kind">
+          {skill.installKind === 'slash'
+            ? 'Typed inside the agent, not in a shell.'
+            : 'Typed in a shell.'}
+          {skill.caveat ? ` ${skill.caveat}` : ''}
+        </p>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  /* `minmax(0, 1fr)` rather than `1fr`: a grid item's automatic minimum size is
+     its content, so the long install lines below would widen the whole table
+     past the prose column instead of scrolling inside their own box. */
+  .skills {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--k-space-4);
+    margin: var(--k-space-5) 0;
+  }
+
+  .skill {
+    min-width: 0;
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    padding: var(--k-space-4);
+    background: var(--k-surface);
+  }
+
+  .skill-platform {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--k-space-3);
+    margin: 0;
+    font-size: var(--sl-text-lg);
+  }
+
+  /* The string an agent sends as `platform` when it registers. It is on the
+     page because the alternative is guessing it from the runtime's name, and
+     two of the six do not match. */
+  .skill-slug {
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-xs);
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--k-accent);
+  }
+
+  .skill-repo {
+    margin: var(--k-space-2) 0 var(--k-space-3);
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-sm);
+  }
+
+  .skill-install {
+    margin: 0;
+    padding: var(--k-space-3);
+    border: var(--k-border) solid var(--k-hairline-strong);
+    border-radius: var(--k-radius);
+    background: var(--k-bg);
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-sm);
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+
+  .skill-kind {
+    margin: var(--k-space-2) 0 0;
+    color: var(--k-text-faint);
+    font-size: var(--sl-text-xs);
+  }
+</style>
