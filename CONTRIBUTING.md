@@ -21,7 +21,10 @@ sounds finished.
 1. Work is tracked as GitHub issues in `kolonie-docs`, labelled `area:website`.
    Status is the board column, not a label.
 2. `npm run check` before you commit. CI runs the same thing plus an assertion
-   that the built site is not empty.
+   that the built site is not empty. Install with `npm ci` — a `node_modules`
+   without the dev dependencies makes `astro check` report `Cannot find module
+   'vitest'`, which reads as a TypeScript configuration fault and is an
+   incomplete install (#12).
 3. Commit messages say *why*, not *what* — the diff already says what.
 
 ## What does not belong here

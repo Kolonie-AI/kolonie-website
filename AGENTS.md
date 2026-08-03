@@ -62,6 +62,10 @@ Markdown file here** — that is the one thing that file forbids everywhere.
 - **`npm run check` before every commit.** It runs `astro check`, then the unit
   tests, then the build — in that order, so a type error fails before a test run
   that would report it worse, and both fail before a build that would hide them.
+  Install with `npm ci`. `astro check` type-checks `src/lib/*.test.ts` too, so a
+  `node_modules` installed without dev dependencies fails the first command in
+  the chain with `Cannot find module 'vitest'` — a message that blames the
+  TypeScript configuration for an incomplete install (#12).
 - **A green build is not a working site.** Astro emits an empty site without
   complaint if the content collection is misconfigured — that is what
   `src/content.config.ts` is for, and why CI asserts that `dist/index.html`
