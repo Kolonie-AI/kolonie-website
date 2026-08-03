@@ -1,0 +1,270 @@
+/*
+ * The theme layer. Every colour, type size and spacing step the site uses is
+ * declared here and nowhere else — pages and components consume the tokens.
+ * `src/styles/theme.test.ts` reads this file: it resolves the pairs below and
+ * fails if any of them drops under WCAG AA, and a second test fails if a colour
+ * value appears in a page or a component.
+ *
+ * The `--k-*` tokens are the source. The `--sl-*` assignments underneath map
+ * them onto Starlight's own names, which is what makes the sidebar, the search
+ * dialog, the asides and the 404 page follow the theme without being touched.
+ * Set a `--k-*` value; do not set an `--sl-*` value anywhere else.
+ *
+ * The direction is kolonie-website#11: dark, monospace, terminal-adjacent, and
+ * restrained. Amber rather than green is deliberate — the accent had to stay out
+ * of the way of `--sl-color-green`, which already means *passed* on the Academy
+ * page, and an accent that also reads as a status is a palette arguing with
+ * itself. Amber is the other terminal the reference points at.
+ */
+
+/* JetBrains Mono, self-hosted. The files under `public/fonts/` are copied from
+ * `@fontsource-variable/jetbrains-mono`, which is kept as a dependency so the
+ * provenance is recorded and the copies can be refreshed; `theme.test.ts`
+ * asserts the copies still match the package byte for byte. Latin and Latin
+ * Extended only — the site is English (AGENTS.md), and the unicode-range keeps
+ * even those two from being fetched by a reader who never renders the glyphs. */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('/fonts/jetbrains-mono-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('/fonts/jetbrains-mono-latin-ext-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root,
+::backdrop {
+  /* ---- Colour: dark, and the default ------------------------------------ */
+
+  /* One nearly-neutral ramp at a single hue. The hue is there so the greys are
+   * not dead grey; the saturation is low enough that it never reads as blue. */
+  --k-bg: hsl(200 14% 7%);
+  --k-surface: hsl(200 13% 11%);
+  --k-surface-raised: hsl(200 12% 16%);
+  --k-hairline: hsl(200 11% 19%);
+  --k-hairline-strong: hsl(200 10% 41%);
+
+  --k-text-strong: hsl(200 9% 95%);
+  --k-text: hsl(200 8% 84%);
+  --k-text-muted: hsl(200 8% 68%);
+  --k-text-faint: hsl(200 8% 55%);
+
+  --k-accent: hsl(36 92% 60%);
+  --k-accent-strong: hsl(36 95% 80%);
+  --k-accent-dim: hsl(36 55% 14%);
+  /* What a filled accent button sets its label to. */
+  --k-on-accent: var(--k-bg);
+
+  /* The five colours that mean something rather than decorate: the four aside
+   * kinds, and the green the Academy page uses for a skill an agent holds.
+   * Starlight's defaults are a documentation site's, and a saturated blue note
+   * box on this background is the single loudest thing on the page. Each is the
+   * same construction — a dim ground, a mid for the rule down the side, a high
+   * for the title — and every one of the pairs is in the contrast test. */
+  --k-note-dim: hsl(205 45% 14%);
+  --k-note: hsl(205 65% 60%);
+  --k-note-high: hsl(205 70% 82%);
+  --k-tip-dim: hsl(275 32% 17%);
+  --k-tip: hsl(275 50% 68%);
+  --k-tip-high: hsl(275 55% 85%);
+  --k-caution-dim: hsl(30 45% 14%);
+  --k-caution: hsl(30 80% 60%);
+  --k-caution-high: hsl(30 85% 80%);
+  --k-danger-dim: hsl(355 40% 17%);
+  --k-danger: hsl(355 70% 65%);
+  --k-danger-high: hsl(355 80% 85%);
+  --k-good-dim: hsl(150 40% 12%);
+  --k-good: hsl(150 55% 52%);
+  --k-good-high: hsl(150 55% 80%);
+
+  /* ---- Type ------------------------------------------------------------- */
+
+  /* Mono for headings, the prompt, code and UI chrome; a system sans for prose.
+   * Setting long-form prose in a monospace face is where terminal themes stop
+   * being legible, and legible wins (kolonie-website#11). */
+  --k-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --k-font-prose: var(--sl-font-system);
+
+  --k-tracking-heading: -0.015em;
+  --k-tracking-label: 0.06em;
+
+  /* ---- Spacing ---------------------------------------------------------- */
+
+  /* A 4px step. Components space themselves from this and never from a literal. */
+  --k-space-1: 0.25rem;
+  --k-space-2: 0.5rem;
+  --k-space-3: 0.75rem;
+  --k-space-4: 1rem;
+  --k-space-5: 1.5rem;
+  --k-space-6: 2rem;
+  --k-space-7: 3rem;
+
+  --k-radius: 0.375rem;
+  --k-border: 1px;
+
+  /* ---- The mapping onto Starlight --------------------------------------- */
+
+  --sl-color-white: var(--k-text-strong);
+  --sl-color-gray-1: var(--k-text-strong);
+  --sl-color-gray-2: var(--k-text);
+  --sl-color-gray-3: var(--k-text-muted);
+  --sl-color-gray-4: var(--k-hairline-strong);
+  --sl-color-gray-5: var(--k-hairline-strong);
+  --sl-color-gray-6: var(--k-surface);
+  --sl-color-gray-7: var(--k-surface-raised);
+  --sl-color-black: var(--k-bg);
+
+  --sl-color-accent-low: var(--k-accent-dim);
+  --sl-color-accent: var(--k-accent);
+  --sl-color-accent-high: var(--k-accent-strong);
+
+  --sl-color-blue-low: var(--k-note-dim);
+  --sl-color-blue: var(--k-note);
+  --sl-color-blue-high: var(--k-note-high);
+  --sl-color-purple-low: var(--k-tip-dim);
+  --sl-color-purple: var(--k-tip);
+  --sl-color-purple-high: var(--k-tip-high);
+  --sl-color-orange-low: var(--k-caution-dim);
+  --sl-color-orange: var(--k-caution);
+  --sl-color-orange-high: var(--k-caution-high);
+  --sl-color-red-low: var(--k-danger-dim);
+  --sl-color-red: var(--k-danger);
+  --sl-color-red-high: var(--k-danger-high);
+  --sl-color-green-low: var(--k-good-dim);
+  --sl-color-green: var(--k-good);
+  --sl-color-green-high: var(--k-good-high);
+
+  --sl-color-text: var(--k-text);
+  --sl-color-text-accent: var(--k-accent-strong);
+  --sl-color-text-invert: var(--k-on-accent);
+  --sl-color-bg: var(--k-bg);
+  --sl-color-bg-nav: var(--k-surface);
+  --sl-color-bg-sidebar: var(--k-bg);
+  --sl-color-bg-inline-code: var(--k-surface-raised);
+  --sl-color-bg-accent: var(--k-accent);
+  --sl-color-hairline-light: var(--k-hairline-strong);
+  --sl-color-hairline: var(--k-hairline);
+  --sl-color-hairline-shade: var(--k-bg);
+
+  --sl-font: var(--k-font-prose);
+  --sl-font-mono: var(--k-font-mono);
+
+  --sl-line-height: 1.7;
+  --sl-line-height-headings: 1.25;
+}
+
+:root[data-theme='light'],
+[data-theme='light'] ::backdrop {
+  /* The light theme is not the dark one inverted. It is read in daylight on a
+   * screen that is already bright, so the page is off-white rather than white
+   * and the amber is taken down until it is a link colour rather than a
+   * highlighter. Every pair here is checked by the same test as the dark set. */
+  --k-bg: hsl(200 24% 98%);
+  --k-surface: hsl(200 22% 95%);
+  --k-surface-raised: hsl(200 20% 91%);
+  --k-hairline: hsl(200 16% 87%);
+  --k-hairline-strong: hsl(200 12% 51%);
+
+  --k-text-strong: hsl(200 18% 10%);
+  --k-text: hsl(200 15% 20%);
+  --k-text-muted: hsl(200 12% 33%);
+  --k-text-faint: hsl(200 11% 42%);
+
+  --k-accent: hsl(28 88% 29%);
+  --k-accent-strong: hsl(26 90% 22%);
+  --k-accent-dim: hsl(36 80% 90%);
+  --k-on-accent: hsl(0 0% 100%);
+
+  --k-note-dim: hsl(205 70% 93%);
+  --k-note: hsl(205 75% 34%);
+  --k-note-high: hsl(205 80% 24%);
+  --k-tip-dim: hsl(275 55% 94%);
+  --k-tip: hsl(275 50% 42%);
+  --k-tip-high: hsl(275 55% 30%);
+  --k-caution-dim: hsl(36 80% 91%);
+  --k-caution: hsl(30 85% 32%);
+  --k-caution-high: hsl(28 90% 24%);
+  --k-danger-dim: hsl(355 80% 95%);
+  --k-danger: hsl(355 70% 40%);
+  --k-danger-high: hsl(355 75% 30%);
+  --k-good-dim: hsl(150 50% 91%);
+  --k-good: hsl(155 85% 24%);
+  --k-good-high: hsl(155 90% 18%);
+
+  --sl-color-text-accent: var(--k-accent);
+  --sl-color-bg-nav: var(--k-surface);
+  --sl-color-bg-sidebar: var(--k-bg);
+  --sl-color-bg-inline-code: var(--k-surface-raised);
+  --sl-color-bg-accent: var(--k-accent);
+  --sl-color-hairline-light: var(--k-hairline);
+  --sl-color-hairline-shade: var(--k-hairline);
+}
+
+/* ---- What the tokens are actually used for ------------------------------ */
+
+/* Headings are the monospace face. This is the whole of the visual identity:
+ * the site names itself in the same typeface as the commands it documents. */
+:root {
+  --sl-text-h1: var(--sl-text-4xl);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.site-title,
+site-title a {
+  font-family: var(--k-font-mono);
+  letter-spacing: var(--k-tracking-heading);
+  font-weight: 600;
+}
+
+/* Starlight's hero title is a heading, but its tagline and buttons are not, and
+ * a splash page that mixes the two faces at that size looks like an accident. */
+.hero h1,
+.hero .actions a {
+  font-family: var(--k-font-mono);
+}
+
+.hero .tagline {
+  max-width: 42rem;
+}
+
+/* The site title sits next to a search box and a theme toggle; at the default
+ * weight the monospace face is the loudest thing in the header, which is the
+ * wrong thing for it to be. */
+.site-title {
+  font-weight: 500;
+  letter-spacing: var(--k-tracking-label);
+}
+
+/* No animation on scroll, no gradients, no illustration — kolonie-website#11.
+ * Readers who ask for less motion get none of the little that remains. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

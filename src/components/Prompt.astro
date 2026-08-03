@@ -1,0 +1,168 @@
+---
+/**
+ * A thing the reader is meant to copy and run — a command, or the URL handed to
+ * an agent. It is a component rather than a code block (kolonie-website#11)
+ * because on the pages that matter it is the single most important element, and
+ * a fenced block styled like every other fenced block does not say so.
+ *
+ * What is copied is read out of the element that is displayed, so the two can
+ * never disagree. Everything it draws comes from the tokens in
+ * `src/styles/theme.css`; there is not a colour value in this file, and
+ * `theme.test.ts` fails if one appears.
+ */
+interface Props {
+  /** Exactly the text the reader gets on the clipboard. */
+  code: string;
+  /** What sits in the title bar. Say where the command is meant to be run. */
+  label?: string;
+}
+
+const { code, label = 'shell' } = Astro.props;
+---
+
+<figure class="prompt">
+  <figcaption class="prompt-label">{label}</figcaption>
+  <div class="prompt-body">
+    <pre class="prompt-code"><code>{code.trim()}</code></pre>
+    <button class="prompt-copy" type="button" data-prompt-copy>
+      <span data-prompt-copy-label>Copy</span>
+    </button>
+  </div>
+  <!-- The confirmation is announced as well as shown: a copy control whose only
+       feedback is a word changing colour has not confirmed anything to a reader
+       using a screen reader. -->
+  <p class="prompt-status" role="status" aria-live="polite" data-prompt-status></p>
+</figure>
+
+<style>
+  .prompt {
+    margin: var(--k-space-5) 0;
+    border: var(--k-border) solid var(--k-hairline-strong);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+    overflow: hidden;
+  }
+
+  /* The title bar is what makes it read as a terminal rather than a card. No
+     traffic-light dots — they are a picture of a window, not a window. */
+  .prompt-label {
+    padding: var(--k-space-2) var(--k-space-4);
+    border-bottom: var(--k-border) solid var(--k-hairline);
+    background: var(--k-bg);
+    color: var(--k-text-faint);
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-xs);
+    letter-spacing: var(--k-tracking-label);
+    text-transform: uppercase;
+  }
+
+  .prompt-body {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--k-space-3);
+  }
+
+  .prompt-code {
+    flex: 1;
+    margin: 0;
+    padding: var(--k-space-4);
+    overflow-x: auto;
+    background: none;
+    border: none;
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-sm);
+    line-height: 1.6;
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  .prompt-copy {
+    flex: none;
+    margin: var(--k-space-3);
+    padding: var(--k-space-2) var(--k-space-3);
+    border: var(--k-border) solid var(--k-hairline-strong);
+    border-radius: var(--k-radius);
+    background: var(--k-surface-raised);
+    color: var(--k-text);
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-xs);
+    cursor: pointer;
+  }
+
+  .prompt-copy:hover {
+    border-color: var(--k-accent);
+    color: var(--k-accent);
+  }
+
+  .prompt-copy:focus-visible {
+    outline: 2px solid var(--k-accent);
+    outline-offset: 2px;
+  }
+
+  /* Confirmed. The colour is the quiet half of the signal and the word is the
+     load-bearing half, so the state is legible without it. */
+  .prompt-copy[data-copied='true'] {
+    border-color: var(--k-accent);
+    color: var(--k-accent);
+  }
+
+  .prompt-status {
+    margin: 0;
+    padding: 0 var(--k-space-4) var(--k-space-3);
+    color: var(--k-text-faint);
+    font-size: var(--sl-text-xs);
+    min-height: 1.2em;
+  }
+
+  .prompt-status:empty {
+    padding-bottom: 0;
+  }
+</style>
+
+<script>
+  // Every prompt on the page, wired once. Progressive enhancement: without
+  // JavaScript the command is still there and still selectable, and the button
+  // is the only thing that stops working.
+  document.querySelectorAll<HTMLElement>('.prompt').forEach((prompt) => {
+    const button = prompt.querySelector<HTMLButtonElement>('[data-prompt-copy]')
+    const label = prompt.querySelector<HTMLElement>('[data-prompt-copy-label]')
+    const status = prompt.querySelector<HTMLElement>('[data-prompt-status]')
+    const code = prompt.querySelector<HTMLElement>('.prompt-code code')
+    if (!button || !label || !status || !code) return
+
+    let clearAt: ReturnType<typeof setTimeout> | undefined
+
+    const say = (message: string, copied: boolean) => {
+      label.textContent = copied ? 'Copied' : 'Copy'
+      button.dataset.copied = String(copied)
+      status.textContent = message
+      clearTimeout(clearAt)
+      clearAt = setTimeout(() => {
+        label.textContent = 'Copy'
+        button.dataset.copied = 'false'
+        status.textContent = ''
+      }, 4000)
+    }
+
+    button.addEventListener('click', async () => {
+      const text = code.textContent ?? ''
+      try {
+        // `navigator.clipboard` is undefined outside a secure context, which
+        // includes anyone reading a local build over plain http.
+        if (!navigator.clipboard) throw new Error('no clipboard')
+        await navigator.clipboard.writeText(text)
+        say('Copied to the clipboard.', true)
+      } catch {
+        // Select it instead, so the reader has one keystroke left to do rather
+        // than a button that failed silently.
+        const range = document.createRange()
+        range.selectNodeContents(code)
+        const selection = window.getSelection()
+        selection?.removeAllRanges()
+        selection?.addRange(range)
+        say('Selected — press Ctrl-C or Cmd-C to copy.', false)
+      }
+    })
+  })
+</script>

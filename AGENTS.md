@@ -66,6 +66,15 @@ Markdown file here** — that is the one thing that file forbids everywhere.
   `node_modules` installed without dev dependencies fails the first command in
   the chain with `Cannot find module 'vitest'` — a message that blames the
   TypeScript configuration for an incomplete install (#12).
+- **Colour lives in `src/styles/theme.css` and nowhere else.** It defines the
+  colour, type and spacing tokens; pages and components consume them, and
+  Starlight's own `--sl-*` names are assigned there once so the sidebar, the
+  search dialog, the asides and the 404 page follow without being touched. A
+  colour value in any other file fails `src/styles/theme.test.ts`, which also
+  computes every text-on-background pair in both themes and fails under WCAG AA.
+  The favicon and the Open Graph image are generated from the same tokens by
+  `node scripts/build-assets.mjs` — regenerate them when the palette changes,
+  and `src/styles/assets.test.ts` will say so if you forget.
 - **A green build is not a working site.** Astro emits an empty site without
   complaint if the content collection is misconfigured — that is what
   `src/content.config.ts` is for, and why CI asserts that `dist/index.html`
