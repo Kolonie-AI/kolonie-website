@@ -94,10 +94,10 @@ export const ENTRY_POINTS = {
 /**
  * The runtimes, named, for a page that answers *does this work with what I run*.
  *
- * Derived rather than written down (kolonie-website#13). `<Runtimes />` renders
- * exactly this and holds no names of its own, so the landing page and `/skill`
- * cannot come to disagree about which runtimes exist — which is the failure
- * `#8` is named for and the one a second hand-written list guarantees.
+ * Derived rather than written down (kolonie-website#13). Nothing that renders
+ * runtime names holds any of its own, so the landing page and `/skill` cannot
+ * come to disagree about which runtimes exist — which is the failure `#8` is
+ * named for and the one a second hand-written list guarantees.
  */
 export const runtimeNames = (): readonly string[] =>
   SKILL_REPOSITORIES.map((repository) => repository.platform);

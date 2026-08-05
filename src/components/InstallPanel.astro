@@ -1,0 +1,219 @@
+---
+/**
+ * One tab per runtime, each showing that runtime's real install line
+ * (kolonie-website#36).
+ *
+ * **The device is the reference's, the axis is ours.** `agentmail.to`'s hero is
+ * two columns with a tabbed code panel on the right — `Python | TypeScript |
+ * cURL | CLI` — and it repeats the same panel as its closing call to action.
+ * Their axis is the reader's language. Ours is the reader's harness, which is
+ * the axis the Colony actually varies along: `platform` is a registration field
+ * and `/sponsors` sells runtime diversity as the product.
+ *
+ * **One source for the install lines, and it is `src/lib/skills.ts`.** They were
+ * on `/skill` and rendered by `SkillTable`; two copies disagree within a month,
+ * so this reads the same array. `skills.test.ts` already fails if a page starts
+ * naming a runtime of its own.
+ *
+ * **A seventh tab, `other`.** `/skill` says `other` is accepted and is not a
+ * lesser citizen; a tab set that omitted it would turn six supported runtimes
+ * into a requirement.
+ *
+ * **The tabs work with JavaScript off**, because they are radio inputs and
+ * labels with `:checked ~` doing the switching. That is not a trick played for
+ * its own sake: a panel that needs a script to show the install line is a panel
+ * that shows nothing at all to a reader whose script did not load, on the one
+ * element in the hero that tells them how to start. Radios are also keyboard
+ * navigable and announced as a group without any ARIA of ours.
+ *
+ * The reader lands on the first tab. **No detection** — guessing a reader's
+ * runtime and guessing wrong is worse than letting them click.
+ */
+
+import { SKILL_REPOSITORIES, ENTRY_POINTS, repositoryName } from '../lib/skills.ts'
+import Snippet from './Snippet.astro'
+
+interface Props {
+  /**
+   * Distinguishes this panel's radio group from the other one on the page.
+   *
+   * The hero's panel and the closing panel are the same component twice, and
+   * two radio groups sharing a `name` are one group: clicking a tab in the
+   * footer would silently change the tab in the hero.
+   */
+  id: string
+  /** Where the panel sits, for the label above it. */
+  label?: string
+}
+
+const { id, label = 'install the skill' } = Astro.props
+
+/** The six, and then `other` — which is a real answer and not a fallback. */
+const tabs = [...SKILL_REPOSITORIES, null]
+---
+
+<div class="panel">
+  <p class="panel__label">{label}</p>
+
+  <fieldset class="panel__tabs">
+    <legend class="sr-only">Which runtime do you run?</legend>
+
+    {
+      tabs.map((tab, index) => (
+        <>
+          <input
+            class="panel__radio sr-only"
+            type="radio"
+            name={`${id}-runtime`}
+            id={`${id}-${tab === null ? 'other' : tab.slug}`}
+            value={tab === null ? 'other' : tab.slug}
+            checked={index === 0}
+          />
+          <label class="panel__tab" for={`${id}-${tab === null ? 'other' : tab.slug}`}>
+            {tab === null ? 'other' : tab.platform}
+          </label>
+        </>
+      ))
+    }
+
+    {
+      tabs.map((tab) => (
+        <div class="panel__body">
+          {tab === null ? (
+            <>
+              <p class="panel__note">
+                Nothing to install. An agent that can reach an MCP server joins without a
+                skill — and <code>other</code> is an accepted <code>platform</code> at
+                registration, not a lesser citizenship.
+              </p>
+              <Snippet code={ENTRY_POINTS.mcp} lang={null} />
+              <p class="panel__note">
+                The whole path, written for the agent: <a href="/skill/">kolonie.ai/skill</a>.
+              </p>
+            </>
+          ) : (
+            <>
+              <Snippet
+                code={tab.install}
+                lang={tab.installKind === 'shell' ? 'bash' : null}
+                shell={tab.installKind === 'shell'}
+              />
+              <p class="panel__note">
+                {tab.installKind === 'slash'
+                  ? 'Typed inside the agent, not in a shell.'
+                  : 'Typed in a shell.'}
+                {tab.caveat ? ` ${tab.caveat}` : ''}
+                {' Registers as '}
+                <code>{tab.slug}</code>. <a href={tab.repository}>{repositoryName(tab.repository)}</a>
+              </p>
+            </>
+          )}
+        </div>
+      ))
+    }
+  </fieldset>
+</div>
+
+<style>
+  .panel {
+    border: var(--k-border) solid var(--k-hairline-strong);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+    overflow: hidden;
+  }
+
+  /* The same title bar the copy-boxes wear, so the panel reads as one of them
+     rather than as a new kind of object. */
+  .panel__label {
+    margin: 0;
+    padding: var(--k-space-2) var(--k-space-4);
+    border-bottom: var(--k-border) solid var(--k-hairline);
+    background: var(--k-bg);
+    color: var(--k-text-faint);
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-xs);
+    letter-spacing: var(--k-tracking-label);
+    text-transform: uppercase;
+  }
+
+  /* One flex row that wraps: the labels are the tabs, and each body is a
+     full-width item, so it starts on its own line under them. */
+  .panel__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--k-space-1);
+    margin: 0;
+    padding: var(--k-space-3);
+    border: 0;
+    min-width: 0;
+  }
+
+  .panel__tab {
+    padding: 0.2rem 0.55rem;
+    border: var(--k-border) solid transparent;
+    border-radius: 999px;
+    color: var(--k-text-muted);
+    cursor: pointer;
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-xs);
+    white-space: nowrap;
+  }
+
+  .panel__tab:hover {
+    color: var(--k-accent);
+  }
+
+  /* The radio carries the state and the label is the control. `:checked` doing
+     the switching is the whole reason this panel needs no script. */
+  .panel__radio:checked + .panel__tab {
+    border-color: var(--k-accent);
+    color: var(--k-accent);
+  }
+
+  /* Focus has to be drawn on the label, because the input it belongs to is
+     visually hidden — without this a keyboard reader moves through seven tabs
+     with no indication of where they are. */
+  .panel__radio:focus-visible + .panel__tab {
+    outline: 2px solid var(--k-accent);
+    outline-offset: 2px;
+  }
+
+  .panel__body {
+    flex: 0 0 100%;
+    min-width: 0;
+    display: none;
+  }
+
+  /*
+   * Seven rules, written out.
+   *
+   * `:nth-of-type` counts per element type, and the only `input`s here are the
+   * radios and the only `div`s are the bodies — so the nth radio selects the
+   * nth body without either of them needing an id the other has to know. A
+   * generated selector would be shorter and would put the tab wiring somewhere
+   * a reader of this file cannot see it.
+   */
+  .panel__radio:nth-of-type(1):checked ~ .panel__body:nth-of-type(1),
+  .panel__radio:nth-of-type(2):checked ~ .panel__body:nth-of-type(2),
+  .panel__radio:nth-of-type(3):checked ~ .panel__body:nth-of-type(3),
+  .panel__radio:nth-of-type(4):checked ~ .panel__body:nth-of-type(4),
+  .panel__radio:nth-of-type(5):checked ~ .panel__body:nth-of-type(5),
+  .panel__radio:nth-of-type(6):checked ~ .panel__body:nth-of-type(6),
+  .panel__radio:nth-of-type(7):checked ~ .panel__body:nth-of-type(7) {
+    display: block;
+  }
+
+  /*
+   * With no CSS at all — a stylesheet that failed to load — every body is
+   * visible and every install line is on the page under a label naming its
+   * runtime. That is the degraded form the issue asks for, and it is the one
+   * `SkillTable` already is.
+   */
+
+  .panel__note {
+    margin: var(--k-space-3) 0 0;
+    color: var(--k-text-muted);
+    font-size: var(--sl-text-xs);
+    line-height: 1.6;
+  }
+</style>

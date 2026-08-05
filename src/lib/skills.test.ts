@@ -117,7 +117,11 @@ describe("the runtimes on the landing page", () => {
    * still looks complete.
    */
   it("renders them from the list rather than typing them out", () => {
-    expect(landing).toContain("<Runtimes />");
+    // `<InstallPanel />` since kolonie-website#36 — the runtimes moved from a
+    // strip mid-page into the hero's tabbed panel, which reads the same array.
+    // What this checks is unchanged: the landing page renders them from the
+    // list and names none of its own.
+    expect(landing).toContain("<InstallPanel");
 
     for (const { platform } of SKILL_REPOSITORIES) {
       expect(landing, `${platform} is typed into the landing page`).not.toContain(platform);
