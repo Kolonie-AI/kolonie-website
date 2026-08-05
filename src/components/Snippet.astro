@@ -1,0 +1,98 @@
+---
+/**
+ * The rendered inside of a copy-box (kolonie-website#31).
+ *
+ * `Prompt` and `SkillTable` both draw one and drew it twice; this is the one
+ * place that decides what a snippet looks like, so the join prompt on `/` and
+ * the install line on `/skill` cannot end up two different objects.
+ *
+ * **Three properties, and they are the acceptance criteria.**
+ *
+ * 1. **What is copied is what is displayed.** The highlighter wraps every token
+ *    in a `<span>`, so the copy control reads `textContent` off the rendered
+ *    `<code>` and gets the plain text back — never the markup. There is no
+ *    second copy of the string anywhere. `prompt.built-test.ts` reads the built
+ *    page and checks it, because this is the site's primary interaction and a
+ *    silent regression in it costs more than the highlighting is worth.
+ * 2. **A sentence is not code.** `lang={null}` renders the text as it is. The
+ *    join prompt is English, and colouring it as though it were a language is
+ *    the highlighter saying something false.
+ * 3. **A shell line looks like a shell line.** `shell` draws the prompt glyph.
+ *    It is a `::before` in CSS rather than a character in the markup,
+ *    deliberately: it must not be selectable and must not land on the
+ *    clipboard. Confusing *typed in a shell* with *pasted into an agent* is the
+ *    single most common way a reader gets the install wrong, and `/skill` has
+ *    been drawing that distinction in prose only.
+ */
+import { Code } from 'astro:components'
+import { SYNTAX_THEME, type SnippetLanguage } from '../lib/syntax.ts'
+
+interface Props {
+  /** Exactly the text the reader gets on the clipboard. */
+  code: string
+  /** `null` for prose. Anything else is tokenised. */
+  lang?: SnippetLanguage
+  /** Whether this is typed at a shell, which is what earns the glyph. */
+  shell?: boolean
+  /** Passed through so the copy script can find the rendered code. */
+  class?: string
+}
+
+const { code, lang = null, shell = false, class: className = '' } = Astro.props
+
+const text = code.trim()
+---
+
+<div class:list={['snippet', className, { 'snippet--shell': shell }]}>
+  {
+    lang === null ? (
+      <pre class="snippet-plain"><code>{text}</code></pre>
+    ) : (
+      <Code code={text} lang={lang} theme={SYNTAX_THEME} />
+    )
+  }
+</div>
+
+<style is:global>
+  /* Shiki writes its own `<pre class="shiki">`, so these are global: a scoped
+     rule cannot reach markup this component did not author. Everything below is
+     layout and type — the colours arrive on the tokens themselves, as variables
+     pointing back at `theme.css`. */
+  .snippet > pre {
+    margin: 0;
+    padding: var(--k-space-4);
+    overflow-x: auto;
+    border: none;
+    /* Shiki emits a background on its own `<pre>`; the box around the snippet
+       is the component's, and a second one inside it is a second edge. */
+    background: none !important;
+    color: var(--k-syn-plain);
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-sm);
+    line-height: 1.6;
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  .snippet > pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* The prompt glyph. Not a character in the markup: it must not be selectable
+     and must not reach the clipboard, and `::before` is the only version of it
+     that is neither.
+
+     One per block and not one per line. Shiki emits a `.line` per source line,
+     so a per-line glyph is available — and it would be wrong on the `curl`,
+     whose three lines are one command joined by backslashes. Marking a
+     continuation as a fresh prompt is a worse error than under-marking the two
+     install blocks that really are two commands, so the glyph opens the block
+     and says *this is a shell*, which is the distinction it exists to draw. */
+  .snippet--shell > pre code::before {
+    content: '$ ';
+    color: var(--k-syn-punct);
+    user-select: none;
+  }
+</style>

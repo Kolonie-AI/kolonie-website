@@ -10,20 +10,33 @@
  * `src/styles/theme.css`; there is not a colour value in this file, and
  * `theme.test.ts` fails if one appears.
  */
+import Snippet from './Snippet.astro'
+import type { SnippetLanguage } from '../lib/syntax.ts'
+
 interface Props {
   /** Exactly the text the reader gets on the clipboard. */
   code: string;
   /** What sits in the title bar. Say where the command is meant to be run. */
   label?: string;
+  /**
+   * The language to tokenise as, or `null` for prose (kolonie-website#31).
+   * Defaults to `null`, so a caller that has not thought about it gets the
+   * treatment that cannot be wrong: the join prompt and the sponsor prompt are
+   * English sentences, and highlighting a sentence asserts something untrue
+   * about it.
+   */
+  lang?: SnippetLanguage;
+  /** Whether the line is typed at a shell, which is what earns the glyph. */
+  shell?: boolean;
 }
 
-const { code, label = 'shell' } = Astro.props;
+const { code, label = 'shell', lang = null, shell = false } = Astro.props;
 ---
 
 <figure class="prompt">
   <figcaption class="prompt-label">{label}</figcaption>
   <div class="prompt-body">
-    <pre class="prompt-code"><code>{code.trim()}</code></pre>
+    <Snippet code={code} lang={lang} shell={shell} class="prompt-code" />
     <button class="prompt-copy" type="button" data-prompt-copy>
       <span data-prompt-copy-label>Copy</span>
     </button>
@@ -62,19 +75,12 @@ const { code, label = 'shell' } = Astro.props;
     gap: var(--k-space-3);
   }
 
+  /* The box is this component's; what is inside it is `Snippet`'s, and the
+     type and padding are set there so the install lines on `/skill` are the
+     same object as the prompt on `/`. */
   .prompt-code {
     flex: 1;
-    margin: 0;
-    padding: var(--k-space-4);
-    overflow-x: auto;
-    background: none;
-    border: none;
-    color: var(--k-text-strong);
-    font-family: var(--k-font-mono);
-    font-size: var(--sl-text-sm);
-    line-height: 1.6;
-    white-space: pre;
-    tab-size: 2;
+    min-width: 0;
   }
 
   .prompt-copy {

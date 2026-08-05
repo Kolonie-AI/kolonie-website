@@ -115,6 +115,18 @@ const pairs: Array<[string, string, number, string]> = [
   ["--k-on-accent", "--k-accent", AA, "the label of a filled button"],
   ["--k-hairline-strong", "--k-bg", AA_UI, "the border of a control"],
 
+  // The syntax palette (kolonie-website#31), on both grounds a snippet is
+  // drawn on: `.prompt` sits on --k-surface, `.skill-install` on --k-bg. A
+  // highlighted token is body text at body size, so it is AA and not AA_UI —
+  // the decision on the issue was explicit that a syntax palette skipping this
+  // check would be a hole in the one guarantee this repository enforces.
+  ...(["plain", "command", "string", "flag", "value", "punct", "comment"] as const).flatMap(
+    (kind): Array<[string, string, number, string]> => [
+      [`--k-syn-${kind}`, "--k-bg", AA, `syntax: ${kind} in an install line`],
+      [`--k-syn-${kind}`, "--k-surface", AA, `syntax: ${kind} in a prompt`],
+    ],
+  ),
+
   // The four aside kinds and the Academy's "holds this skill" green. Starlight
   // sets an aside's body in --sl-color-white on the dim ground and its title in
   // the high, so those are the two pairs each has to survive.

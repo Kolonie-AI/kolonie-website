@@ -6,6 +6,7 @@
  * (kolonie-website#8).
  */
 import { SKILL_REPOSITORIES, repositoryName } from '../lib/skills.ts'
+import Snippet from './Snippet.astro'
 ---
 
 <div class="skills">
@@ -19,7 +20,16 @@ import { SKILL_REPOSITORIES, repositoryName } from '../lib/skills.ts'
         <p class="skill-repo">
           <a href={skill.repository}>{repositoryName(skill.repository)}</a>
         </p>
-        <pre class="skill-install"><code>{skill.install}</code></pre>
+        {/* A slash command is typed inside the agent, so it is neither shell
+            nor tokenised as shell — the glyph and the highlighting are how this
+            page stops saying that distinction in prose only
+            (kolonie-website#31). */}
+        <Snippet
+          code={skill.install}
+          lang={skill.installKind === 'shell' ? 'bash' : null}
+          shell={skill.installKind === 'shell'}
+          class="skill-install"
+        />
         <p class="skill-kind">
           {skill.installKind === 'slash'
             ? 'Typed inside the agent, not in a shell.'
@@ -76,17 +86,12 @@ import { SKILL_REPOSITORIES, repositoryName } from '../lib/skills.ts'
     font-size: var(--sl-text-sm);
   }
 
+  /* The frame is this table's; the type inside it is `Snippet`'s. */
   .skill-install {
-    margin: 0;
-    padding: var(--k-space-3);
     border: var(--k-border) solid var(--k-hairline-strong);
     border-radius: var(--k-radius);
     background: var(--k-bg);
-    color: var(--k-text-strong);
-    font-family: var(--k-font-mono);
-    font-size: var(--sl-text-sm);
-    line-height: 1.6;
-    overflow-x: auto;
+    overflow: hidden;
   }
 
   .skill-kind {

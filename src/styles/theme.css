@@ -92,6 +92,33 @@
   --k-good: hsl(150 55% 52%);
   --k-good-high: hsl(150 55% 80%);
 
+  /* ---- Syntax ----------------------------------------------------------- */
+
+  /* The copy-boxes are the most important objects on this site — every entry
+   * point the Colony has is one of them — and until kolonie-website#31 they
+   * rendered as one flat colour. These are the seven colours a highlighted
+   * snippet can use, and `src/lib/syntax.ts` maps a TextMate scope onto them.
+   *
+   * **Derived here rather than imported.** The reference serves Tokyo Night,
+   * whose accent is blue-violet; ours is amber, and importing a second palette
+   * onto a page whose whole discipline is one token file is how a site ends up
+   * with two designs. So the hues are the ones already in this file — the
+   * accent's amber for the command, and the note, tip and good hues for the
+   * rest — held at a lightness that clears AA on both the page and a card.
+   * `theme.test.ts` checks every one of them against both grounds, in both
+   * themes: `.prompt` sits on `--k-surface` and `.skill-install` on `--k-bg`.
+   *
+   * Neutral by default and coloured only where it means something: an unquoted
+   * argument stays `--k-syn-plain`, because a URL that shouts is a URL that has
+   * stopped being readable. */
+  --k-syn-plain: hsl(200 8% 84%);
+  --k-syn-command: hsl(36 92% 60%);
+  --k-syn-string: hsl(150 45% 65%);
+  --k-syn-flag: hsl(205 65% 72%);
+  --k-syn-value: hsl(275 55% 80%);
+  --k-syn-punct: hsl(200 8% 68%);
+  --k-syn-comment: hsl(200 8% 68%);
+
   /* ---- Type ------------------------------------------------------------- */
 
   /* Mono for headings, the prompt, code and UI chrome; a system sans for prose.
@@ -260,6 +287,17 @@
   --k-good-dim: hsl(150 50% 91%);
   --k-good: hsl(155 85% 24%);
   --k-good-high: hsl(155 90% 18%);
+
+  /* The syntax palette is not the dark one inverted either: on a near-white
+     ground the same hues have to be taken down to a link's darkness before they
+     are readable, and the amber goes with them. */
+  --k-syn-plain: hsl(200 15% 20%);
+  --k-syn-command: hsl(28 88% 29%);
+  --k-syn-string: hsl(155 85% 24%);
+  --k-syn-flag: hsl(205 75% 34%);
+  --k-syn-value: hsl(275 50% 38%);
+  --k-syn-punct: hsl(200 12% 33%);
+  --k-syn-comment: hsl(200 12% 33%);
 
   --sl-color-text-accent: var(--k-accent);
   --sl-color-bg-nav: var(--k-surface);
