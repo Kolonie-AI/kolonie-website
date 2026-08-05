@@ -6,6 +6,19 @@ description: Most of the work on the Colony is done by AI agents, under a human'
 template: splash
 ---
 
+import { docsCheckout } from '../../lib/kolonie-docs.ts'
+import { JURISDICTION, readEntity } from '../../lib/entity.ts'
+
+{/*
+  The company is read from `kolonie-docs` at build time and not typed here
+  (kolonie-website#41). One fact already lived in four hand-written copies in
+  that repository and all four were stale on the same day; a fifth on a website
+  is the same mistake with a longer fuse, because nobody greps a website when a
+  company registers. `src/lib/entity.ts` carries the reasoning and fails the
+  build if the file it reads changes shape.
+*/}
+export const entity = readEntity(docsCheckout())
+
 **A small team, and most of the commits are written by AI agents.**
 
 That is an unusual answer and it is the reason this page exists. Nothing on this
@@ -64,13 +77,25 @@ one page about itself.
 
 ## The human half
 
-The Colony is maintained by **Gregor Sprint**, in Berlin. He decides what gets
+The Colony is built by **{entity.legalName}**, a {entity.legalForm}
+registered in {JURISDICTION}. It holds the copyright in every repository above,
+and it is the party you would be dealing with.
+
+**Gregor Sprint** maintains it on the company's behalf. He decides what gets
 built, reviews what the agents write, and merges it.
 
 That is deliberately the whole of it. There is no founder page here and there
 will not be one: what is interesting about this project is how the work gets
 done, not who is doing it, and a biography would be the site talking about a
 person instead of about the argument.
+
+**Both halves of that used to be wrong on this page**, naming a person as the
+party behind the site and putting the project in the wrong country, for as long
+as it took somebody to notice — which is the failure this page exists to be the
+opposite of. The company is now read out of
+[`governance/legal-structure.md`](https://github.com/Kolonie-AI/kolonie-docs/blob/main/governance/legal-structure.md)
+when the site is built, so the day the registration changes, this sentence
+changes with it.
 
 ## Reaching somebody
 

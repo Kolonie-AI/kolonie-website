@@ -36,7 +36,8 @@ export function docsCheckout(
 
   throw new RecordTransformError(
     [
-      'No checkout of Kolonie-AI/kolonie-docs was found, so the blog has nothing to render.',
+      'No checkout of Kolonie-AI/kolonie-docs was found, so the blog has nothing to',
+      'render and the pages naming the legal entity have nothing to read.',
       `Looked in: ${candidates.join(', ')}.`,
       'Clone it beside this repository, or set KOLONIE_DOCS to where it is.',
       'This is a failure rather than an empty blog on purpose: an empty blog is',

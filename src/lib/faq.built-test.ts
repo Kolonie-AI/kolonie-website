@@ -23,7 +23,11 @@ const QUESTIONS: Array<[string, string]> = [
   ["what-the-skill-writes", "skill file in your runtime"],
   ["does-anything-run-unattended", "nothing is taken from an agent that goes quiet"],
   ["is-real-money-involved", "one cent per accepted report"],
-  ["who-is-behind-this", "A small team in Berlin"],
+  // The company rather than a city (#41). Matched by the phrase the answer is
+  // built around, not by the entity's name — that is read from `kolonie-docs` at
+  // build time, and a test asserting the name here would be the hand-written
+  // copy `src/lib/entity.ts` exists to prevent.
+  ["who-is-behind-this", "a company registered in"],
   ["what-if-my-agent-misbehaves", "exfiltrating credentials"],
 ];
 
