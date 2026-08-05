@@ -13,10 +13,29 @@
  * indexes the surrounding prose and not the nodes. The alternative — a build
  * time fetch — trades a page that is occasionally unavailable for a page that
  * is quietly wrong, and a stale graph on the public site is worse than no graph.
+ *
+ * **`compact` draws the shape and not the cards** (kolonie-website#19). The
+ * landing page needs one live thing in its first screen, and the full forest is
+ * dozens of cards — a page of them is the Academy page, which is where it stays.
+ * The compact rendering is the branches, named and linked, and it carries **no
+ * count of anything**: not tasks, not branches. `#8` refused counts on this site
+ * and `#19` refused them again, so the summary line the full graph writes is not
+ * written here.
+ *
+ * One component and not two, because the three states — reading, unavailable,
+ * empty — are the part that must never diverge between the two pages. What
+ * differs is what `ready` draws.
  */
+
+interface Props {
+  /** Draw the shape only: branch names, linked, no cards and no numbers. */
+  readonly compact?: boolean
+}
+
+const { compact = false } = Astro.props
 ---
 
-<section class="academy" aria-labelledby="academy-graph-heading">
+<section class="academy" aria-labelledby="academy-graph-heading" data-compact={compact ? '' : undefined}>
   <h2 id="academy-graph-heading" class="sr-only">The Academy graph</h2>
 
   <p class="academy__state" data-state="loading" aria-busy="true">Reading the catalogue…</p>
@@ -42,6 +61,18 @@
   </div>
 
   <noscript>
+    {/*
+      Without JavaScript nothing ever clears the loading line, so a reader who
+      has scripts off would be told the catalogue is being read for as long as
+      they look at it — beside a paragraph explaining that it will not be. The
+      style element is inside <noscript>, so it applies in exactly the case
+      where the script that would have replaced that line cannot run.
+    */}
+    <style>
+      .academy [data-state='loading'] {
+        display: none;
+      }
+    </style>
     <p>
       <strong>This graph is read live and needs JavaScript.</strong> The same data is served as
       JSON at <code>/v1/academy/graph</code> on the Colony's API, without a credential.
@@ -77,6 +108,8 @@
     const forest = toForest(result.nodes)
     const granting = grantingTasks(result.nodes)
 
+    if (section.dataset.compact !== undefined) return renderShape(section, forest)
+
     const summary = section.querySelector<HTMLElement>('[data-summary]')
     if (summary) {
       const drafted = result.nodes.filter((node) => node.status !== 'active').length
@@ -92,6 +125,64 @@
         ...(forest.root === undefined ? [] : [rootOf(forest.root)]),
         ...forest.branches.map((branch) => branchOf(branch, granting)),
         ...(forest.singles.length === 0 ? [] : [singlesOf(forest.singles, granting)]),
+      )
+    }
+
+    show(section, 'ready')
+  }
+
+  /**
+   * The shape of the Academy: where every route starts, and what opens off it.
+   *
+   * **Branch names, linked into the full graph, and nothing else.** No card, no
+   * description, no number. A reader in the first screen of the landing page is
+   * being told *this is a network of capabilities somebody checked*, and the
+   * evidence for that is the names arriving from the API in front of them.
+   *
+   * The links are absolute into `/academy/`, because this rendering exists on a
+   * page the graph itself is not on — a bare `#fragment` would go nowhere.
+   */
+  function renderShape(section: HTMLElement, forest: ReturnType<typeof toForest>): void {
+    const summary = section.querySelector<HTMLElement>('[data-summary]')
+    if (summary) {
+      summary.textContent =
+        forest.root === undefined
+          ? 'Read from the Colony just now. Each branch opens with a task a verifier checks.'
+          : `Every route starts at ${forest.root.title}. Each branch opens with a task a verifier checks.`
+    }
+
+    const container = section.querySelector<HTMLElement>('[data-forest]')
+    if (container) {
+      const named = forest.branches.filter(
+        (branch): branch is typeof branch & { skill: string } => branch.skill !== null,
+      )
+
+      container.replaceChildren(
+        el(
+          'ul',
+          { class: 'shape' },
+          [
+            ...named.map((branch) =>
+              el('li', {}, [
+                el('a', { class: 'shape__branch', href: `/academy/#${branch.key ?? ''}` }, [
+                  branch.skill,
+                ]),
+              ]),
+            ),
+            ...(forest.singles.length === 0
+              ? []
+              : [
+                  el('li', {}, [
+                    el('a', { class: 'shape__branch shape__branch--singles', href: '/academy/' }, [
+                      'one-step proofs',
+                    ]),
+                  ]),
+                ]),
+          ],
+        ),
+        el('p', { class: 'shape__more' }, [
+          el('a', { href: '/academy/' }, ['What each of these certifies']),
+        ]),
       )
     }
 
@@ -362,6 +453,51 @@
     color: var(--sl-color-gray-3);
     font-size: var(--sl-text-sm);
     margin-bottom: 1.5rem;
+  }
+
+  /*
+   * The compact rendering: the branches as a row of names, and nothing that
+   * needs a card. It sits in the landing page's first screen, so it has to hold
+   * its height on a phone — a wrapping row of chips does, a grid of cards does
+   * not.
+   */
+  .academy[data-compact] {
+    margin-top: var(--k-space-5);
+  }
+
+  .academy[data-compact] .academy__summary {
+    margin-bottom: var(--k-space-4);
+  }
+
+  .academy .shape {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--k-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .academy .shape__branch {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: 999px;
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-xs);
+    text-decoration: none;
+  }
+
+  .academy .shape__branch:hover,
+  .academy .shape__branch:focus-visible {
+    border-color: var(--k-accent);
+    color: var(--k-accent);
+  }
+
+  .academy .shape__more {
+    margin: var(--k-space-4) 0 0;
+    font-size: var(--sl-text-xs);
   }
 
   /*
