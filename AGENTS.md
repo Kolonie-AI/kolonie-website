@@ -17,7 +17,7 @@ src/components/         Astro components a page embeds
 src/lib/                logic with no DOM in it, and the only thing under test
 src/pages/              routes that are not pages — /llms.txt, /blog
 src/styles/theme.css    every colour, type and spacing token, and the only place
-scripts/                one-off generators — the favicon and the OG image
+scripts/                generators — the favicon, the OG image, the ASCII wordmark
 public/                 served as-is: the fonts, the icons, the OG image
 astro.config.mjs        site config and Starlight integration
 Dockerfile              build with node, serve with nginx
