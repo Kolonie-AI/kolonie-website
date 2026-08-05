@@ -1,0 +1,256 @@
+---
+/**
+ * The shell for the one page that is not a document (kolonie-website#30).
+ *
+ * `/` was `src/content/docs/index.mdx` with `template: splash`: a Markdown file
+ * rendered by a documentation framework, which meant a hero of a centred title
+ * and up to two buttons, a body that could only be a stream of `##` headings,
+ * and — on the most important page on the site — a documentation pager reading
+ * *Next → The Academy*. `#21` set out to remove that furniture and this was the
+ * page it survived on.
+ *
+ * **This is one page leaving, not a framework migration.** `/academy`,
+ * `/skill`, `/sponsors`, `/who-builds-this` and `/blog` are documents, are well
+ * served by being documents, and stay on Starlight. What that costs is this
+ * file: the base layer Starlight was providing — the element styles, the skip
+ * link, the header — has to exist here instead. It is written against the same
+ * tokens in `src/styles/theme.css`, so the two surfaces cannot drift into two
+ * designs, and there is not a colour value in this file.
+ *
+ * **Dark only, and only here.** Decided by the maintainer on 2026-08-05: both
+ * references are dark-only, the brand is terminal-adjacent, and a light theme
+ * is a second design that will always be the worse one. `#22` chose *follow the
+ * system* and that was right for a documentation site. The other pages keep
+ * both themes and `theme.test.ts` keeps checking both — which is why the light
+ * block in `theme.css` is not dead code and must not be removed on the strength
+ * of this page.
+ */
+
+import { PAGESENSE_ATTRS } from '../lib/analytics'
+import { OG_IMAGE, OG_IMAGE_ALT, SITE, themeColorFrom } from '../lib/head'
+import '../styles/theme.css'
+// The same file again, as text, because `<meta name="theme-color">` needs the
+// value rather than the variable. `?raw` rather than `readFileSync`: this
+// module is bundled, and at build time a path relative to it points into
+// `dist/.prerender/`, where `theme.css` is not.
+import themeCss from '../styles/theme.css?raw'
+
+interface Props {
+  /** The `<title>`, before the site name is appended. */
+  title: string
+  description: string
+}
+
+const { title, description } = Astro.props
+
+const canonical = new URL(Astro.url.pathname, SITE).href
+const themeColor = themeColorFrom(themeCss)
+---
+
+<!doctype html>
+<!-- `data-theme="dark"` is written into the markup rather than chosen at
+     runtime: this page has one theme, so there is no preference to read and no
+     flash of the wrong one to avoid. -->
+<html lang="en" dir="ltr" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | Kolonie AI</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kolonie AI" />
+    <meta property="og:locale" content="en" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={OG_IMAGE} />
+    <meta property="og:image:alt" content={OG_IMAGE_ALT} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content={themeColor} />
+
+    <!-- Zoho PageSense, on every page of this site and on no host that serves a
+         token (kolonie-website#17). `analytics.built-test.ts` reads the built
+         output and fails if a page is missing it, which is what makes leaving
+         the framework safe to do at all. -->
+    <!-- `is:inline` so Astro leaves it exactly as written: the tag has to reach
+         the browser as a deferred external script, not as something bundled. -->
+    <script is:inline {...PAGESENSE_ATTRS}></script>
+  </head>
+
+  <body>
+    <!-- Not chrome and not optional: `#21` is explicit that removing a
+         documentation framework's furniture must not remove its accessibility.
+         Starlight was providing this one. -->
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <header class="site-header">
+      <a href="/" class="site-title">Kolonie AI</a>
+      <nav aria-label="Elsewhere">
+        <a href="https://github.com/Kolonie-AI" rel="me">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <p>Kolonie AI</p>
+      <p><a href="https://github.com/Kolonie-AI">The code, and every decision behind it</a></p>
+    </footer>
+
+    <style is:global>
+      /*
+       * The base layer for the pages that are not documents. Starlight ships one
+       * and it comes with Starlight; this is the same job done against the same
+       * tokens, and nothing here is a colour value.
+       */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--k-bg);
+        color-scheme: dark;
+      }
+
+      body {
+        margin: 0;
+        background: var(--k-bg);
+        color: var(--k-text);
+        font-family: var(--k-font-prose);
+        font-size: var(--k-text-base);
+        line-height: var(--sl-line-height);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        color: var(--k-text-strong);
+        line-height: var(--sl-line-height-headings);
+      }
+
+      h1 {
+        font-size: var(--k-text-4xl);
+      }
+      h2 {
+        font-size: var(--k-text-2xl);
+      }
+      h3 {
+        font-size: var(--k-text-xl);
+      }
+      h4 {
+        font-size: var(--k-text-lg);
+      }
+
+      a {
+        color: var(--k-accent);
+        text-underline-offset: 0.2em;
+      }
+
+      strong {
+        color: var(--k-text-strong);
+        font-weight: 600;
+      }
+
+      code {
+        font-family: var(--k-font-mono);
+        font-size: 0.9em;
+        padding: 0.15em 0.35em;
+        border-radius: var(--k-radius);
+        background: var(--k-surface-raised);
+      }
+
+      /* Focus is visible on everything, on a page whose accent is the only
+         bright thing in the palette. */
+      :is(a, button, summary, input, [tabindex]):focus-visible {
+        outline: 2px solid var(--k-accent);
+        outline-offset: 3px;
+        border-radius: var(--k-radius);
+      }
+
+      /* Starlight's, because components written for the documentation pages use
+         it and a landing page that dropped it would show the labels those
+         components hide. */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+
+      .skip-link {
+        position: absolute;
+        z-index: 10;
+        top: var(--k-space-2);
+        left: var(--k-space-2);
+        padding: var(--k-space-2) var(--k-space-4);
+        border: var(--k-border) solid var(--k-hairline-strong);
+        border-radius: var(--k-radius);
+        background: var(--k-surface);
+        font-family: var(--k-font-mono);
+        font-size: var(--k-text-sm);
+        transform: translateY(-200%);
+      }
+
+      .skip-link:focus {
+        transform: none;
+      }
+    </style>
+
+    <style>
+      /* The header is the one Starlight rendered, in the markup it takes to
+         render it: the name and the one social link. `#30` decided it does not
+         change — it is fine and it is consistent across pages. */
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--k-space-4);
+        padding: var(--k-space-4) var(--k-space-5);
+        border-bottom: var(--k-border) solid var(--k-hairline);
+        background: var(--k-surface);
+      }
+
+      .site-title {
+        color: var(--k-text-strong);
+        font-family: var(--k-font-mono);
+        font-size: var(--k-text-lg);
+        font-weight: 500;
+        letter-spacing: var(--k-tracking-label);
+        text-decoration: none;
+      }
+
+      .site-header nav a {
+        font-family: var(--k-font-mono);
+        font-size: var(--k-text-sm);
+      }
+
+      .site-footer {
+        margin-top: var(--k-flow-section);
+        padding: var(--k-space-6) var(--k-space-5);
+        border-top: var(--k-border) solid var(--k-hairline);
+        color: var(--k-text-faint);
+        font-family: var(--k-font-mono);
+        font-size: var(--k-text-sm);
+      }
+
+      .site-footer p {
+        margin: 0 0 var(--k-space-2);
+      }
+    </style>
+  </body>
+</html>

@@ -97,8 +97,11 @@ describe("the page written for a machine", () => {
 });
 
 describe("the runtimes on the landing page", () => {
+  // `src/pages/index.astro` since kolonie-website#30 — the landing page left
+  // the documentation framework and is a composed page now. What this checks is
+  // unchanged: the runtimes are rendered from the list rather than typed out.
   const landing = readFileSync(
-    fileURLToPath(new URL("../content/docs/index.mdx", import.meta.url)),
+    fileURLToPath(new URL("../pages/index.astro", import.meta.url)),
     "utf8",
   );
 

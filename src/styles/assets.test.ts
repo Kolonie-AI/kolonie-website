@@ -69,9 +69,15 @@ describe("the site is not shared as a bare link", () => {
 
   it("names it in the head, at an absolute URL", () => {
     // Relative Open Graph images are ignored by most consumers.
-    const config = read("../../astro.config.mjs");
-    expect(config).toContain("https://kolonie.ai/og.png");
-    expect(config).toContain("summary_large_image");
+    //
+    // Declared in `src/lib/head.ts` since kolonie-website#30, not in
+    // `astro.config.mjs`: `/` left Starlight, so the config is no longer the
+    // only place a page's head is written from, and the two surfaces read this
+    // one list. `head.built-test.ts` checks the tag survived onto every built
+    // page, which is the assertion that catches them drifting apart.
+    const head = read("../lib/head.ts");
+    expect(head).toContain("https://kolonie.ai/og.png");
+    expect(head).toContain("summary_large_image");
   });
 
   it("serves an Apple touch icon", () => {
