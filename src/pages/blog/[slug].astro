@@ -1,0 +1,41 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { getCollection, render, type CollectionEntry } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+
+/**
+ * One published decision record (kolonie-website#15).
+ *
+ * The preface, the supersession notice and every rewritten link are the
+ * loader's work, not this page's: the transform is a pure function under test,
+ * and a template that reasoned about records as well would be a second place
+ * for the same rules to live.
+ */
+export const getStaticPaths: GetStaticPaths = async () => {
+  const posts = await getCollection('blog')
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }))
+}
+
+const { post } = Astro.props as { post: CollectionEntry<'blog'> }
+const { Content } = await render(post)
+---
+
+<StarlightPage
+  frontmatter={{
+    title: post.data.title,
+    description: `A decision record from Kolonie AI, published unchanged from the Colony’s own repository.`,
+    template: 'splash',
+  }}
+>
+  <Content />
+
+  <hr />
+  <p>
+    <small>
+      Published unchanged from
+      <a href={post.data.source}>the Colony’s repository</a>. If this page and that file
+      ever disagree, the file is the decision. —
+      <a href="/blog/">More records</a>
+    </small>
+  </p>
+</StarlightPage>

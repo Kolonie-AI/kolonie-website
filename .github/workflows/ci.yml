@@ -12,6 +12,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The blog renders decision records that live in kolonie-docs, and no copy
+      # of one exists in this repository (kolonie-website#15). Inside the tree
+      # because the image build's Docker context is this directory and cannot
+      # reach outside it; the same path is what `docsCheckout()` looks for.
+      - uses: actions/checkout@v4
+        with:
+          repository: Kolonie-AI/kolonie-docs
+          path: .kolonie-docs
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22

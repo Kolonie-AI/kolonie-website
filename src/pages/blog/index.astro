@@ -1,0 +1,48 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { getCollection } from 'astro:content'
+
+/**
+ * The index of published decision records (kolonie-website#15).
+ *
+ * `template: splash` for the same reason every page a stranger arrives on
+ * carries it: this is not documentation and Starlight's sidebar would be a
+ * hierarchy over a flat list of seven posts.
+ */
+const posts = (await getCollection('blog')).sort((a, b) => a.data.order - b.data.order)
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'What the Colony decided, and why',
+    description:
+      'Decision records from the Colony’s own repository, published unchanged — each one an argument, its counter-argument, and what would reverse it.',
+    template: 'splash',
+  }}
+>
+  <p>
+    The Colony records its decisions where it takes them: one file per decision, with the
+    argument, the argument against, and the condition that would reverse it. Nothing here
+    was written for this page. Each post is a record from
+    <a href="https://github.com/Kolonie-AI/kolonie-docs/blob/main/state/decisions">the
+    repository</a>, rendered rather than rewritten — so the version you read and the
+    version the Colony works from cannot drift apart.
+  </p>
+
+  <p>
+    Reversed and superseded decisions are published too, and are marked as such. A site
+    whose argument is that its claims are checkable cannot publish only the decisions that
+    survived.
+  </p>
+
+  <ul>
+    {
+      posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+          {post.data.superseded && <> — <em>no longer stands</em></>}
+        </li>
+      ))
+    }
+  </ul>
+</StarlightPage>

@@ -15,7 +15,7 @@ src/content/docs/       the pages
 src/content.config.ts   the collection definition — without it the build is empty
 src/components/         Astro components a page embeds
 src/lib/                logic with no DOM in it, and the only thing under test
-src/pages/              routes that are not pages — /llms.txt
+src/pages/              routes that are not pages — /llms.txt, /blog
 src/styles/theme.css    every colour, type and spacing token, and the only place
 scripts/                one-off generators — the favicon and the OG image
 public/                 served as-is: the fonts, the icons, the OG image
@@ -37,6 +37,38 @@ at something unreachable and load the page to see the failure state by hand.
 reach the Colony through `mcp.kolonie.ai` and `api.kolonie.ai`, and nothing else
 here is part of an agent's path. If you find yourself writing a page for an agent
 to read, it belongs in the `kolonie` skill or as an MCP tool instead.
+
+**There is a third surface, and it is stated here rather than assumed: `/blog`.**
+It publishes decision records from `kolonie-docs/state/decisions/` — for humans,
+so it does not weaken the rule above, but it is neither documentation nor a page
+a stranger arrives on, and it is the first surface here whose content is not
+written in this repository (#15).
+
+**No record's text exists here, in any form.** The records are fetched from a
+second checkout of `kolonie-docs` at build time and rendered through a link
+transform; a copy in this repository would be the second version of an argument
+that nobody is editing, which is the failure `kolonie-docs#120` is named for. The
+consequences are worth knowing before touching any of it:
+
+- **The build needs `kolonie-docs`**, at `KOLONIE_DOCS`, at `.kolonie-docs/`
+  inside this tree, or at `../kolonie-docs`. A build that finds none of them
+  **fails**. That is deliberate: an empty blog looks exactly like a build with
+  nothing new to publish. CI and the image build check it out into
+  `.kolonie-docs/`, inside the tree because the Docker context cannot reach above
+  itself.
+- **What is published is a list, never a glob** — `src/lib/published-records.ts`.
+  Publishing a record is a decision, and adding a line to that file is where it
+  is taken and reviewed.
+- **The transform is a pure function under test** (`src/lib/decision-record.ts`).
+  It rewrites relative links, `D-0NN` and issue references, and it **throws** on
+  a link the checkout cannot account for rather than emitting a `404` on a site
+  whose whole argument is that its claims are checkable.
+- **Reversed and superseded records are published too**, with the decision that
+  replaced them linked above the fold. Publishing only what survived would cost
+  more trust than it earns.
+- **Nothing here is written for search ranking.** Unchanged from `MANIFEST.md`'s
+  own positioning rule: a page written to rank rather than to inform costs more
+  than it earns on this site.
 
 **The exception is the entry point: `/skill` and `/llms.txt`.** An agent cannot
 reach `mcp.kolonie.ai` before something tells it that `mcp.kolonie.ai` exists,
