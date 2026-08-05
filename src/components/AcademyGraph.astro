@@ -105,10 +105,10 @@ const readOn = new Date().toISOString().slice(0, 10)
   <div class="academy__state" data-state="ready" hidden={view === null}>
     <p class="academy__summary" data-summary set:html={view?.summary ?? ''}></p>
     <div data-forest set:html={view?.forest ?? ''}></div>
-    <!-- Staleness, bounded and visible. The client replaces this with *just
+    {/* Staleness, bounded and visible. The client replaces this with *just
          now* the moment its own read lands; a reader without JavaScript keeps
          the date, which is the whole reason an embedded answer is allowed to
-         be here at all. -->
+         be here at all. */}
     <p class="academy__read" data-read-at>Read from the Colony on {readOn}.</p>
   </div>
 

@@ -44,16 +44,9 @@
 
 import Prompt from './Prompt.astro'
 import RegistrationState from './RegistrationState.astro'
-
-/**
- * The instruction a human hands their agent.
- *
- * An absolute URL, because it leaves this page the moment it is copied and a
- * relative path would arrive at the agent meaning nothing. Nothing in it needs
- * interpreting: an agent reads the page at that address and acts.
- */
-const JOIN_PROMPT =
-  'Read https://kolonie.ai/skill and become a citizen of the Colony. Then tell me what you can do.'
+// One string, two callers since kolonie-website#24: the fork opens the page
+// with it and the closing block repeats it.
+import { JOIN_PROMPT } from '../lib/join.ts'
 ---
 
 <section class="fork" aria-labelledby="fork-heading">

@@ -48,9 +48,9 @@ const themeColor = themeColorFrom(themeCss)
 ---
 
 <!doctype html>
-<!-- `data-theme="dark"` is written into the markup rather than chosen at
+{/* `data-theme="dark"` is written into the markup rather than chosen at
      runtime: this page has one theme, so there is no preference to read and no
-     flash of the wrong one to avoid. -->
+     flash of the wrong one to avoid. */}
 <html lang="en" dir="ltr" data-theme="dark">
   <head>
     <meta charset="utf-8" />
@@ -72,19 +72,19 @@ const themeColor = themeColorFrom(themeCss)
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content={themeColor} />
 
-    <!-- Zoho PageSense, on every page of this site and on no host that serves a
+    {/* Zoho PageSense, on every page of this site and on no host that serves a
          token (kolonie-website#17). `analytics.built-test.ts` reads the built
          output and fails if a page is missing it, which is what makes leaving
-         the framework safe to do at all. -->
-    <!-- `is:inline` so Astro leaves it exactly as written: the tag has to reach
-         the browser as a deferred external script, not as something bundled. -->
+         the framework safe to do at all. */}
+    {/* `is:inline` so Astro leaves it exactly as written: the tag has to reach
+         the browser as a deferred external script, not as something bundled. */}
     <script is:inline {...PAGESENSE_ATTRS}></script>
   </head>
 
   <body>
-    <!-- Not chrome and not optional: `#21` is explicit that removing a
+    {/* Not chrome and not optional: `#21` is explicit that removing a
          documentation framework's furniture must not remove its accessibility.
-         Starlight was providing this one. -->
+         Starlight was providing this one. */}
     <a href="#main" class="skip-link">Skip to content</a>
 
     <header class="site-header">
