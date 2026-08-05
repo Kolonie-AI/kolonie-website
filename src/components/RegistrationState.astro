@@ -12,6 +12,31 @@
  * reason a count does not go on this site, and it holds here. Whether the door
  * opens is the only thing a first-time reader needs from this line.
  *
+ * **Re-argued on `kolonie-website#16` and the answer is still no**, but not for
+ * the reason anybody expected. `#16` asked whether a per-service table is worth
+ * revisiting now that five hosts answer `/health`, and set the condition itself:
+ * a page that *queries* inherits this component's argument, where a page that
+ * *asserts* is five copies of the `#9` failure. That reasoning is right and it
+ * is not what settles it.
+ *
+ * **What settles it is that the live read does not work today, here, on this
+ * component.** Measured 2026-08-05: none of the five hosts sends an
+ * `Access-Control-Allow-Origin` header, so a browser on `kolonie.ai` cannot read
+ * any of them — including this one. Every visitor to the landing page is being
+ * told *"The Colony did not answer when this page asked"* while the API is up and
+ * healthy. That is `kolonie-infra#86`, and it is a defect in the line that exists
+ * rather than an argument about a page that does not.
+ *
+ * So: a status page built on the same mechanism would be five copies of a read
+ * that fails, which is worse than the assertion `#8` refused — it would look
+ * live and be wrong. **The order is `kolonie-infra#86` first, and only then is
+ * `#16` a question about taste rather than about a header.**
+ *
+ * A `no-cors` fetch was considered and does not help: an opaque response carries
+ * no status and no body, so *answered 200* and *answered 502* are the same
+ * observation, and this component would have to guess. Guessing is the whole of
+ * what `#9` was.
+ *
  * The decision half lives in `lib/registration.ts` so the unreachable case is a
  * test rather than an intention; this file renders what it decided.
  */
