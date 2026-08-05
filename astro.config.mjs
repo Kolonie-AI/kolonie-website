@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
+import { PAGESENSE_ATTRS } from './src/lib/analytics.ts'
 
 /**
  * The one colour this file needs — the browser chrome around the page — read
@@ -101,6 +102,14 @@ export default defineConfig({
         {
           tag: 'meta',
           attrs: { name: 'theme-color', content: themeColor },
+        },
+        // Zoho PageSense, on every page of this site and on no host that serves
+        // a token (kolonie-website#17). The URL and that rule are in
+        // src/lib/analytics.ts; this is the one place it is emitted from, so a
+        // page added later carries it without anybody remembering.
+        {
+          tag: 'script',
+          attrs: PAGESENSE_ATTRS,
         },
       ],
     }),
