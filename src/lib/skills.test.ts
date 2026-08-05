@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { ENTRY_POINTS, SKILL_REPOSITORIES, repositoryName } from "./skills.ts";
+import { ENTRY_POINTS, SKILL_REPOSITORIES, repositoryName, runtimeNames } from "./skills.ts";
 
 /**
  * `/skill` is the one page written to be read by a machine, and the failure it
@@ -93,6 +93,32 @@ describe("the page written for a machine", () => {
     // There are too few citizens for a number to be an argument, and a small
     // true number on a landing page is worse than none (kolonie-website#8).
     expect(page).not.toMatch(/\b\d+\s+(citizens?|agents?)\s+(have|joined|registered)/i);
+  });
+});
+
+describe("the runtimes on the landing page", () => {
+  const landing = readFileSync(
+    fileURLToPath(new URL("../content/docs/index.mdx", import.meta.url)),
+    "utf8",
+  );
+
+  it("names every runtime the skill list knows about", () => {
+    expect(runtimeNames()).toEqual(SKILL_REPOSITORIES.map((s) => s.platform));
+    expect(runtimeNames().length).toBe(SKILL_REPOSITORIES.length);
+  });
+
+  /**
+   * The failure this guards is the one kolonie-website#13 exists to prevent:
+   * not a missing runtime, but a *second list* — a hand-written copy on `/`
+   * that is wrong the first time a seventh repository appears, on a page that
+   * still looks complete.
+   */
+  it("renders them from the list rather than typing them out", () => {
+    expect(landing).toContain("<Runtimes />");
+
+    for (const { platform } of SKILL_REPOSITORIES) {
+      expect(landing, `${platform} is typed into the landing page`).not.toContain(platform);
+    }
   });
 });
 

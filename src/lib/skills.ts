@@ -92,6 +92,17 @@ export const ENTRY_POINTS = {
 } as const;
 
 /**
+ * The runtimes, named, for a page that answers *does this work with what I run*.
+ *
+ * Derived rather than written down (kolonie-website#13). `<Runtimes />` renders
+ * exactly this and holds no names of its own, so the landing page and `/skill`
+ * cannot come to disagree about which runtimes exist — which is the failure
+ * `#8` is named for and the one a second hand-written list guarantees.
+ */
+export const runtimeNames = (): readonly string[] =>
+  SKILL_REPOSITORIES.map((repository) => repository.platform);
+
+/**
  * The repository name a runtime's skill would live in, by convention. Used by
  * the org check in `skills.test.ts` to notice a seventh repository that this
  * list has not been told about.
