@@ -58,20 +58,54 @@ const text = code.trim()
      rule cannot reach markup this component did not author. Everything below is
      layout and type — the colours arrive on the tokens themselves, as variables
      pointing back at `theme.css`. */
+  /*
+   * **Phone-first, and the wrapping is the point** (kolonie-website#33).
+   *
+   * These boxes were `white-space: pre` with `overflow-x: auto` at every width.
+   * On a 390px screen that turns the join prompt and every install line into a
+   * horizontal scroller sitting next to a copy button — so the button works and
+   * the reader cannot see what they are about to paste, which is the one thing
+   * this site asks them to do.
+   *
+   * So a phone wraps. `overflow-wrap: anywhere` because the things that
+   * overflow are URLs and package names, which have no spaces to break at.
+   * Above `--k-bp-sm` there is room for the line as it was written, and the
+   * snippet goes back to `pre` — an install line that wraps on a desktop is
+   * harder to read than one that does not, and there the scroller is a
+   * scroller the reader can actually see.
+   */
   .snippet > pre {
     margin: 0;
-    padding: var(--k-space-4);
-    overflow-x: auto;
+    padding: var(--k-space-3);
     border: none;
     /* Shiki emits a background on its own `<pre>`; the box around the snippet
        is the component's, and a second one inside it is a second edge. */
     background: none !important;
     color: var(--k-syn-plain);
     font-family: var(--k-font-mono);
-    font-size: var(--sl-text-sm);
+    font-size: var(--k-text-xs);
     line-height: 1.6;
-    white-space: pre;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
     tab-size: 2;
+  }
+
+  @media (min-width: 40rem) {
+    .snippet > pre {
+      padding: var(--k-space-4);
+      font-size: var(--sl-text-sm);
+      overflow-x: auto;
+      white-space: pre;
+      overflow-wrap: normal;
+    }
+  }
+
+  /* A sentence wraps at every width. `lang={null}` is prose — the join prompt
+     and the sponsor prompt — and prose set to scroll sideways on a desktop is
+     not a decision anybody would take deliberately. */
+  .snippet > pre.snippet-plain {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 
   .snippet > pre code {

@@ -177,10 +177,37 @@
    * sections — and a fourth is where a rhythm becomes a set of margins again. */
   --k-flow-tight: var(--k-space-4);
   --k-flow: var(--k-space-5);
-  --k-flow-section: var(--k-space-8);
+  /* Phone-first: 3rem between sections here, opening to 4.5rem at `--k-bp-sm`
+     (kolonie-website#33). A 4.5rem gap is a third of a phone screen, and a
+     reader scrolling past one has lost the thread of the page. */
+  --k-flow-section: var(--k-space-7);
 
   --k-radius: 0.375rem;
   --k-border: 1px;
+
+  /* ---- Breakpoints ------------------------------------------------------ */
+
+  /* **Two, and phone-first** (kolonie-website#33). Three or more is a design
+   * system for a product with more surfaces than five pages, and each one is a
+   * state somebody has to keep looking right. `--k-bp-sm` is where a phone
+   * stops being a phone; `--k-bp-md` is where a second column becomes
+   * affordable, and it is the width the fork already used.
+   *
+   * **These are tokens that a media query cannot read, and that is a CSS
+   * limitation rather than a decision.** `@media (min-width: var(--k-bp-sm))`
+   * is not valid — custom properties are resolved per element, and a media
+   * query is evaluated before there is an element. So every `@media` in this
+   * repository writes the width out, and `src/styles/responsive.test.ts` fails
+   * if one of them writes a width that is not declared here. The single source
+   * is enforced by a test instead of by the cascade, which is the same trade
+   * `themeColorFrom` makes for `<meta name="theme-color">`.
+   *
+   * Most of the site needs neither: `clamp()` on the type, `flex-wrap` on the
+   * chip rows, and `repeat(auto-fit, minmax(min(100%, …), 1fr))` on the card
+   * grids are responsive without a breakpoint at all, and a layout that never
+   * has to be told a width cannot be told the wrong one. */
+  --k-bp-sm: 40rem;
+  --k-bp-md: 60rem;
 
   /* ---- The mapping onto Starlight --------------------------------------- */
 
@@ -398,6 +425,18 @@ site-title a {
 .site-title {
   font-weight: 500;
   letter-spacing: var(--k-tracking-label);
+}
+
+/* ---- What opens up once there is room ----------------------------------- */
+
+/* The whole of the site's width-dependent behaviour that is not a component's
+   own, in one place (kolonie-website#33). Phone-first and `min-width` only:
+   what is written above is what a phone gets, and these are the two widths at
+   which something is added. */
+@media (min-width: 40rem) {
+  :root {
+    --k-flow-section: var(--k-space-8);
+  }
 }
 
 /* No animation on scroll, no gradients, no illustration — kolonie-website#11.

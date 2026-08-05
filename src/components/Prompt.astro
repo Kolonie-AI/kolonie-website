@@ -69,10 +69,28 @@ const { code, label = 'shell', lang = null, shell = false } = Astro.props;
     text-transform: uppercase;
   }
 
+  /* On a phone the copy control sits under the command rather than beside it
+     (kolonie-website#33). Beside it, the button takes a fifth of a 390px screen
+     away from the thing the reader is trying to read — and the button is not
+     what they are reading, it is what they press afterwards. */
   .prompt-body {
     display: flex;
-    align-items: flex-start;
-    gap: var(--k-space-3);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  @media (min-width: 40rem) {
+    .prompt-body {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: var(--k-space-3);
+    }
+
+    .prompt-copy {
+      align-self: auto;
+      margin: var(--k-space-3);
+    }
   }
 
   /* The box is this component's; what is inside it is `Snippet`'s, and the
@@ -85,7 +103,8 @@ const { code, label = 'shell', lang = null, shell = false } = Astro.props;
 
   .prompt-copy {
     flex: none;
-    margin: var(--k-space-3);
+    align-self: flex-end;
+    margin: 0 var(--k-space-3) var(--k-space-3);
     padding: var(--k-space-2) var(--k-space-3);
     border: var(--k-border) solid var(--k-hairline-strong);
     border-radius: var(--k-radius);
