@@ -9,6 +9,23 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 COPY . .
+
+# The site's id in Umami (kolonie-website#43).
+#
+# It has to arrive at *build* time, because the site is static: `astro build`
+# writes the id into the tag on every page, and nothing at runtime can add it
+# afterwards. An image built without it serves no analytics tag at all and every
+# page still loads — see `src/lib/analytics.ts`, where absent is a supported
+# state rather than a misconfiguration.
+#
+# It is not a secret. The id is served to every visitor in the tag, identifies a
+# site rather than a person, and grants nothing — the dashboard behind it is not
+# exposed to the internet. It is a repository *variable*, not a repository
+# secret, so it is readable by anyone who can read the workflow, which is the
+# honest place for a value that ships in the HTML.
+ARG PUBLIC_UMAMI_WEBSITE_ID=""
+ENV PUBLIC_UMAMI_WEBSITE_ID=$PUBLIC_UMAMI_WEBSITE_ID
+
 RUN npm run build
 
 FROM nginx:1.29-alpine AS runtime

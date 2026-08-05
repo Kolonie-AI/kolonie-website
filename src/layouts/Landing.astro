@@ -26,7 +26,7 @@
  * of this page.
  */
 
-import { PAGESENSE_ATTRS } from '../lib/analytics'
+import { trackerAttrs } from '../lib/analytics'
 import { OG_IMAGE, OG_IMAGE_ALT, SITE, themeColorFrom } from '../lib/head'
 import '../styles/theme.css'
 // The same file again, as text, because `<meta name="theme-color">` needs the
@@ -42,6 +42,12 @@ interface Props {
 }
 
 const { title, description } = Astro.props
+
+/**
+ * The analytics tag, or nothing. See `src/lib/analytics.ts` — absent is a
+ * supported state, not a misconfiguration.
+ */
+const tracker = trackerAttrs()
 
 const canonical = new URL(Astro.url.pathname, SITE).href
 const themeColor = themeColorFrom(themeCss)
@@ -72,13 +78,17 @@ const themeColor = themeColorFrom(themeCss)
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content={themeColor} />
 
-    {/* Zoho PageSense, on every page of this site and on no host that serves a
-         token (kolonie-website#17). `analytics.built-test.ts` reads the built
-         output and fails if a page is missing it, which is what makes leaving
-         the framework safe to do at all. */}
+    {/* Self-hosted, cookieless analytics, on every page of this site and on no
+         host that serves a token (kolonie-website#43, keeping #17's rule).
+         `analytics.built-test.ts` reads the built output and fails if a page is
+         missing it, which is what makes leaving the framework safe to do at all.
+
+         Rendered only when a website id was in the build. A build without one
+         emits no tag: a script that loaded and reported to a site the server has
+         never heard of would slow a reader's page for nothing. */}
     {/* `is:inline` so Astro leaves it exactly as written: the tag has to reach
          the browser as a deferred external script, not as something bundled. */}
-    <script is:inline {...PAGESENSE_ATTRS}></script>
+    {tracker && <script is:inline {...tracker}></script>}
   </head>
 
   <body>
