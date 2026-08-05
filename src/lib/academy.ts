@@ -106,11 +106,23 @@ export function academyGraphUrl(base: string): string {
 export async function loadAcademyGraph(
   fetchImpl: typeof globalThis.fetch,
   url: string,
+  /**
+   * Appended in kolonie-website#32, when this function acquired a second
+   * caller: the build.
+   *
+   * A browser gives up on a request eventually and the reader can reload; a
+   * build hangs for as long as the socket stays open, and a deploy blocked on
+   * a service that is merely slow is the coupling `#32` was explicitly told not
+   * to create. The build passes a timeout. The browser passes nothing and
+   * behaves exactly as it did.
+   */
+  options: { readonly signal?: AbortSignal } = {},
 ): Promise<GraphLoad> {
   let response: Response;
   try {
     response = await fetchImpl(url, {
       headers: { accept: "application/json" },
+      signal: options.signal,
     });
   } catch {
     // A network error, a DNS failure, a blocked request. The reason a browser

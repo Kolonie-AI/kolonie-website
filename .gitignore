@@ -6,3 +6,7 @@ node_modules/
 .DS_Store
 npm-debug.log*
 .kolonie-docs/
+
+# The throwaway output of src/lib/academy-offline.test.ts, which builds the site
+# with the Colony unreachable to prove the deploy does not depend on it (#32).
+dist-offline-check/
