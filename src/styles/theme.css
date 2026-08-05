@@ -104,6 +104,34 @@
   --k-tracking-heading: -0.015em;
   --k-tracking-label: 0.06em;
 
+  /* One scale, and every size on the site is a step on it (kolonie-website#22).
+   * It existed as Starlight's defaults, which is a scale nobody chose — so the
+   * page had sizes rather than a hierarchy. The ratio is 1.2 through the body
+   * range, opening up above it, because a landing page needs one size that is
+   * unmistakably the loudest and prose does not.
+   *
+   * The `--sl-text-*` mapping below points at these, so Starlight's own
+   * components move with the site instead of beside it. */
+  --k-text-xs: 0.75rem;
+  --k-text-sm: 0.875rem;
+  --k-text-base: 1rem;
+  --k-text-lg: 1.125rem;
+  --k-text-xl: 1.35rem;
+  --k-text-2xl: 1.6rem;
+  --k-text-3xl: 2rem;
+  --k-text-4xl: 2.5rem;
+  --k-text-5xl: 3.25rem;
+
+  /* How wide a line of prose is allowed to get. Measured in characters rather
+   * than pixels, because the thing being limited is how far the eye travels
+   * between the end of a line and the start of the next, and that is counted in
+   * words. The marketing pages have no sidebar since `#21`, so without this the
+   * text runs the full width of a desktop window. */
+  --k-measure: 68ch;
+  /* The hero's own, tighter: a first sentence that wraps five times has stopped
+   * being a first sentence. */
+  --k-measure-lede: 46ch;
+
   /* ---- Spacing ---------------------------------------------------------- */
 
   /* A 4px step. Components space themselves from this and never from a literal. */
@@ -114,6 +142,15 @@
   --k-space-5: 1.5rem;
   --k-space-6: 2rem;
   --k-space-7: 3rem;
+  --k-space-8: 4.5rem;
+
+  /* Vertical rhythm, which is the step above spacing: how far apart *blocks*
+   * sit, rather than how much padding a box has. Three values, because a page
+   * only needs three answers — inside a thought, between thoughts, between
+   * sections — and a fourth is where a rhythm becomes a set of margins again. */
+  --k-flow-tight: var(--k-space-4);
+  --k-flow: var(--k-space-5);
+  --k-flow-section: var(--k-space-8);
 
   --k-radius: 0.375rem;
   --k-border: 1px;
@@ -165,8 +202,25 @@
   --sl-font: var(--k-font-prose);
   --sl-font-mono: var(--k-font-mono);
 
+  /* The scale, handed to Starlight so its components sit on it too (`#22`). */
+  --sl-text-xs: var(--k-text-xs);
+  --sl-text-sm: var(--k-text-sm);
+  --sl-text-base: var(--k-text-base);
+  --sl-text-lg: var(--k-text-lg);
+  --sl-text-xl: var(--k-text-xl);
+  --sl-text-2xl: var(--k-text-2xl);
+  --sl-text-3xl: var(--k-text-3xl);
+  --sl-text-4xl: var(--k-text-4xl);
+  --sl-text-5xl: var(--k-text-5xl);
+
+  --sl-text-h1: var(--k-text-4xl);
+  --sl-text-h2: var(--k-text-2xl);
+  --sl-text-h3: var(--k-text-xl);
+  --sl-text-h4: var(--k-text-lg);
+  --sl-text-h5: var(--k-text-base);
+
   --sl-line-height: 1.7;
-  --sl-line-height-headings: 1.25;
+  --sl-line-height-headings: 1.15;
 }
 
 :root[data-theme='light'],
@@ -220,10 +274,6 @@
 
 /* Headings are the monospace face. This is the whole of the visual identity:
  * the site names itself in the same typeface as the commands it documents. */
-:root {
-  --sl-text-h1: var(--sl-text-4xl);
-}
-
 h1,
 h2,
 h3,
@@ -237,6 +287,47 @@ site-title a {
   font-weight: 600;
 }
 
+/* ---- Measure and rhythm ------------------------------------------------- */
+
+/* **The line length, and it is the largest single change `#22` makes.** `#21`
+ * took the sidebar off the marketing pages, which is right and left the prose
+ * running the full width of a desktop window — eighteen or twenty words a line,
+ * where the eye starts losing the next one somewhere after fifteen.
+ *
+ * Capped on the text elements rather than on the container, deliberately: the
+ * fork, the Academy graph, the verdict and every code block keep the full width
+ * they were composed at, and only the things read as sentences are narrowed. A
+ * container cap would have narrowed all of them together. */
+.sl-markdown-content > :is(p, ul, ol, dl, blockquote, h2, h3, h4, h5, h6) {
+  max-width: var(--k-measure);
+}
+
+/* Vertical rhythm as one rule rather than a margin per element. Blocks are one
+ * step apart; a heading takes a section's step above it and a tight one below,
+ * which is what makes a heading read as belonging to what follows it rather
+ * than floating between two things. */
+.sl-markdown-content > * + * {
+  margin-top: var(--k-flow);
+}
+
+.sl-markdown-content > * + :is(h2, h3) {
+  margin-top: var(--k-flow-section);
+}
+
+.sl-markdown-content > :is(h2, h3) + * {
+  margin-top: var(--k-flow-tight);
+}
+
+/* An h2 opens a section, so it is given a line to sit on. One hairline, the
+ * page's own colour, and no other decoration — `#11` refused gradients and
+ * illustration and that refusal holds. */
+.sl-markdown-content > h2 {
+  padding-top: var(--k-space-4);
+  border-top: var(--k-border) solid var(--k-hairline);
+}
+
+/* ---- The hero ----------------------------------------------------------- */
+
 /* Starlight's hero title is a heading, but its tagline and buttons are not, and
  * a splash page that mixes the two faces at that size looks like an accident. */
 .hero h1,
@@ -244,8 +335,23 @@ site-title a {
   font-family: var(--k-font-mono);
 }
 
+/* Composed rather than stacked (`#22`): the name is the loudest thing on the
+ * page by a clear step, the sentence under it is set as a lede rather than as
+ * body copy that happens to be first, and the two are close enough to read as
+ * one block. */
+.hero h1 {
+  font-size: clamp(var(--k-text-4xl), 7vw, var(--k-text-5xl));
+}
+
 .hero .tagline {
-  max-width: 42rem;
+  margin-top: var(--k-space-4);
+  max-width: var(--k-measure-lede);
+  font-size: var(--k-text-lg);
+  line-height: 1.55;
+}
+
+.hero .actions {
+  margin-top: var(--k-space-6);
 }
 
 /* The site title sits next to a search box and a theme toggle; at the default
