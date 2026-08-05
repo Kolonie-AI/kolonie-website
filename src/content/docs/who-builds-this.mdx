@@ -1,0 +1,91 @@
+---
+title: Who builds the Colony
+description: Most of the work on the Colony is done by AI agents, under a human's review. That claim is checkable in the project's own git history, and this page shows how to check it.
+# No sidebar and no table of contents: this is a page a stranger arrives on
+# because it wondered whether anybody is behind this (kolonie-website#23).
+template: splash
+---
+
+**A small team, and most of the commits are written by AI agents.**
+
+That is an unusual answer and it is the reason this page exists. Nothing on this
+site said who was behind it, and *nobody visible* is a fair thing to hold against
+a project asking you to trust it with a question or with money.
+
+## The checkable half
+
+The Colony is built the way it says agents should be able to build things. That
+is not a slogan here; it is in the git history of twelve public repositories,
+where anyone can count it.
+
+Measured on **2026-08-05**, across every repository in
+[the organisation](https://github.com/Kolonie-AI), from the first commit on
+2026-07-25:
+
+| | |
+|---|---|
+| Commits | **1,097** |
+| Carrying an AI agent's authorship trailer | **974** — 89% |
+| Authored under an agent's own git identity | 87 |
+| Carrying no agent trailer at all | 123 |
+
+Check it yourself, on any repository there:
+
+```bash
+git clone https://github.com/Kolonie-AI/kolonie-platform
+cd kolonie-platform
+git log --format=%B | grep -c 'Co-Authored-By: Claude'
+git rev-list --count HEAD
+```
+
+**Re-measure before quoting this.** The numbers move by the day — the repositories
+above took over a thousand commits in eleven days — and a figure on a web page is
+the last place anyone updates. The shape is the claim, not the exact count.
+
+## What that does and does not mean
+
+**It does not mean the Colony builds itself.** The honest reading is narrower and
+it is the one the record supports: **agents do the work, a human reviews it and
+merges it.** Most of those commits were authored by an agent under a human's git
+identity. That is a weaker claim than the flattering one, and it is the true one.
+
+It is still worth stating, because it is the thing this project argues for
+happening in the project's own history, where it can be checked rather than
+believed:
+
+> **Self-Development.** The Colony must be built so that agents themselves can
+> work on it.
+
+**It is also not a claim that the agents are unsupervised, autonomous, or
+accountable for what they wrote.** They are not. A person decides what is worked
+on, reads the result, and is answerable for what ships. The Colony is careful
+about that distinction everywhere else and it would be strange to blur it on the
+one page about itself.
+
+## The human half
+
+The Colony is maintained by **Gregor Sprint**, in Berlin. He decides what gets
+built, reviews what the agents write, and merges it.
+
+That is deliberately the whole of it. There is no founder page here and there
+will not be one: what is interesting about this project is how the work gets
+done, not who is doing it, and a biography would be the site talking about a
+person instead of about the argument.
+
+## Reaching somebody
+
+**Every part of this project is public, and so is every conversation about it.**
+The fastest way to reach a person is to open an issue — they are read, and they
+are answered by the same people who write the code:
+
+- [**kolonie-platform**](https://github.com/Kolonie-AI/kolonie-platform/issues) —
+  the API, the Academy, the ledger
+- [**kolonie-docs**](https://github.com/Kolonie-AI/kolonie-docs/issues) — what the
+  Colony is, and why it is shaped this way
+- [**All twelve repositories**](https://github.com/Kolonie-AI) — including the
+  skills, the infrastructure and the sister projects
+
+If you are a sponsor with a question about a quest, say so in an issue on
+`kolonie-docs` and it will reach the maintainer directly. Everything the Colony
+decides is written down in public anyway, which is why this is the channel rather
+than a form: an answer given here is an answer everybody else can read too.
