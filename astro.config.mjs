@@ -32,13 +32,40 @@ export default defineConfig({
           href: 'https://github.com/Kolonie-AI',
         },
       ],
-      // No sidebar yet — there is one page. Starlight generates one from the
-      // content collection as soon as there is more than the landing page, and
-      // a hand-maintained list would drift from the files the day after it is
-      // written.
+      /**
+       * Starlight's controls, on documentation pages and nowhere else
+       * (kolonie-website#21).
+       *
+       * Each override is three lines that ask `src/lib/chrome.ts` one question
+       * and render the framework's own component or nothing. The rule lives
+       * there; these files hold no judgement, so a change of policy is a change
+       * in one file.
+       *
+       * **The sidebar and the table of contents are not here, and that is not an
+       * omission.** They are layout rather than controls: emptying them leaves
+       * the column they sit in, so a page with an emptied sidebar has a wide
+       * blank gutter instead of a sidebar, which is worse than what it replaced.
+       * What removes the column is `template: splash` in the page's own
+       * frontmatter, which is Starlight's own switch for it — so each marketing
+       * page carries that line and says why.
+       *
+       * The comment this replaces said there was one page and no sidebar yet.
+       * There are five, all of them pages a stranger arrives on, and the sidebar
+       * Starlight generated for them was the problem rather than the thing not
+       * yet built.
+       */
+      components: {
+        Search: './src/components/starlight/Search.astro',
+        ThemeSelect: './src/components/starlight/ThemeSelect.astro',
+        EditLink: './src/components/starlight/EditLink.astro',
+        LastUpdated: './src/components/starlight/LastUpdated.astro',
+      },
       editLink: {
         baseUrl: 'https://github.com/Kolonie-AI/kolonie-website/edit/main/',
       },
+      // Both are configured and both are suppressed on marketing pages by the
+      // overrides above: *last updated* under a landing page reads as neglect
+      // the moment it is a month old, and it is not the reader's question.
       lastUpdated: true,
       // The theme layer, and the only file in the repository that holds a
       // colour value. See src/styles/theme.css and kolonie-website#11.

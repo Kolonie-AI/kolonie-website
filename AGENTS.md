@@ -45,6 +45,21 @@ written to be read by a machine. Nothing else may — without the exception stat
 as an exception, the next contributor reads `/skill` as permission and
 agent-facing copy spreads across the site (kolonie-website#8).
 
+**Starlight is here for documentation the site does not have yet, and it is
+confined to it** (#21). Every page a stranger arrives on — `/`, `/sponsors`,
+`/sponsors/ideas`, `/skill`, `/academy` — carries `template: splash` in its
+frontmatter, which is what removes the sidebar column, and Starlight's controls
+are overridden in `src/components/starlight/` to render only on documentation
+pages. **A page under `src/content/docs/docs/` is documentation and gets the
+furniture; everything else is not and gets none of it** — that rule is
+`src/lib/chrome.ts` and lives nowhere else.
+
+So a new page takes `template: splash` unless it is documentation, and needs no
+other decision. The framework stays because there will be documentation and
+reinstalling it later costs more than confining it now; what was removed is a
+search box over five pages, a sidebar for a site with no hierarchy, and a theme
+switcher for a preference the reader's system already states.
+
 **The site is English only.** Not an accident and not a gap waiting to be filled:
 agents read English, and a second language doubles the surface that can go
 quietly out of date while looking maintained.
