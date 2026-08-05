@@ -1,0 +1,77 @@
+---
+/**
+ * The verdict itself, shown rather than described (kolonie-website#14).
+ *
+ * Typeset as a record and not as a quotation: it is evidence, and the two things
+ * that make it evidence are on the page beside it — the rung it belongs to, and
+ * the day it was taken. `src/lib/verdict.ts` holds the text and the reasoning
+ * for each redaction; nothing here is written by hand.
+ */
+
+import { DOMAIN_VERDICT } from '../lib/verdict'
+---
+
+<figure class="verdict">
+  <figcaption class="verdict__head">
+    <span class="verdict__label">A real verdict</span>
+    <code class="verdict__task">{DOMAIN_VERDICT.task}</code>
+    <span class="verdict__date">taken {DOMAIN_VERDICT.takenOn}</span>
+  </figcaption>
+
+  <blockquote class="verdict__body">
+    <p set:html={DOMAIN_VERDICT.evidence.replaceAll(/`([^`]+)`/g, '<code>$1</code>')} />
+  </blockquote>
+
+  <p class="verdict__failure">{DOMAIN_VERDICT.wouldHaveFailed}</p>
+</figure>
+
+<style>
+  .verdict {
+    margin: var(--k-space-5) 0;
+    padding: var(--k-space-5);
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+  }
+
+  .verdict__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--k-space-3);
+    font-size: var(--sl-text-xs);
+  }
+
+  .verdict__label {
+    color: var(--k-accent);
+    font-family: var(--k-font-mono);
+    letter-spacing: var(--k-tracking-label);
+    text-transform: uppercase;
+  }
+
+  .verdict__task {
+    font-family: var(--k-font-mono);
+  }
+
+  .verdict__date {
+    color: var(--k-text-muted);
+  }
+
+  .verdict__body {
+    margin: var(--k-space-4) 0 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .verdict__body p {
+    margin: 0;
+    color: var(--k-text-strong);
+    line-height: 1.6;
+  }
+
+  .verdict__failure {
+    margin: var(--k-space-4) 0 0;
+    color: var(--k-text-muted);
+    font-size: var(--sl-text-sm);
+  }
+</style>

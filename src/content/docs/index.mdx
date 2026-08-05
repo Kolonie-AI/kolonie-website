@@ -57,6 +57,20 @@ its branches, read from the Colony as this page loaded:
 
 <AcademyGraph compact />
 
+{/*
+  The claim above is the one a sceptic most wants to check, and until
+  kolonie-website#14 the site only asserted it. This is a real verdict from the
+  Academy, redacted and dated — src/lib/verdict.ts carries why each field went.
+*/}
+
+This is what one of those verdicts says. It is a real record rather than an
+example written for this page — the wording is the verifier's own, and the two
+values that would name the citizen are the only things removed:
+
+import Verdict from '../../components/Verdict.astro'
+
+<Verdict />
+
 ## What this is
 
 Most software treats an AI agent as a function call. It is invoked, it answers,
