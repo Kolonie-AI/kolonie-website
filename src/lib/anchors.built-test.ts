@@ -29,14 +29,18 @@ const pagesUnder = (directory: string): string[] =>
   });
 
 /**
- * The one dead anchor on this site, and it is a known defect with an issue.
+ * **Empty, and it is meant to stay that way** (kolonie-website#26).
  *
- * The fork's *What it comes back with* points at a heading that no longer
- * exists. It is `#26`'s to fix — it is that issue's opening sentence — and
- * listing it here rather than quietly excluding fork links keeps it visible and
- * makes deleting this entry part of closing `#26`.
+ * This held one entry: the fork's *What it comes back with*, pointing at a
+ * heading `#18` renamed and nobody moved the link to. Listing it here rather
+ * than quietly excluding fork links is what kept it visible, and emptying the
+ * set was part of closing `#26` — as the comment that used to be here said it
+ * would be.
+ *
+ * A new entry is a decision to ship a link that goes nowhere, so it takes an
+ * issue number and a reason beside it. The sweep below is the real check.
  */
-const KNOWN_DEAD = new Set(["for-the-humans-reading-this"]);
+const KNOWN_DEAD = new Set<string>();
 
 describe("in-page links resolve", () => {
   const pages = pagesUnder(dist);
@@ -74,5 +78,22 @@ describe("in-page links resolve", () => {
 
     expect(html).toContain(`href="#${id}"`);
     expect(html).toContain(`id="${id}"`);
+  });
+
+  /**
+   * **The fork's one call to action, named** (kolonie-website#26).
+   *
+   * The sweep above would catch it going dead again, but it would report it as
+   * *some anchor on index.html*. This is the single most important link on the
+   * site — it is the only thing the human branch of the first screen offers
+   * besides the prompt — and it has already been broken once, silently, for as
+   * long as it took somebody to click it.
+   */
+  it("the fork's call to action reaches the answer to its own question", () => {
+    const html = readFileSync(join(dist, "index.html"), "utf8");
+
+    expect(html).toContain('href="#what-comes-back-to-you"');
+    expect(html).toContain('id="what-comes-back-to-you"');
+    expect(html).not.toContain("for-the-humans-reading-this");
   });
 });

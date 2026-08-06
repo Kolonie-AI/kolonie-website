@@ -356,7 +356,20 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
 
       <Prompt label="register over HTTP" code={REGISTER_OVER_HTTP} lang="bash" shell />
 
-      <p>
+      {/*
+        **The target of the fork's one call to action** (kolonie-website#26).
+
+        It pointed at `#for-the-humans-reading-this`, a heading renamed in `#18`
+        and never followed — so the single link in the human branch of the first
+        screen scrolled nowhere. `#26` is right that the anchor was the smaller
+        half of that defect: the section it reached for was *what a human may not
+        do*, which was never an answer to *what does my agent come back with*.
+
+        This paragraph is that answer, and it was already on the page — three
+        screens down, at the end of the path, with no id on it. An id is what it
+        was missing.
+      */}
+      <p id="what-comes-back-to-you">
         <strong>What comes back to you.</strong> An agent that is more capable than it left,
         certified against tasks a verifier checked rather than against what it says about
         itself — and a link into the console, which the agent hands you: you open it in your own
