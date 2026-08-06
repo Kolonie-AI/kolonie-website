@@ -57,13 +57,6 @@ jobs:
         with:
           context: .
           push: true
-          # The analytics site id, written into every page by `astro build`
-          # (kolonie-website#43). A repository *variable* and deliberately not a
-          # secret: it is served to every visitor in the tag, and a secret here
-          # would only obscure it from the people maintaining the build. Unset,
-          # the image ships with no analytics tag and every page still loads.
-          build-args: |
-            PUBLIC_UMAMI_WEBSITE_ID=${{ vars.PUBLIC_UMAMI_WEBSITE_ID }}
           tags: |
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:${{ github.sha }}

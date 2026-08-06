@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { TRACKER_SRC, WEBSITE_ID } from "./analytics.ts";
+import { PAGESENSE_SRC } from "./analytics.ts";
 
 /**
  * Run **after** `astro build`, which is why this file is not named `*.test.ts`
@@ -13,8 +13,7 @@ import { TRACKER_SRC, WEBSITE_ID } from "./analytics.ts";
  *
  * What it is for: `kolonie-website#17` asks that a page added later cannot
  * silently miss the tag. Nothing in the source can promise that — only the
- * output can. `#43` changed which tag, and added the more important question:
- * that **nothing** from the old vendor survives, anywhere.
+ * output can.
  */
 
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
@@ -26,95 +25,32 @@ const pagesUnder = (directory: string): string[] =>
     return entry.endsWith(".html") ? [path] : [];
   });
 
-const pages = pagesUnder(dist);
+describe("the analytics tag in the built site", () => {
+  const pages = pagesUnder(dist);
 
-describe("Zoho PageSense is gone", () => {
   it("built some pages at all", () => {
     // Astro emits an empty site without complaint if the content collection is
     // misconfigured, and an assertion over nothing passes.
     expect(pages.length).toBeGreaterThan(1);
   });
 
-  /**
-   * **This is the acceptance criterion, and it runs whether or not a website id
-   * was in the build.** `#43` says the tracker is removed rather than disabled,
-   * because a tracker one config flag from returning is one that returns. Every
-   * other assertion in this file is conditional on a configured build; this one
-   * is not, so a contributor's checkout still fails if PageSense comes back.
-   */
-  it.each(pages.map((page) => page.slice(dist.length)))(
-    "no request to pagesense.io from %s",
-    (page) => {
-      const html = readFileSync(join(dist, page), "utf8");
-
-      expect(html).not.toContain("pagesense");
-      expect(html).not.toContain("zoho");
-    },
-  );
-
-  it("left no reference behind in any built asset", () => {
-    const assets = readdirSync(join(dist, "_astro"), { withFileTypes: true })
-      .filter((entry) => entry.isFile())
-      .map((entry) => readFileSync(join(dist, "_astro", entry.name), "utf8"));
-
-    for (const asset of assets) expect(asset).not.toContain("pagesense");
-  });
-});
-
-/**
- * The rest describes a *configured* build.
- *
- * A checkout without `PUBLIC_UMAMI_WEBSITE_ID` emits no tag by design — see
- * `analytics.ts` — so asserting the tag unconditionally would fail every
- * contributor's `npm run check` and teach them to ignore it. Skipping is
- * announced rather than silent: the suite reports a skipped test, which is a
- * different thing from a passing one.
- */
-describe.skipIf(!WEBSITE_ID)("the analytics tag in a configured build", () => {
   it.each(pages.map((page) => page.slice(dist.length)))("is on %s", (page) => {
-    expect(readFileSync(join(dist, page), "utf8")).toContain(TRACKER_SRC);
+    expect(readFileSync(join(dist, page), "utf8")).toContain(PAGESENSE_SRC);
   });
 
   /**
-   * The attribute is what keeps the page readable when the request hangs. A
-   * classic `<script src>` in `<head>` stops the parser until it loads or fails;
-   * this one does not, and losing the attribute would be a silent regression
-   * into a blank page for as long as a connection takes to time out.
+   * The attribute is what keeps the page readable when the CDN hangs. A classic
+   * `<script src>` in `<head>` stops the parser until it loads or fails; this
+   * one does not, and losing the attribute would be a silent regression into a
+   * blank page for as long as a connection takes to time out.
    */
-  it.each(pages.map((page) => page.slice(dist.length)))(
-    "is deferred on %s",
-    (page) => {
-      const html = readFileSync(join(dist, page), "utf8");
-      const tag = new RegExp(
-        `<script[^>]*${TRACKER_SRC.replaceAll(".", "\\.")}[^>]*>`,
-      ).exec(html);
+  it.each(pages.map((page) => page.slice(dist.length)))("is deferred on %s", (page) => {
+    const html = readFileSync(join(dist, page), "utf8");
+    const tag = new RegExp(`<script[^>]*${PAGESENSE_SRC.replaceAll(".", "\\.")}[^>]*>`).exec(html);
 
-      expect(tag?.[0]).toContain("defer");
-    },
-  );
+    expect(tag?.[0]).toContain("defer");
+  });
 
-  /**
-   * First-party is the whole design: two paths on this site's own hostname,
-   * routed to the analytics container by Traefik. An absolute URL here would
-   * mean a third-party origin in the page's connection list and a name `#42`
-   * would have to disclose — and would report every preview build's traffic
-   * into production.
-   */
-  it.each(pages.map((page) => page.slice(dist.length)))(
-    "loads it from this origin on %s",
-    (page) => {
-      const html = readFileSync(join(dist, page), "utf8");
-      const tag = new RegExp(
-        `<script[^>]*${TRACKER_SRC.replaceAll(".", "\\.")}[^>]*>`,
-      ).exec(html);
-
-      expect(tag?.[0]).toContain(`src="${TRACKER_SRC}"`);
-      expect(tag?.[0]).not.toMatch(/src="https?:/);
-    },
-  );
-});
-
-describe("what analytics may never reach", () => {
   /**
    * The one route here that must stay byte-clean. `/llms.txt` is generated by a
    * route and returns plain text; a script tag in it would be served to an agent
@@ -123,24 +59,7 @@ describe("what analytics may never reach", () => {
   it("is not in /llms.txt", () => {
     const llms = readFileSync(join(dist, "llms.txt"), "utf8");
 
-    expect(llms).not.toContain(TRACKER_SRC);
-    expect(llms).not.toContain("pagesense");
+    expect(llms).not.toContain(PAGESENSE_SRC);
     expect(llms).not.toContain("<script");
   });
-
-  /**
-   * `#17`'s rule, which outlived the tool it was written for and matters more
-   * now: Umami records the URL path of every page view, and
-   * `console.kolonie.ai` serves sign-in tokens *in* URLs. Nothing in this
-   * repository builds that host, so what this can check is the thing that would
-   * precede a mistake — the tag naming an absolute host at all.
-   */
-  it.each(pages.map((page) => page.slice(dist.length)))(
-    "names no other host in the tag on %s",
-    (page) => {
-      const html = readFileSync(join(dist, page), "utf8");
-
-      expect(html).not.toContain("console.kolonie.ai/analytics");
-    },
-  );
 });

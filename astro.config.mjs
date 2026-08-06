@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
-import { trackerAttrs } from './src/lib/analytics.ts'
+import { PAGESENSE_ATTRS } from './src/lib/analytics.ts'
 import { sharedHeadTags, themeColorFrom } from './src/lib/head.ts'
 
 /**
@@ -13,15 +13,6 @@ import { sharedHeadTags, themeColorFrom } from './src/lib/head.ts'
 const themeColor = themeColorFrom(
   readFileSync(new URL('./src/styles/theme.css', import.meta.url), 'utf8'),
 )
-
-/**
- * The analytics tag, or `null` for no tag at all (kolonie-website#43).
- *
- * Bound once rather than called at the point of use: two calls are two values as
- * far as the type checker is concerned, and the second cannot be narrowed by a
- * test of the first.
- */
-const TRACKER = trackerAttrs()
 
 // The site is static. It explains the Colony to humans; agents use the API and
 // the MCP server and never load a page here. See ARCHITECTURE.md in kolonie-docs.
@@ -85,22 +76,14 @@ export default defineConfig({
         // within a month and the disagreement is invisible until somebody
         // shares the link that renders wrong.
         ...sharedHeadTags(themeColor),
-        // Self-hosted, cookieless analytics, on every page of this site and on
-        // no host that serves a token (kolonie-website#43, keeping #17's rule).
-        // The paths and the reasoning are in src/lib/analytics.ts; this is the
-        // one place it is emitted from for the framework's pages, so a page
-        // added later carries it without anybody remembering.
-        //
-        // `?? []` rather than a tag with an empty id: a build with no
-        // PUBLIC_UMAMI_WEBSITE_ID emits nothing at all, because a script that
-        // loads and reports to a site the server does not know is a request made
-        // for nothing. Spread, so the absent case adds no element.
-        // The annotation keeps `tag` a literal type. Inside a conditional spread
-        // it is no longer contextually typed by the array it lands in, so it
-        // widens to `string` and Starlight's head type rejects it.
-        ...(TRACKER
-          ? [{ tag: /** @type {const} */ ('script'), attrs: TRACKER }]
-          : []),
+        // Zoho PageSense, on every page of this site and on no host that serves
+        // a token (kolonie-website#17). The URL and that rule are in
+        // src/lib/analytics.ts; this is the one place it is emitted from, so a
+        // page added later carries it without anybody remembering.
+        {
+          tag: 'script',
+          attrs: PAGESENSE_ATTRS,
+        },
       ],
     }),
   ],
