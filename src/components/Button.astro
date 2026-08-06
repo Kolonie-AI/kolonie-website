@@ -1,0 +1,136 @@
+---
+/**
+ * The button (kolonie-website#48).
+ *
+ * Measured against the reference on 2026-08-06, this site had **no filled
+ * button above the fold and none anywhere else**: every action on every page
+ * was an underlined link. A link is the right element for *go and read this*
+ * and the wrong one for *do this* — and the two things a reader is actually
+ * asked to do here, sending an agent and opening the console, were rendered as
+ * the former.
+ *
+ * **Two variants and no more.** `primary` is the filled one and there is at
+ * most one per screen; `secondary` is the outline beside it. A third would be a
+ * hierarchy nobody can hold in their head, and this site has exactly two kinds
+ * of action.
+ *
+ * **It renders an `<a>` when it is given an `href` and a `<button>` when it is
+ * not**, rather than styling one to look like the other. A `<button>` that
+ * navigates cannot be opened in a new tab and is not announced as a link; an
+ * `<a>` with no `href` is not focusable at all. The element follows what the
+ * control does, and the variant only decides how it looks.
+ *
+ * `disabled` is honoured on both: a `<button>` gets the attribute, and an `<a>`
+ * — which has no such attribute — is rendered as a `<span>` with
+ * `aria-disabled`, because a link that is present, focusable and inert is worse
+ * than one that is not a link.
+ *
+ * Every value here is a token. There is no colour in this file, per AGENTS.md.
+ */
+
+interface Props {
+  /** Present: a link. Absent: a button. */
+  href?: string
+  variant?: 'primary' | 'secondary'
+  /** Passed through to `<a rel>`; ignored on a `<button>`. */
+  rel?: string
+  disabled?: boolean
+  class?: string
+  /** Anything else — `type`, `data-*`, `aria-*` — reaches the element. */
+  [key: string]: unknown
+}
+
+const {
+  href,
+  variant = 'secondary',
+  rel,
+  disabled = false,
+  class: extra,
+  ...rest
+} = Astro.props
+
+const classes = ['btn', `btn--${variant}`, extra].filter(Boolean).join(' ')
+---
+
+{
+  href === undefined ? (
+    <button class={classes} disabled={disabled} {...rest}>
+      <slot />
+    </button>
+  ) : disabled ? (
+    <span class={classes} aria-disabled="true" {...rest}>
+      <slot />
+    </span>
+  ) : (
+    <a class={classes} href={href} rel={rel} {...rest}>
+      <slot />
+    </a>
+  )
+}
+
+<style>
+  /* The shared shape. Both variants are the same object at the same size, and
+     only the fill and the border tell them apart — a secondary that is also
+     smaller reads as a lesser action rather than as the other one. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--k-space-2);
+    padding: var(--k-space-3) var(--k-space-5);
+    border: var(--k-border) solid transparent;
+    border-radius: var(--k-radius);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-type-small);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: var(--k-tracking-label);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--k-transition);
+  }
+
+  /* The filled one. `--k-on-accent` is the token that exists for exactly this
+     label, and `theme.test.ts` already checks the pair in both themes. */
+  .btn--primary {
+    background: var(--k-accent);
+    color: var(--k-on-accent);
+  }
+
+  .btn--primary:hover {
+    background: var(--k-accent-strong);
+  }
+
+  .btn--secondary {
+    border-color: var(--k-hairline-strong);
+    background: transparent;
+    color: var(--k-text-strong);
+  }
+
+  .btn--secondary:hover {
+    border-color: var(--k-accent);
+    color: var(--k-accent);
+  }
+
+  /* **Declared here rather than inherited** (kolonie-website#48). The landing
+     page's layout has a focus rule and Starlight has its own; a control that
+     appears on both surfaces should not have two different focus treatments,
+     and a filled button needs the offset in particular — an outline drawn flush
+     against the accent fill is invisible on the one variant that most needs it.
+     Three pixels puts the ring on `--k-bg`, where the accent clears AA. */
+  .btn:focus-visible {
+    outline: 2px solid var(--k-accent);
+    outline-offset: 3px;
+  }
+
+  /* Not a colour change: a disabled control that is merely dimmer is a control
+     a reader keeps trying to press. The cursor and the pointer-events say what
+     the opacity only suggests. */
+  .btn:disabled,
+  .btn[aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+</style>

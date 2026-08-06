@@ -17,12 +17,19 @@
  * itself. Amber is the other terminal the reference points at.
  */
 
-/* JetBrains Mono, self-hosted. The files under `public/fonts/` are copied from
- * `@fontsource-variable/jetbrains-mono`, which is kept as a dependency so the
- * provenance is recorded and the copies can be refreshed; `theme.test.ts`
- * asserts the copies still match the package byte for byte. Latin and Latin
- * Extended only — the site is English (AGENTS.md), and the unicode-range keeps
- * even those two from being fetched by a reader who never renders the glyphs. */
+/* Two self-hosted families, and every file under `public/fonts/` is a copy from
+ * a `@fontsource-variable/*` package kept as a dependency so the provenance is
+ * recorded and the copies can be refreshed; `theme.test.ts` asserts the copies
+ * still match the package byte for byte, and that each family's OFL-1.1 licence
+ * ships beside them. Latin and Latin Extended only — the site is English
+ * (AGENTS.md), and the unicode-range keeps even those two from being fetched by
+ * a reader who never renders the glyphs.
+ *
+ * **Both are `font-display: swap` and both latin files are preloaded** by
+ * `sharedHeadTags` in `src/lib/head.ts`, on every page and both surfaces
+ * (kolonie-website#48). Swap alone still costs a reflow when the face lands;
+ * the preload is what makes the swap happen before first paint rather than
+ * after it. */
 @font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
@@ -41,6 +48,43 @@
   font-display: swap;
   font-weight: 100 800;
   src: url('/fonts/jetbrains-mono-latin-ext-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Inter, self-hosted, and the prose face (kolonie-website#48).
+ *
+ * Before this it was `--k-font-prose: var(--sl-font-system)` — a variable
+ * Starlight defines. On `/terms/`, rendered by the framework, it resolved to a
+ * system sans stack; on `/`, which left the framework in `#30`, it resolved to
+ * nothing and the browser's default *serif* won. The same two lines produced
+ * the right result on one page and the wrong one on the other, which is why the
+ * defect survived so long. A self-hosted face has no such asymmetry: it is
+ * declared here, so it is the same face wherever this file is loaded.
+ *
+ * Inter rather than a system stack because a system stack is a different
+ * typeface per visitor, and the type scale below was set against one of them.
+ * `#48` records the choice and its reason: it is what the reference uses, it is
+ * openly licensed, and the machinery to self-host it already existed. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/inter-latin-ext-wght-normal.woff2')
     format('woff2-variations');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
     U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
@@ -121,12 +165,19 @@
 
   /* ---- Type ------------------------------------------------------------- */
 
-  /* Mono for headings, the prompt, code and UI chrome; a system sans for prose.
-   * Setting long-form prose in a monospace face is where terminal themes stop
-   * being legible, and legible wins (kolonie-website#11). */
+  /* Mono for headings, the prompt, code and UI chrome; Inter for prose. Setting
+   * long-form prose in a monospace face is where terminal themes stop being
+   * legible, and legible wins (kolonie-website#11).
+   *
+   * **Neither stack may point at a variable this file does not declare**
+   * (kolonie-website#48). The fallbacks after the self-hosted name are for the
+   * frames before it lands and for a reader who blocked the fetch; the first
+   * name is always a face served from `public/fonts/`, and `theme.test.ts`
+   * fails if it is not. */
   --k-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, 'Liberation Mono', 'Courier New', monospace;
-  --k-font-prose: var(--sl-font-system);
+  --k-font-prose: 'Inter', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   --k-tracking-heading: -0.015em;
   --k-tracking-label: 0.06em;
@@ -148,6 +199,32 @@
   --k-text-3xl: 2rem;
   --k-text-4xl: 2.5rem;
   --k-text-5xl: 3.25rem;
+  /* The sixth step, added by `#48` for the one thing on a landing page that has
+   * to be unmistakably the loudest. Nothing on a documentation page uses it. */
+  --k-text-6xl: 4rem;
+
+  /* **The roles, and they are the layer a page is written against**
+   * (kolonie-website#48). The steps above are a ruler; these say which mark on
+   * it each kind of text stands at, so *how large is an h2* has one answer for
+   * both surfaces instead of one per stylesheet. A component asks for
+   * `--k-type-h2` and never for `--k-text-4xl` — the same division the spacing
+   * scale and the flow tokens already have.
+   *
+   * **Body is `--k-text-lg`, 18px**, which is what the site already rendered on
+   * its documentation pages and what the landing page did not: it asked for
+   * `--k-text-base` and set the most-read text on the site two steps below the
+   * same text one click away.
+   *
+   * **`h2` is 40px, and the ratio is the point rather than the number.** `#48`
+   * measured it at 25.6px against a body of 18px — 1.4×, which is a heading
+   * that has to be looked for. At 2.2× a section boundary is visible without
+   * reading anything, which is the whole job of an h2 on a page this long. */
+  --k-type-small: var(--k-text-sm);
+  --k-type-body: var(--k-text-lg);
+  --k-type-h3: var(--k-text-2xl);
+  --k-type-h2: var(--k-text-4xl);
+  --k-type-h1: var(--k-text-5xl);
+  --k-type-display: var(--k-text-6xl);
 
   /* How wide a line of prose is allowed to get. Measured in characters rather
    * than pixels, because the thing being limited is how far the eye travels
@@ -181,6 +258,19 @@
      (kolonie-website#33). A 4.5rem gap is a third of a phone screen, and a
      reader scrolling past one has lost the thread of the page. */
   --k-flow-section: var(--k-space-7);
+
+  /* **Page padding as two tokens rather than as a value per component**
+   * (kolonie-website#48). The gutter and the vertical padding of a section were
+   * written out in `.page`, in `.site-header` and in `.site-footer`, each from
+   * the scale but each independently — so the header's gutter and the page's
+   * gutter agreed by coincidence and would have stopped agreeing the first time
+   * one of them was adjusted. Both open at `--k-bp-sm`, in the one media query
+   * at the bottom of this file, and every surface moves together.
+   *
+   * The gutter is a step narrower on a phone, where 1.5rem of each margin is 8%
+   * of the screen. */
+  --k-gutter: var(--k-space-4);
+  --k-section-y: var(--k-space-6);
 
   --k-radius: 0.375rem;
   --k-border: 1px;
@@ -302,11 +392,14 @@
   --sl-text-4xl: var(--k-text-4xl);
   --sl-text-5xl: var(--k-text-5xl);
 
-  --sl-text-h1: var(--k-text-4xl);
-  --sl-text-h2: var(--k-text-2xl);
-  --sl-text-h3: var(--k-text-xl);
-  --sl-text-h4: var(--k-text-lg);
-  --sl-text-h5: var(--k-text-base);
+  /* The headings, from the roles rather than from the ruler (`#48`), so a
+     documentation page and the landing page set an h2 at the same size. */
+  --sl-text-body: var(--k-type-body);
+  --sl-text-h1: var(--k-type-h1);
+  --sl-text-h2: var(--k-type-h2);
+  --sl-text-h3: var(--k-type-h3);
+  --sl-text-h4: var(--k-text-xl);
+  --sl-text-h5: var(--k-text-lg);
 
   --sl-line-height: 1.7;
   --sl-line-height-headings: 1.15;
@@ -440,13 +533,13 @@ site-title a {
  * body copy that happens to be first, and the two are close enough to read as
  * one block. */
 .hero h1 {
-  font-size: clamp(var(--k-text-4xl), 7vw, var(--k-text-5xl));
+  font-size: clamp(var(--k-type-h1), 7vw, var(--k-type-display));
 }
 
 .hero .tagline {
   margin-top: var(--k-space-4);
   max-width: var(--k-measure-lede);
-  font-size: var(--k-text-lg);
+  font-size: var(--k-type-body);
   line-height: 1.55;
 }
 
@@ -471,6 +564,8 @@ site-title a {
 @media (min-width: 40rem) {
   :root {
     --k-flow-section: var(--k-space-8);
+    --k-gutter: var(--k-space-5);
+    --k-section-y: var(--k-space-7);
   }
 }
 

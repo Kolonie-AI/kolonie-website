@@ -27,7 +27,13 @@
  */
 
 import { PAGESENSE_ATTRS } from '../lib/analytics'
-import { OG_IMAGE, OG_IMAGE_ALT, SITE, themeColorFrom } from '../lib/head'
+import {
+  FONT_PRELOADS,
+  OG_IMAGE,
+  OG_IMAGE_ALT,
+  SITE,
+  themeColorFrom,
+} from '../lib/head'
 import { legalLinks, projectLinks, SIGN_IN } from '../lib/site-footer'
 import StatusChip from '../components/StatusChip.astro'
 import '../styles/theme.css'
@@ -62,6 +68,20 @@ const themeColor = themeColorFrom(themeCss)
     <link rel="canonical" href={canonical} />
     <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    {/* The same two files the Starlight pages preload, from the same list
+        (kolonie-website#48) — the reason `sharedHeadTags` exists at all is that
+        this page writes its own head and quietly losing a tag here is the
+        failure that costs most. */}
+    {FONT_PRELOADS.map((href) => (
+      <link
+        rel="preload"
+        href={href}
+        as="font"
+        type="font/woff2"
+        crossorigin="anonymous"
+      />
+    ))}
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Kolonie AI" />
@@ -197,7 +217,10 @@ const themeColor = themeColorFrom(themeCss)
         background: var(--k-bg);
         color: var(--k-text);
         font-family: var(--k-font-prose);
-        font-size: var(--k-text-base);
+        /* The role, not the step (kolonie-website#48). This asked for
+           `--k-text-base` and set the most-read text on the site two steps
+           below the same text on a documentation page one click away. */
+        font-size: var(--k-type-body);
         line-height: var(--sl-line-height);
         -webkit-font-smoothing: antialiased;
       }
@@ -211,16 +234,16 @@ const themeColor = themeColorFrom(themeCss)
       }
 
       h1 {
-        font-size: var(--k-text-4xl);
+        font-size: var(--k-type-h1);
       }
       h2 {
-        font-size: var(--k-text-2xl);
+        font-size: var(--k-type-h2);
       }
       h3 {
-        font-size: var(--k-text-xl);
+        font-size: var(--k-type-h3);
       }
       h4 {
-        font-size: var(--k-text-lg);
+        font-size: var(--k-text-xl);
       }
 
       a {
@@ -292,7 +315,10 @@ const themeColor = themeColorFrom(themeCss)
         align-items: center;
         justify-content: space-between;
         gap: var(--k-space-4);
-        padding: var(--k-space-3) var(--k-space-4);
+        /* The gutter is a token now, shared with the page and the footer
+           (kolonie-website#48). It opens at `--k-bp-sm` in `theme.css`, so
+           there is no width written here. */
+        padding: var(--k-space-3) var(--k-gutter);
         border-bottom: var(--k-border) solid var(--k-hairline);
         background: var(--k-surface);
       }
@@ -318,7 +344,7 @@ const themeColor = themeColorFrom(themeCss)
 
       .site-footer {
         margin-top: var(--k-flow-section);
-        padding: var(--k-space-5) var(--k-space-4);
+        padding: var(--k-space-5) var(--k-gutter);
         border-top: var(--k-border) solid var(--k-hairline);
         color: var(--k-text-faint);
         font-family: var(--k-font-mono);
@@ -336,14 +362,16 @@ const themeColor = themeColorFrom(themeCss)
       }
 
       /* The gutter opens once there is a screen to open it on
-         (kolonie-website#33). */
+         (kolonie-website#33). The horizontal half is `--k-gutter` and moves on
+         its own now (`#48`); what is left here is the vertical padding, which
+         is the header's and the footer's own business. */
       @media (min-width: 40rem) {
         .site-header {
-          padding: var(--k-space-4) var(--k-space-5);
+          padding-block: var(--k-space-4);
         }
 
         .site-footer {
-          padding: var(--k-space-6) var(--k-space-5);
+          padding-block: var(--k-space-6);
         }
       }
     </style>

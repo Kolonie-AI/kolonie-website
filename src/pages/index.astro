@@ -26,6 +26,7 @@ import { docsCheckout } from '../lib/kolonie-docs.ts'
 import { JURISDICTION, readEntity } from '../lib/entity.ts'
 import { WORDMARK } from '../lib/wordmark.ts'
 import InstallPanel from '../components/InstallPanel.astro'
+import Button from '../components/Button.astro'
 
 /**
  * The frontmatter title was descriptive so the `<title>` tag and search results
@@ -91,9 +92,15 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       */}
       <p class="hero__cost">No account, no card, no key to fetch first.</p>
 
+      {/*
+        Two buttons rather than two underlined links (kolonie-website#48). The
+        wording and the destinations are unchanged — `#52` is the issue that
+        decides what the first screen *says*, and this is only the control the
+        page had no component for until now.
+      */}
       <p class="hero__actions">
-        <a href="/academy/">What an agent can learn</a>
-        <a href="https://github.com/Kolonie-AI">Read the code</a>
+        <Button href="/academy/" variant="primary">What an agent can learn</Button>
+        <Button href="https://github.com/Kolonie-AI">Read the code</Button>
       </p>
       </div>
 
@@ -686,17 +693,16 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
   /* Phone-first (kolonie-website#33). The gutter is a step narrower on a
      phone, where 1.5rem of each margin is 8% of the screen; it opens at
      `--k-bp-sm`. No breakpoint on the width itself — `max-width` plus `margin:
-     auto` is already the whole of a centred column. */
+     auto` is already the whole of a centred column.
+
+     Both padding values are tokens rather than steps picked here
+     (kolonie-website#48), so this page's gutter and the header's cannot drift
+     apart, and the media query that opened them lives in `theme.css` with the
+     rest of the width-dependent behaviour. */
   .page {
     max-width: 60rem;
     margin: 0 auto;
-    padding: var(--k-space-6) var(--k-space-4) var(--k-space-7);
-  }
-
-  @media (min-width: 40rem) {
-    .page {
-      padding: var(--k-space-7) var(--k-space-5) var(--k-space-8);
-    }
+    padding: var(--k-section-y) var(--k-gutter) var(--k-flow-section);
   }
 
   /* The measure is capped on the things read as sentences and not on the
@@ -752,9 +758,12 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     background: var(--k-surface);
   }
 
+  /* A card's heading is a heading of a card and not of a section, so it sits at
+     body size rather than on the `h3` step (`#48` raised that step to 25.6px,
+     which inside a 16rem card is a headline). */
   .page .card h3 {
     margin: 0;
-    font-size: var(--k-text-base);
+    font-size: var(--k-type-body);
   }
 
   .page .card p {
@@ -939,10 +948,12 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     }
   }
 
+  /* The one place a display size belongs: the loudest thing on the site, by a
+     step nothing else takes (`#48`). */
   .hero h1 {
     margin: 0;
     font-family: var(--k-font-mono);
-    font-size: clamp(var(--k-text-4xl), 7vw, var(--k-text-5xl));
+    font-size: clamp(var(--k-type-h1), 7vw, var(--k-type-display));
     letter-spacing: var(--k-tracking-heading);
   }
 
@@ -954,12 +965,12 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     line-height: 1.55;
   }
 
+  /* The buttons carry their own type and spacing (`#48`), so this row is only
+     the row: how they wrap and how far apart they sit. */
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--k-space-4) var(--k-space-5);
+    gap: var(--k-space-3);
     margin-top: var(--k-space-6);
-    font-family: var(--k-font-mono);
-    font-size: var(--k-text-sm);
   }
 </style>

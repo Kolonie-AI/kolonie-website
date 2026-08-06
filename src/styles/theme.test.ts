@@ -183,21 +183,34 @@ describe("colour values stay in the theme layer", () => {
   });
 });
 
-describe("the self-hosted font is the font it claims to be", () => {
+describe("the self-hosted fonts are the fonts they claim to be", () => {
   // The files under `public/fonts/` are copies. A copy silently diverges from
   // its source the first time the source is updated, and the failure is a font
   // nobody notices is stale.
-  it.each([
-    "jetbrains-mono-latin-wght-normal.woff2",
-    "jetbrains-mono-latin-ext-wght-normal.woff2",
-  ])("%s matches the package it was copied from", (file) => {
+  //
+  // Two families since kolonie-website#48: the mono face for headings, code and
+  // labels, and Inter for prose. Both are checked the same way, and the package
+  // each was copied out of is named here rather than assumed.
+  const families = [
+    { package: "jetbrains-mono", prefix: "jetbrains-mono", licence: "LICENSE-JetBrainsMono" },
+    { package: "inter", prefix: "inter", licence: "LICENSE-Inter" },
+  ] as const;
+
+  const files = families.flatMap((family) =>
+    (["latin", "latin-ext"] as const).map((subset) => ({
+      family,
+      file: `${family.prefix}-${subset}-wght-normal.woff2`,
+    })),
+  );
+
+  it.each(files)("$file matches the package it was copied from", ({ family, file }) => {
     const served = readFileSync(
       fileURLToPath(new URL(`../../public/fonts/${file}`, import.meta.url)),
     );
     const packaged = readFileSync(
       fileURLToPath(
         new URL(
-          `../../node_modules/@fontsource-variable/jetbrains-mono/files/${file}`,
+          `../../node_modules/@fontsource-variable/${family.package}/files/${file}`,
           import.meta.url,
         ),
       ),
@@ -205,8 +218,109 @@ describe("the self-hosted font is the font it claims to be", () => {
     expect(served.equals(packaged)).toBe(true);
   });
 
-  it("ships the licence beside them, which OFL-1.1 requires", () => {
-    expect(read("../../public/fonts/LICENSE")).toMatch(/SIL OPEN FONT LICENSE/i);
+  it.each(families)(
+    "$package ships its licence beside them, which OFL-1.1 requires",
+    (family) => {
+      expect(read(`../../public/fonts/${family.licence}`)).toMatch(
+        /SIL OPEN FONT LICENSE/i,
+      );
+    },
+  );
+
+  it.each(files)("$file is declared by an @font-face in this file", ({ file }) => {
+    expect(themeCss).toContain(`/fonts/${file}`);
+  });
+});
+
+/**
+ * **The prose face resolves, on every page** (kolonie-website#48).
+ *
+ * The defect this replaces was not a missing font — it was a font stack that
+ * pointed at `var(--sl-font-system)`, a variable **another package** declares.
+ * On a page Starlight rendered it resolved; on `/`, which left the framework in
+ * `#30`, it resolved to nothing and the browser's default serif won. One
+ * declaration, two answers, and no test could see it because the file itself
+ * looked correct.
+ *
+ * So the rule that is checked is the one that would have caught it: **a font
+ * stack in this file may not depend on a variable this file does not declare**,
+ * and its first named family must be one served from `public/fonts/`. The
+ * fallbacks after it are for the frames before the face lands; the browser's
+ * generic default is never reached because a real family always precedes it.
+ */
+describe("the type stacks stand on their own", () => {
+  const stacks = [
+    ["--k-font-prose", "Inter"],
+    ["--k-font-mono", "JetBrains Mono"],
+  ] as const;
+
+  it.each(stacks)("%s names %s first, self-hosted", (token, family) => {
+    const declared = dark[token];
+    expect(declared.split(",")[0]!.trim()).toBe(`'${family}'`);
+    expect(themeCss).toContain(`font-family: '${family}';`);
+  });
+
+  // The rejection case. Point either stack back at a variable from outside this
+  // file — which is exactly what `--k-font-prose` did — and this fails.
+  it.each(stacks)("%s points at nothing outside this file", (token) => {
+    expect(dark[token]).not.toMatch(/var\(\s*--(?!k-)/);
+  });
+
+  // And the generic-family case: a stack whose *first* entry is `serif`,
+  // `sans-serif` or `system-ui` is a page that renders in whatever the visitor
+  // happens to have, which is the state #48 was opened for.
+  it.each(stacks)("%s does not open on a generic family", (token) => {
+    expect(dark[token].split(",")[0]!.trim()).not.toMatch(
+      /^(serif|sans-serif|monospace|system-ui|ui-\w+)$/,
+    );
+  });
+});
+
+/**
+ * **The scale has roles, and a page is written against the roles**
+ * (kolonie-website#48).
+ *
+ * The steps are a ruler. `--k-type-*` says which mark each kind of text stands
+ * at, and it is the layer that can be checked: *is an h2 large enough to
+ * separate two sections* is a question about the ratio between two roles and
+ * cannot be asked of a ruler at all.
+ */
+describe("the type scale", () => {
+  const rem = (token: string) => {
+    const value = dark[token];
+    const m = value.match(/^([\d.]+)rem$/);
+    if (!m) throw new Error(`${token} is ${value}, which this test cannot size`);
+    return Number(m[1]);
+  };
+
+  it.each([
+    "--k-type-small",
+    "--k-type-body",
+    "--k-type-h3",
+    "--k-type-h2",
+    "--k-type-h1",
+    "--k-type-display",
+  ])("declares %s", (token) => {
+    expect(dark[token]).toBeTruthy();
+  });
+
+  // The acceptance criterion of #48, as a number: measured at 25.6px against an
+  // 18px body — 1.4×, a heading that has to be looked for.
+  it("sets h2 to at least twice the body size", () => {
+    expect(rem("--k-type-h2") / rem("--k-type-body")).toBeGreaterThanOrEqual(2);
+  });
+
+  it("rises without a repeat", () => {
+    const ladder = [
+      "--k-type-small",
+      "--k-type-body",
+      "--k-type-h3",
+      "--k-type-h2",
+      "--k-type-h1",
+      "--k-type-display",
+    ].map(rem);
+    expect(ladder).toEqual([...ladder].sort((a, b) => a - b));
+    expect(new Set(ladder).size).toBe(ladder.length);
   });
 });
 

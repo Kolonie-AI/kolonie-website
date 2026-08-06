@@ -68,7 +68,42 @@ interface HeadTag {
   attrs: Record<string, string>
 }
 
+/**
+ * The two font files a page needs before it paints (kolonie-website#48).
+ *
+ * `font-display: swap` alone means the page paints in a fallback and reflows
+ * when the face arrives — which is the layout shift `#48` is explicit about not
+ * accepting. A preload starts both fetches with the document rather than after
+ * the stylesheet has been parsed and the first glyph has been asked for, so the
+ * swap happens before there is anything to shift.
+ *
+ * **Latin only, and not the Latin Extended pair.** The site is English
+ * (AGENTS.md); the extended files exist so that a name with a diacritic renders
+ * rather than falls back, and preloading two files no page is likely to need
+ * would cost every reader 100kB to save a few of them a swap.
+ *
+ * `crossorigin` is not optional on a font preload even for a same-origin file:
+ * fonts are fetched in CORS mode, and a preload without it is a second,
+ * unmatched request rather than a warm cache entry.
+ */
+export const FONT_PRELOADS = [
+  '/fonts/inter-latin-wght-normal.woff2',
+  '/fonts/jetbrains-mono-latin-wght-normal.woff2',
+] as const
+
 export const sharedHeadTags = (themeColor: string): HeadTag[] => [
+  ...FONT_PRELOADS.map(
+    (href): HeadTag => ({
+      tag: 'link',
+      attrs: {
+        rel: 'preload',
+        href,
+        as: 'font',
+        type: 'font/woff2',
+        crossorigin: 'anonymous',
+      },
+    }),
+  ),
   {
     tag: 'meta',
     attrs: { property: 'og:image', content: OG_IMAGE },
