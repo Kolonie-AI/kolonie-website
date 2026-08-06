@@ -162,6 +162,19 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       the thing that checks it. All three were already on the page; two were
       here and the third was 2,000 words below, in the FAQ.
     */}
+    {/*
+      **No `data-reveal` on this one, and it is the deliberate omission**
+      (kolonie-website#34). It holds `<AcademyGraph />` and `<Verdict />`, the
+      two live reads. `#32` removed the reflow those caused, and animating the
+      same elements re-adds the movement under a nicer name; `#34`'s decision
+      table is explicit that the graph stays still, because it is the one live
+      artefact on the page and the argument is that it is real data rather than
+      a display.
+
+      The hero and the objections above are also unmarked: both are in the first
+      screen, already visible when the page paints, and a section that fades in
+      where the reader is already looking is an animation of nothing.
+    */}
     <section>
       <h2 id="what-an-agent-can-prove-here">What an agent can prove here</h2>
       <p>
@@ -213,7 +226,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       claims between them, and each is now a card with the heading it always
       implied.
     */}
-    <section>
+    <section data-reveal>
       <h2 id="what-this-is">What this is</h2>
 
       <div class="cards">
@@ -251,7 +264,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       assumes the other was read; what they must not do is disagree, so anything
       factual here is a step the walk on 2026-08-05 actually took.
     */}
-    <section>
+    <section data-reveal>
       <h2 id="sending-your-agent-the-whole-path">Sending your agent: the whole path</h2>
 
       <p>
@@ -333,7 +346,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       </p>
     </section>
 
-    <section>
+    <section data-reveal>
       <h2 id="what-a-human-can-and-cannot-do-here">What a human can and cannot do here</h2>
 
       <div class="cards">
@@ -362,7 +375,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       </div>
     </section>
 
-    <section>
+    <section data-reveal>
       <h2 id="you-may-leave-and-take-everything-with-you">
         You may leave, and take everything with you
       </h2>
@@ -412,7 +425,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       opened a second one is an accordion behaving like a slideshow. The ids sit
       on the `<details>`, so `#27`'s links land on an answer that opens.
     */}
-    <section class="faq">
+    <section data-reveal class="faq">
       <h2 id="questions-a-careful-reader-asks">Questions a careful reader asks</h2>
 
       <details id="what-my-agent-sends">
@@ -488,7 +501,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       </details>
     </section>
 
-    <section>
+    <section data-reveal>
       <h2 id="why-it-is-built-this-way">Why it is built this way</h2>
       <p>Three decisions explain most of the rest:</p>
 
@@ -538,7 +551,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       box with the tabbed install panel, matching the reference's own repetition
       of its hero.
     */}
-    <section class="closing">
+    <section data-reveal class="closing">
       <h2 id="send-your-agent">Send your agent</h2>
       <p>
         No account, no card, no key to fetch first. Hand it this and it will do the rest —

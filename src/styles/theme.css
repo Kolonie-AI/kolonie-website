@@ -185,6 +185,41 @@
   --k-radius: 0.375rem;
   --k-border: 1px;
 
+  /* ---- Motion ----------------------------------------------------------- */
+
+  /* The page responds to being used, and does nothing else (kolonie-website#34).
+   *
+   * Before this there was not one `transition`, `animation` or `@keyframes` rule
+   * in any of the eight components: links changed colour instantly, cards did
+   * nothing on hover, the copy confirmation was a text swap, and nothing
+   * acknowledged a scroll. A page with correct type, correct spacing and no
+   * motion reads as a well-set document; the references it is measured against
+   * read as software.
+   *
+   * **Two durations and one curve, and every moving thing on this site uses
+   * them.** A raw duration in a component is what makes a page feel
+   * inconsistent for reasons nobody can point at, and `motion.test.ts` fails on
+   * one — the same rule the colour tokens have.
+   *
+   * `--k-quick` is for a state a pointer caused and the reader is watching:
+   * short enough that the control feels attached to the cursor. `--k-settle` is
+   * for something arriving on its own, where the same speed reads as a flicker.
+   *
+   * The easing is a standard decelerate. Nothing here overshoots or bounces: a
+   * site arguing that its claims are checkable does not need its buttons to be
+   * playful, and `#22` refused decoration on exactly that ground. */
+  --k-quick: 120ms;
+  --k-settle: 320ms;
+  --k-ease: cubic-bezier(0.2, 0, 0.2, 1);
+
+  /* The shorthand a control reaches for. Colour and border only — what a
+     transition may touch is deliberately narrow, because animating a size or a
+     position is what turns a hover into a layout shift. */
+  --k-transition: color var(--k-quick) var(--k-ease),
+    background-color var(--k-quick) var(--k-ease),
+    border-color var(--k-quick) var(--k-ease),
+    opacity var(--k-quick) var(--k-ease);
+
   /* ---- Breakpoints ------------------------------------------------------ */
 
   /* **Two, and phone-first** (kolonie-website#33). Three or more is a design
@@ -439,8 +474,20 @@ site-title a {
   }
 }
 
-/* No animation on scroll, no gradients, no illustration — kolonie-website#11.
- * Readers who ask for less motion get none of the little that remains. */
+/* No gradients and no illustration — kolonie-website#11. Readers who ask for
+ * less motion get none of the motion `#34` added.
+ *
+ * **This block is the accessibility guarantee and it is tested rather than
+ * trusted** (`motion.test.ts`). `#34` is explicit that `prefers-reduced-motion:
+ * reduce` removing all of it is a test and not a courtesy — this repository
+ * already computes every text-on-background contrast pair rather than believing
+ * the palette, and motion gets the same treatment.
+ *
+ * `!important` against `*` is the blunt form on purpose: it cannot be forgotten
+ * by a component author, and there is nothing on this site whose motion is
+ * load-bearing enough to want an exception. The scroll reveal `#34` adds is
+ * written so its content is in the HTML whether or not the observer ever fires,
+ * so removing the animation here removes an effect and never a paragraph. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -450,4 +497,99 @@ site-title a {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  /* **Not hidden, and this is a correctness fix rather than a refinement.**
+   *
+   * Neutralising the transition above leaves `[data-reveal]`'s *initial* state
+   * untouched — `opacity: 0` — so a reader who asks for less motion still gets
+   * a page whose content depends on an IntersectionObserver firing. Measured in
+   * a browser with `prefers-reduced-motion: reduce` emulated: every marked
+   * section reported `opacity: 0`. That is not reduced motion, it is hidden
+   * content, and it is the exact failure the reveal was written to avoid.
+   *
+   * Under this preference there is no reveal at all: the sections are simply
+   * there, as they are for a reader with no JavaScript. */
+  [data-reveal-ready] [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---- Motion: what actually moves (kolonie-website#34) --------------------- */
+
+/* **Interactive states, and this is most of the gain.** Every link, button and
+ * summary on both surfaces — the Starlight pages and the landing page, which
+ * left the framework in `#30` — settles into its hover and focus colours instead
+ * of snapping. One declaration, one token, and nothing here animates a size or a
+ * position, so no hover can cause a layout shift. */
+a,
+button,
+summary,
+.card,
+[data-card] {
+  transition: var(--k-transition);
+}
+
+/* **The copy confirmation is an event rather than a word swap.**
+ *
+ * Copying a prompt is the single most important action on this site — it is
+ * what the whole landing page is arranged around — and it used to change
+ * `Copy` to `Copied` with nothing to mark that anything had happened. A reader
+ * who was looking at the command rather than at the button could miss it
+ * entirely and click twice.
+ *
+ * A single pulse of the border, once, on the frame the clipboard write
+ * succeeded. It does not repeat and it does not loop: this marks an event, and
+ * something that keeps moving after the event is decoration. The word and the
+ * announced status are unchanged and still carry the meaning — the animation is
+ * the quiet half, the same division the status dot and the copy label already
+ * use. */
+@keyframes k-confirm {
+  from {
+    box-shadow: 0 0 0 0 var(--k-accent);
+  }
+  to {
+    box-shadow: 0 0 0 0.4rem transparent;
+  }
+}
+
+.prompt-copy[data-copied='true'] {
+  animation: k-confirm var(--k-settle) var(--k-ease) 1;
+}
+
+/* **One reveal, for sections entering the viewport.**
+ *
+ * Short, a small offset, and driven by an `IntersectionObserver` that adds
+ * `data-revealed`. **The content is in the HTML whether or not the observer ever
+ * fires**, which is the property that makes this safe: the reduced-motion block
+ * above leaves a fully readable page, and so does a browser that never runs the
+ * script. A reveal that hides content until a script runs is a page that fails
+ * closed, and this site does not do that anywhere else either.
+ *
+ * **Nothing live is given this attribute**, and that is a rule rather than an
+ * oversight: `#32` removed the reflow the live reads caused, and animating the
+ * same elements re-adds the movement under a nicer name. The Academy graph is
+ * excluded by the same decision — it is the one live artefact on the site and
+ * the argument is that it is real data rather than a display.
+ *
+ * **The hidden state is gated on `html[data-reveal-ready]`, which only a script
+ * sets**, and that is what makes this fail open rather than closed. A reader
+ * with JavaScript disabled or blocked never gets the attribute, so nothing is
+ * ever hidden and the page is exactly the page it would otherwise be — no
+ * `@media (scripting: none)` needed, and the rule that this site has at most
+ * three responsive states stays intact.
+ *
+ * The attribute is set by an inline script in `<head>`, before first paint, so
+ * there is no frame in which content is visible and then hidden. */
+[data-reveal-ready] [data-reveal] {
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition:
+    opacity var(--k-settle) var(--k-ease),
+    transform var(--k-settle) var(--k-ease);
+}
+
+[data-reveal-ready] [data-reveal][data-revealed] {
+  opacity: 1;
+  transform: none;
 }

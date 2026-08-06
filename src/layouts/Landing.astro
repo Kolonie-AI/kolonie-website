@@ -81,6 +81,22 @@ const themeColor = themeColorFrom(themeCss)
     {/* `is:inline` so Astro leaves it exactly as written: the tag has to reach
          the browser as a deferred external script, not as something bundled. */}
     <script is:inline {...PAGESENSE_ATTRS}></script>
+
+    {/*
+      Arms the scroll reveal before first paint (kolonie-website#34).
+
+      `is:inline` and in `<head>` on purpose. The hidden state in `theme.css` is
+      gated on this attribute, so a browser that never runs a script never hides
+      anything — the reveal fails open — and running it here rather than in the
+      bundled module below means there is no frame where a section is painted
+      and then hidden.
+
+      Three lines, and they are the whole of what has to be inline: everything
+      that decides *when* to reveal is in the module, where it can be read.
+    */}
+    <script is:inline>
+      document.documentElement.dataset.revealReady = ''
+    </script>
   </head>
 
   <body>
@@ -99,6 +115,47 @@ const themeColor = themeColorFrom(themeCss)
     <main id="main">
       <slot />
     </main>
+
+    <script>
+      /**
+       * Sections arrive as they enter the viewport (kolonie-website#34).
+       *
+       * **Nothing here decides what moves.** The page marks its own sections
+       * with `data-reveal`, this only watches them — so the live reads and the
+       * Academy graph are excluded by not carrying the attribute rather than by
+       * a list here that would go out of date.
+       *
+       * `once` semantics: an element is unobserved as soon as it has been
+       * revealed. A section that faded every time it re-entered the viewport
+       * would be a page that never settles, which is the thing `#22` refused
+       * under the name decoration.
+       */
+      const targets = document.querySelectorAll<HTMLElement>('[data-reveal]')
+
+      if (targets.length) {
+        // No observer — an old browser, or a polyfill nobody shipped. Reveal
+        // everything immediately: the failure mode of this feature is that the
+        // page is simply the page.
+        if (!('IntersectionObserver' in window)) {
+          targets.forEach((el) => (el.dataset.revealed = ''))
+        } else {
+          const seen = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue
+                ;(entry.target as HTMLElement).dataset.revealed = ''
+                seen.unobserve(entry.target)
+              }
+            },
+            // A small margin so a section is already settled by the time it is
+            // properly in view, rather than animating under the reader's eye.
+            { rootMargin: '0px 0px -10% 0px', threshold: 0.05 },
+          )
+
+          targets.forEach((el) => seen.observe(el))
+        }
+      }
+    </script>
 
     {/* The same links the Starlight pages get, from the same list
          (kolonie-website#42). This page left the framework in #30, so it writes
