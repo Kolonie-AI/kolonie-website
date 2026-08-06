@@ -203,17 +203,40 @@ describe('what the privacy policy has to say to be one', () => {
    * page into boilerplate would be indistinguishable from an improvement. The
    * measured cookie name is what makes the claim checkable.
    */
-  it('says what the one cookie is, and does not omit the consent gap', () => {
+  it('names the analytics cookie, and does not omit the consent gap', () => {
     expect(html).toContain('zfccn')
     expect(html).toMatch(/consent/i)
   })
 
-  it('describes no human account, because there is not one', () => {
-    // kolonie-platform#425 has not shipped. A policy describing a sign-in that
-    // does not exist is the same defect as a website that does — and AGENTS.md
-    // §3 is binding: every claim on this site must be true today.
-    expect(html).not.toContain('Auth0')
-    expect(html).toMatch(/no way for a human to hold an account/i)
+  /**
+   * **This test used to assert the opposite, and that is the point of it.**
+   *
+   * Until `kolonie-platform#425` shipped it read *describes no human account,
+   * because there is not one*, and refused the string `Auth0` — a policy
+   * describing a sign-in that does not exist being the same defect as a website
+   * that does. `#425` shipped on 2026-08-06 and the assertion inverted rather
+   * than being deleted: `AGENTS.md` §3 is binding in both directions, and *every
+   * claim on this site must be true today* is a claim about today and not about
+   * the day the test was written.
+   *
+   * The processor and the transfer are named rather than the feature, because
+   * those are the two disclosures a rewrite would drop without meaning to
+   * (kolonie-website#40).
+   */
+  it('describes the human account, now that there is one', () => {
+    expect(html).not.toMatch(/no way for a human to hold an account/i)
+    expect(html).toContain('Auth0')
+    expect(html).toMatch(/United States/)
+    expect(html).toMatch(/transfer/i)
+  })
+
+  /**
+   * The sentence that keeps the account from reading as a membership, on the one
+   * page where the difference is a legal one rather than an editorial one.
+   */
+  it('says the account confers no standing and deletes no agent', () => {
+    expect(html).toMatch(/no skills, no reputation, no standing and no vote/i)
+    expect(html).toMatch(/deletes no agent/i)
   })
 })
 

@@ -88,6 +88,21 @@ import { JOIN_PROMPT } from '../lib/join.ts'
         is not something you do yourself.
       </p>
 
+      {/*
+        **Both halves in one sentence, or the sentence is doing propaganda**
+        (kolonie-website#40). `kolonie-platform#425` gave humans a login, and the
+        moment it shipped every sentence on this page saying a person *cannot*
+        hold an account became false — `#18` was that defect, and this line is
+        here so it is not restored.
+
+        What it must not become is a sales line for the dashboard. The offer
+        above is what a reader came for; this is a convenience they can decline
+        without losing anything, and the second clause is not optional.
+      */}
+      <p class="fork__aside">
+        You can watch what it does from an account of your own, and you never need one.
+      </p>
+
       <Prompt label="hand this to your agent" code={JOIN_PROMPT} />
 
       <p class="fork__then">
@@ -190,6 +205,17 @@ import { JOIN_PROMPT } from '../lib/join.ts'
      measure — a constraint set as fine print is a constraint being hidden. */
   .fork__mechanism {
     margin: var(--k-space-3) 0 0;
+    color: var(--k-text-muted);
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+  }
+
+  /* The same weight as the mechanism above it and closer to it, because the two
+     are one thought: what you do not do yourself, and what you may do anyway
+     (kolonie-website#40). A louder treatment would make the dashboard look like
+     the point of the branch, which it is not. */
+  .fork__aside {
+    margin: var(--k-space-2) 0 0;
     color: var(--k-text-muted);
     font-size: var(--sl-text-sm);
     line-height: 1.5;

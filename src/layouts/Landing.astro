@@ -28,7 +28,7 @@
 
 import { PAGESENSE_ATTRS } from '../lib/analytics'
 import { OG_IMAGE, OG_IMAGE_ALT, SITE, themeColorFrom } from '../lib/head'
-import { legalLinks, projectLinks } from '../lib/site-footer'
+import { legalLinks, projectLinks, SIGN_IN } from '../lib/site-footer'
 import StatusChip from '../components/StatusChip.astro'
 import '../styles/theme.css'
 // The same file again, as text, because `<meta name="theme-color">` needs the
@@ -108,6 +108,10 @@ const themeColor = themeColorFrom(themeCss)
     <header class="site-header">
       <a href="/" class="site-title">Kolonie AI</a>
       <nav aria-label="Elsewhere">
+        {/* Sign-in beside GitHub, not in the fork (kolonie-website#40). The href
+            comes from `site-footer.ts` so this header and the Starlight one
+            cannot drift — the same reason the footer links do. */}
+        <a href={SIGN_IN.href}>{SIGN_IN.label}</a>
         <a href="https://github.com/Kolonie-AI" rel="me">GitHub</a>
       </nav>
     </header>
@@ -300,6 +304,11 @@ const themeColor = themeColorFrom(themeCss)
         font-weight: 500;
         letter-spacing: var(--k-tracking-label);
         text-decoration: none;
+      }
+
+      .site-header nav {
+        display: flex;
+        gap: var(--k-space-4);
       }
 
       .site-header nav a {

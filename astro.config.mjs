@@ -62,6 +62,11 @@ export default defineConfig({
         // from every page's footer, and this site has two — the landing page
         // writes its own since #30. Both read src/lib/site-footer.ts.
         Footer: './src/components/starlight/Footer.astro',
+        // The second override that adds rather than suppresses
+        // (kolonie-website#40). Sign-in belongs in the header beside GitHub, and
+        // this site has two headers — the landing page writes its own. Both read
+        // SIGN_IN from src/lib/site-footer.ts.
+        SocialIcons: './src/components/starlight/SocialIcons.astro',
       },
       editLink: {
         baseUrl: 'https://github.com/Kolonie-AI/kolonie-website/edit/main/',

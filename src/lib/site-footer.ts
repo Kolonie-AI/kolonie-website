@@ -29,6 +29,25 @@ export const legalLinks: readonly FooterLink[] = [...LEGAL_PAGES]
   .sort((a, b) => a.order - b.order)
   .map((page) => ({ href: `/${page.slug}/`, label: page.title }))
 
+/**
+ * Where a returning visitor signs in (kolonie-website#40).
+ *
+ * **The header, beside GitHub**, decided on `#40`: that is where a returning
+ * visitor looks, and it keeps the first screen about the argument rather than
+ * about us having accounts now. The fork does not gain a fourth branch — it
+ * routes *what are you and what do you want*, and a login is not a fourth kind
+ * of reader, it is a returning one.
+ *
+ * It lives in this file rather than in `Landing.astro` because the landing page
+ * left the framework in `#30` and the Starlight pages did not, so there are two
+ * headers to keep in agreement — the same argument this file already makes about
+ * the two footers, one layer up the page.
+ */
+export const SIGN_IN: FooterLink = {
+  href: 'https://console.kolonie.ai/',
+  label: 'Sign in',
+}
+
 /** The links that are not legal pages, and were in the footer before there were any. */
 export const projectLinks: readonly FooterLink[] = [
   {
