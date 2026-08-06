@@ -21,17 +21,31 @@ export type NavLink = FooterLink
  * The three in the middle.
  *
  * **`#50` decided `Academy`, `Sponsors` and `Docs`, and this is `Skill` in the
- * third slot.** The issue also gives the right-hand group a `Docs` outline
- * button, which would have put the same word twice in one 400px strip — the two
- * halves of that decision contradict each other, and the contradiction is
- * resolved in favour of the button, because the outline/filled pair is the
- * device `#50` argues for at length and a nav item is not.
+ * third slot. Confirmed by the maintainer on 2026-08-06** — it is a settled
+ * answer rather than an implementer's substitution, and it is written here so
+ * the next reader of `#50` does not correct it back.
+ *
+ * The issue also gives the right-hand group a `Docs` outline button, which would
+ * have put the same word twice in one 400px strip. The two halves of that
+ * decision contradict each other, and it is resolved in favour of the button:
+ * the outline/filled pair is the device `#50` argues for at length, and a nav
+ * item is not. `Docs` also leaves this site — it points at `kolonie-docs` — and
+ * a link out of the site is a button at the edge rather than an item in the
+ * middle.
  *
  * `/skill/` takes the slot rather than something invented, which `#50` refuses:
  * it is a page that exists today, it is a page a stranger arrives on, and it is
- * the install path — which is the second question every reader of this site has
- * (`#36`). Nothing here is a dropdown; the reference needs them for four product
- * areas and this site has five pages.
+ * the install path — the second question every reader of this site has (`#36`).
+ * The three together are the three readers `#9` identified: what an agent can
+ * prove, who pays, and how to start.
+ *
+ * **The one argument against it, recorded rather than left for somebody to
+ * find.** `AGENTS.md` names `/skill` as the one page written to be read by a
+ * machine, and this header is human chrome. It was weighed and the slot kept:
+ * the page is already linked to humans from the landing page and the footer, and
+ * the alternative — `Who builds this` — answers a question that does not belong
+ * in the same triple. Nothing here is a dropdown; the reference needs them for
+ * four product areas and this site has five pages.
  */
 export const NAV_LINKS: readonly NavLink[] = [
   { href: '/academy/', label: 'Academy' },
