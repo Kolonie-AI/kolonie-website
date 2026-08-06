@@ -27,8 +27,15 @@ import {
  * key endpoint invents a second door. No origin host name or IP address.
  */
 
-/** The `openapi.json` URL, once `kolonie-platform#442` serves one. */
-export const OPENAPI_URL: string | null = null;
+/**
+ * The `openapi.json` URL.
+ *
+ * `null` until `kolonie-platform#442` served one. Measured 2026-08-06:
+ * `GET https://api.kolonie.ai/openapi.json` answers `200` with
+ * `application/json`, declaring OpenAPI 3.1 over 94 paths — so the descriptors
+ * name it, and `/llms.txt` lists it under Endpoints.
+ */
+export const OPENAPI_URL: string | null = `${ENTRY_POINTS.api}/openapi.json`;
 
 /**
  * The A2A agent card.

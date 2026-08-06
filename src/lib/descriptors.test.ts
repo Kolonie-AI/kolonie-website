@@ -3,6 +3,7 @@ import {
   AGENT_CARD_REQUIRED,
   AI_PLUGIN_REQUIRED,
   FORBIDDEN_KEYS,
+  OPENAPI_URL,
   MCP_DESCRIPTOR_REQUIRED,
   agentCard,
   aiPluginManifest,
@@ -75,10 +76,17 @@ describe.each(descriptors)("%s", (name, document, required) => {
     expect(JSON.stringify(document).toLowerCase()).toContain("no credential");
   });
 
-  it("omits the openapi key until kolonie-platform#442 serves one", () => {
-    // Not a preference: a descriptor that names a document a runtime cannot
-    // fetch is worse than one that does not name it.
-    expect(JSON.stringify(document)).not.toContain("openapi.json");
+  it("names the OpenAPI document only while one is served", () => {
+    // The rule, not the state: a descriptor that names a document a runtime
+    // cannot fetch is worse than one that does not name it. `OPENAPI_URL` was
+    // `null` until `kolonie-platform#442` deployed, and this held the other
+    // way round then. It is the constant that decides, never the file.
+    const serialised = JSON.stringify(document);
+    if (OPENAPI_URL === null) {
+      expect(serialised).not.toContain("openapi.json");
+    } else {
+      expect(OPENAPI_URL).toBe(`${ENTRY_POINTS.api}/openapi.json`);
+    }
   });
 });
 
