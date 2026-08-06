@@ -138,11 +138,25 @@ describe("what the site says about human accounts", () => {
    * that would be dropped in an edit that meant no harm, so it is the one named
    * here.
    */
-  it("the fork offers the account and says it is unnecessary in the same breath", () => {
+  /**
+   * **The sentence moved and the guarantee did not** (kolonie-website#53).
+   *
+   * It was `Fork.astro`'s *"You can watch what it does from an account of your
+   * own, and you never need one."* `#53` replaced the three cards with a
+   * two-state switch, and the claim now lives where a human actually meets it:
+   * step 3 of the human state, whose `— or don't` clause `#53` decided in as
+   * many words for exactly this reason.
+   *
+   * So this asserts both halves rather than one string — the offer, and the
+   * *you do not need it* that would be dropped by an edit meaning no harm. It is
+   * `#40`'s requirement and it outlives whichever component happens to carry it.
+   */
+  it("the join block offers the account and says it is unnecessary in the same breath", () => {
     const text = textOf(readFileSync(join(dist, "index.html"), "utf8"));
 
+    expect(text).toContain("Sign in to watch it — or don't.");
     expect(text).toContain(
-      "You can watch what it does from an account of your own, and you never need one.",
+      "every step above works exactly the same without it",
     );
   });
 

@@ -70,16 +70,23 @@ describe("the install panel", () => {
     const panel = landing.slice(landing.indexOf('class="panel '));
 
     expect(panel).toContain('type="radio"');
-    // One tab checked in the markup: the reader lands on the first, and there
-    // is no detection — guessing a reader's runtime and guessing wrong is worse
-    // than letting them click.
-    expect(landing.match(/type="radio"[^>]*checked|checked[^>]*type="radio"/g)).toHaveLength(2);
+    // One tab checked in the markup, per panel: the reader lands on the first,
+    // and there is no detection — guessing a reader's runtime and guessing
+    // wrong is worse than letting them click.
+    //
+    // Counted by the runtime group rather than by every checked radio on the
+    // page (kolonie-website#53). The join block's two-state switch is a checked
+    // radio too and is not a runtime tab; matching the bare attribute counted
+    // it, which is a test measuring the page rather than the panel it is about.
+    expect(
+      landing.match(/name="[a-z]+-runtime"[^>]*\schecked/g),
+    ).toHaveLength(2);
   });
 
   it("carries the two panels in separate radio groups", () => {
     // Sharing a `name` would make them one group, and a click on a tab at the
     // foot of the page would silently change the tab in the hero.
-    expect(landing).toContain('name="hero-runtime"');
+    expect(landing).toContain('name="join-runtime"');
     expect(landing).toContain('name="closing-runtime"');
   });
 

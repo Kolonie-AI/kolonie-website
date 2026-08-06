@@ -16,7 +16,7 @@
  */
 
 import Site from '../layouts/Site.astro'
-import Fork from '../components/Fork.astro'
+import Join from '../components/Join.astro'
 import AcademyGraph from '../components/AcademyGraph.astro'
 import Verdict from '../components/Verdict.astro'
 import CitizenStanding from '../components/CitizenStanding.astro'
@@ -113,7 +113,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         `#51`.
       */}
       <p class="hero__actions">
-        <Button href="#panel-hero" variant="primary">Send your agent</Button>
+        <Button href="#panel-join" variant="primary">Send your agent</Button>
         <Button href="/academy/">What an agent can prove</Button>
       </p>
 
@@ -127,20 +127,27 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       </div>
 
       {/*
-        **The second column** (kolonie-website#36). `agentmail.to`'s hero is the
-        argument on the left and a tabbed code panel on the right, and it
-        repeats the panel as its closing call to action. This is the same
-        device on the axis the Colony varies along — the reader's harness
-        rather than the reader's language.
+        **The second column was the install panel and it has moved one block
+        down** (kolonie-website#36, #53).
 
-        It answers the second question every reader has, *does this work with
-        what I run*, which until now was answerable only by navigating to a
-        second page.
+        `#36` put it here: `agentmail.to`'s hero is the argument on the left and
+        a tabbed code panel on the right, and it repeats the panel as its
+        closing call to action. That reasoning is intact and the panel is one
+        scroll away — what changed is that `#53` builds a two-state switch whose
+        whole mechanic is *one artefact read from two sides*, and an identical
+        seven-tab panel sitting a screen above it makes the artefact look like
+        two. Both issues say the same thing about it in the same words: `#53`
+        that the tabs *"move inside it and are not duplicated"*, and `#52`'s
+        coordination note that `#53` *"changes where it sits"*.
+
+        So the hero is one column, the panel is in the block below, and `Send
+        your agent` above points at it. The second question every reader has —
+        *does this work with what I run* — is still answered without navigating
+        to a second page, which is the property `#36` was actually protecting.
       */}
-      <InstallPanel id="hero" label="if you install things yourself" />
-    </section>
+      </section>
 
-    <Fork />
+    <Join />
 
     {/*
       **The three objections, answered where they are asked**
@@ -907,23 +914,15 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
   /* The hero, composed rather than stacked (`#22`): the name is the loudest
      thing on the page by a clear step, and the sentence under it is set as a
      lede rather than as body copy that happens to be first. */
-  /* **Two columns once there is room, stacked before that**
-     (kolonie-website#36). The argument on the left with the ASCII and the
-     prompt-free reasons to read on; the install panel on the right. `--k-bp-md`
-     rather than `--k-bp-sm`, because the panel holds a shell command and half
-     of a 40rem screen is not enough for one. */
+  /* **One column since `#53` took the panel** (kolonie-website#36, #53). It was
+     two above `--k-bp-md`: the argument on the left, the install panel on the
+     right. The panel is the first thing under the hero now, so a second column
+     here would be a column with nothing in it. */
   .hero {
     display: grid;
     gap: var(--k-space-6);
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
-  }
-
-  @media (min-width: 60rem) {
-    .hero {
-      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-      gap: var(--k-space-7);
-    }
   }
 
   /* Beneath the buttons since `#52`, which is where the reference puts its
