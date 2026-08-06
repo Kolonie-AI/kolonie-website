@@ -1,0 +1,35 @@
+---
+import Search from './Search.astro'
+import SiteHeader from '../SiteHeader.astro'
+
+/**
+ * The site's header, on every page that is not `/` (kolonie-website#50).
+ *
+ * **This override replaces Starlight's header rather than adding to it**, which
+ * is a larger step than the four overrides beside it and is the only way to
+ * meet `#50`'s first criterion: *every page renders the same header*. Starlight
+ * composes its own from a title, a search box and a right-hand group, and no
+ * slot in it can put three navigation items in the middle or two buttons at the
+ * end. The alternative was a second header that resembles the landing page's,
+ * which is the exact drift `site-footer.ts` and `site-nav.ts` exist to prevent.
+ *
+ * **What is not lost with it**: search, which `src/lib/chrome.ts` puts on
+ * documentation pages and nowhere else. `Search.astro` beside this file is
+ * handed to `SiteHeader`'s slot and is still the one deciding whether it
+ * renders anything, so the rule stays in `chrome.ts` and this file holds no
+ * judgement of its own. It is imported by path rather than through Starlight's
+ * `virtual:` alias, which the framework's own header uses and which carries no
+ * types — `astro check` fails on it, and one import line is not worth a
+ * declaration file.
+ *
+ * The theme select and the language select are not rendered, and neither is a
+ * loss: `#21` suppressed the first on every page a stranger arrives on, and the
+ * site is English only (AGENTS.md).
+ */
+
+const { pathname } = Astro.url
+---
+
+<SiteHeader pathname={pathname} bare>
+  <Search slot="search" />
+</SiteHeader>

@@ -34,7 +34,8 @@ import {
   SITE,
   themeColorFrom,
 } from '../lib/head'
-import { legalLinks, projectLinks, SIGN_IN } from '../lib/site-footer'
+import { legalLinks, projectLinks } from '../lib/site-footer'
+import SiteHeader from '../components/SiteHeader.astro'
 import StatusChip from '../components/StatusChip.astro'
 import '../styles/theme.css'
 // The same file again, as text, because `<meta name="theme-color">` needs the
@@ -125,16 +126,11 @@ const themeColor = themeColorFrom(themeCss)
          Starlight was providing this one. */}
     <a href="#main" class="skip-link">Skip to content</a>
 
-    <header class="site-header">
-      <a href="/" class="site-title">Kolonie AI</a>
-      <nav aria-label="Elsewhere">
-        {/* Sign-in beside GitHub, not in the fork (kolonie-website#40). The href
-            comes from `site-footer.ts` so this header and the Starlight one
-            cannot drift — the same reason the footer links do. */}
-        <a href={SIGN_IN.href}>{SIGN_IN.label}</a>
-        <a href="https://github.com/Kolonie-AI" rel="me">GitHub</a>
-      </nav>
-    </header>
+    {/* The same component the Starlight pages render, from the same list
+        (kolonie-website#50). This page wrote its own header from `#30` until
+        then — a wordmark and two links, which is what a header looks like when
+        nobody owns it. There is one now, and it is not written here. */}
+    <SiteHeader pathname={Astro.url.pathname} />
 
     <main id="main">
       <slot />
@@ -307,41 +303,9 @@ const themeColor = themeColorFrom(themeCss)
     </style>
 
     <style>
-      /* The header is the one Starlight rendered, in the markup it takes to
-         render it: the name and the one social link. `#30` decided it does not
-         change — it is fine and it is consistent across pages. */
-      .site-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--k-space-4);
-        /* The gutter is a token now, shared with the page and the footer
-           (kolonie-website#48). It opens at `--k-bp-sm` in `theme.css`, so
-           there is no width written here. */
-        padding: var(--k-space-3) var(--k-gutter);
-        border-bottom: var(--k-border) solid var(--k-hairline);
-        background: var(--k-surface);
-      }
-
-      .site-title {
-        color: var(--k-text-strong);
-        font-family: var(--k-font-mono);
-        font-size: var(--k-text-lg);
-        font-weight: 500;
-        letter-spacing: var(--k-tracking-label);
-        text-decoration: none;
-      }
-
-      .site-header nav {
-        display: flex;
-        gap: var(--k-space-4);
-      }
-
-      .site-header nav a {
-        font-family: var(--k-font-mono);
-        font-size: var(--k-text-sm);
-      }
-
+      /* The header is `src/components/SiteHeader.astro` and carries its own
+         styles (kolonie-website#50) — this page rendered its own until then,
+         which is why there were two of them to keep in agreement. */
       .site-footer {
         margin-top: var(--k-flow-section);
         padding: var(--k-space-5) var(--k-gutter);
@@ -363,13 +327,9 @@ const themeColor = themeColorFrom(themeCss)
 
       /* The gutter opens once there is a screen to open it on
          (kolonie-website#33). The horizontal half is `--k-gutter` and moves on
-         its own now (`#48`); what is left here is the vertical padding, which
-         is the header's and the footer's own business. */
+         its own now (`#48`); what is left here is the footer's own vertical
+         padding. */
       @media (min-width: 40rem) {
-        .site-header {
-          padding-block: var(--k-space-4);
-        }
-
         .site-footer {
           padding-block: var(--k-space-6);
         }

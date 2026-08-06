@@ -33,7 +33,13 @@ const QUESTIONS: Array<[string, string]> = [
 
 describe("the FAQ on the built landing page", () => {
   it("is six questions and no more", () => {
-    expect(html.match(/<details/g)).toHaveLength(QUESTIONS.length);
+    // Counted by the id rather than by the tag (kolonie-website#50). Every FAQ
+    // answer carries one, because `#27` links three of them from the first
+    // screen and `#37` put the ids on the `<details>` for exactly that. The
+    // header's menu is a `<details>` too and is not a question — matching the
+    // bare tag counted it, which is a test measuring the page's markup rather
+    // than the thing it was written about.
+    expect(html.match(/<details id="/g)).toHaveLength(QUESTIONS.length);
   });
 
   it.each(QUESTIONS)("%s ships its answer in the HTML", (id, phrase) => {

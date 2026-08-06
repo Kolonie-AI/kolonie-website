@@ -1,0 +1,350 @@
+---
+/**
+ * The header, and there is one (kolonie-website#50).
+ *
+ * Measured on 2026-08-06 the header held a wordmark, `Sign in` and `GitHub` —
+ * three elements, two of them plain underlined links, on a site with five pages
+ * a stranger can arrive on and no way to reach four of them from the sixth.
+ *
+ * The shape is the reference's, with our own items in it, and the two
+ * structural facts `#50` names are what it is arranged around: **identity at
+ * the edges and navigation in the middle**, so the eye lands on the wordmark,
+ * crosses the offer and finishes on the thing to click; and **the two
+ * right-hand items are buttons rather than links**, which is what makes signing
+ * in findable without reading.
+ *
+ * **The filled button is not this site's primary call to action**, and its
+ * sizing follows from that. The primary action is an agent installing the
+ * skill, and that lives in the hero (`#52`); `Sign in` is for the human who is
+ * coming back.
+ *
+ * **There is no announcement bar, and that was decided here** (`#50`). The
+ * reference carries one. We have nothing to announce, and an empty or filler
+ * bar spends the most valuable strip on the page saying nothing — a refusal
+ * rather than an omission, so if there is ever something to announce it arrives
+ * as its own issue with the thing to announce already in hand.
+ *
+ * **One component, two surfaces.** `Landing.astro` renders it directly and the
+ * Starlight `Header` override renders it for every other page, so a header
+ * cannot be right on `/` and stale on `/sponsors/` — which is the state `#40`
+ * and `#42` both had to fix by hand.
+ */
+
+import Button from './Button.astro'
+import { DOCS, GITHUB, NAV_LINKS, SIGN_IN } from '../lib/site-nav.ts'
+
+interface Props {
+  /**
+   * The current path, so the item for it can be marked. Optional: Starlight
+   * knows it, the landing page's layout does too, and nothing breaks without.
+   */
+  pathname?: string
+  /**
+   * The row without the bar around it.
+   *
+   * Starlight wraps whatever its `Header` slot renders in a fixed bar that
+   * already has a height, a gutter, a hairline and a background — all four from
+   * this site's own tokens, because `theme.css` maps them onto `--sl-*`. Drawing
+   * a second bar inside the first is two hairlines and two backgrounds, and it
+   * is what the header looked like the first time this rendered.
+   *
+   * So the framework's pages pass `bare` and the wrapper stays the bar; `/`,
+   * which has no wrapper since `#30`, does not and the component is the bar.
+   * The row inside is identical either way, which is the point of `#50`.
+   */
+  bare?: boolean
+}
+
+const { pathname, bare = false } = Astro.props
+
+/** `/academy/` is current on `/academy/` and on anything beneath it. */
+const isCurrent = (href: string) =>
+  pathname !== undefined &&
+  href.startsWith('/') &&
+  (pathname === href || pathname.startsWith(href))
+---
+
+<header class:list={['site-header', { 'site-header--bare': bare }]}>
+  <a href="/" class="site-header__mark">Kolonie AI</a>
+
+  {/*
+    A `<details>` and not a script (kolonie-website#50). Below `--k-bp-sm` the
+    wordmark and `Sign in` stay in the bar and everything else folds into this;
+    above it, the CSS opens the panel permanently and hides the toggle, so the
+    same markup is a menu on a phone and a row on a desktop. A scripted menu
+    would be a fourth thing on this site that stops working with JavaScript
+    off, and the accordion on `/` already made this choice for the same reason
+    (`#37`).
+
+    **`Sign in` is outside it rather than inside and repeated.** It has to be in
+    the bar at every width, and the obvious way to do that — one copy in the
+    panel and a second in the bar, each hidden at the other's width — puts two
+    links with the same name in the document. CSS can hide one from the eye and
+    not from a screen reader, and *Sign in, Sign in* is a worse header than a
+    missing button. One copy, and it simply never folds.
+  */}
+  <details class="site-header__menu">
+    <summary aria-label="Menu">
+      <span aria-hidden="true" class="site-header__burger"></span>
+    </summary>
+
+    <div class="site-header__panel">
+      <nav class="site-header__nav" aria-label="Site">
+        {
+          NAV_LINKS.map((link) => (
+            <a href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <div class="site-header__actions">
+        {/* A word for a screen reader, an icon for everybody else — the same
+            division the sign-in link used before this, and the reason it is a
+            word there and a mark here is that no icon means *sign in*. */}
+        <a class="site-header__icon" href={GITHUB.href} rel="me">
+          <span class="sr-only">{GITHUB.label}</span>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 16 16"
+            width="20"
+            height="20"
+            fill="currentColor"
+          >
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+            ></path>
+          </svg>
+        </a>
+
+        <Button href={DOCS.href} variant="secondary">{DOCS.label}</Button>
+      </div>
+    </div>
+  </details>
+
+  <Button class="site-header__sign-in" href={SIGN_IN.href} variant="primary">
+    {SIGN_IN.label}
+  </Button>
+
+  {/* Starlight's search, on documentation pages and nowhere else. The rule is
+      `src/lib/chrome.ts`; the override that applies it is the caller's, and
+      this is only the place it lands. */}
+  <slot name="search" />
+</header>
+
+<style>
+  /* Not one colour value in this file — every one is a token (AGENTS.md). */
+  .site-header {
+    /* The panel below is positioned against this, so opening the menu drops it
+       over the page rather than pushing the page down. */
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--k-space-4);
+    padding: var(--k-space-3) var(--k-gutter);
+    border-bottom: var(--k-border) solid var(--k-hairline);
+    background: var(--k-surface);
+  }
+
+  .site-header__mark {
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-lg);
+    font-weight: 500;
+    letter-spacing: var(--k-tracking-label);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* ---- The phone: a bar and a panel under it ----------------------------- */
+
+  /* `margin-left: auto` puts the toggle at the right-hand end of the bar, just
+     before the sign-in button that never folds. */
+  .site-header__menu {
+    margin-left: auto;
+  }
+
+  /* Never folds and never wraps: it is the one thing in this bar that has to be
+     in the same place on a phone and on a desktop. */
+  .site-header__sign-in {
+    white-space: nowrap;
+  }
+
+  .site-header__menu summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: var(--k-border) solid var(--k-hairline-strong);
+    border-radius: var(--k-radius);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .site-header__menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .site-header__menu summary:focus-visible {
+    outline: 2px solid var(--k-accent);
+    outline-offset: 3px;
+  }
+
+  /* Three lines, drawn rather than shipped as an asset: `#11` refused
+     illustration, and a burger is a control rather than a picture. */
+  .site-header__burger,
+  .site-header__burger::before,
+  .site-header__burger::after {
+    display: block;
+    width: 1rem;
+    height: var(--k-border);
+    background: var(--k-text-strong);
+  }
+
+  .site-header__burger::before,
+  .site-header__burger::after {
+    content: '';
+    position: relative;
+  }
+
+  .site-header__burger::before {
+    top: -0.3rem;
+  }
+
+  .site-header__burger::after {
+    top: 0.3rem;
+  }
+
+  /* The panel drops out of the bar rather than pushing it down, so opening the
+     menu does not move the page under the reader's thumb. */
+  .site-header__panel {
+    position: absolute;
+    z-index: 20;
+    inset-inline: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--k-space-4);
+    padding: var(--k-space-5) var(--k-gutter);
+    border-bottom: var(--k-border) solid var(--k-hairline);
+    background: var(--k-surface);
+  }
+
+  .site-header__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--k-space-4);
+  }
+
+  .site-header__nav a {
+    color: var(--k-text-muted);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-type-small);
+    letter-spacing: var(--k-tracking-label);
+    text-decoration: none;
+  }
+
+  .site-header__nav a:hover {
+    color: var(--k-text-strong);
+  }
+
+  /* The page you are on, marked rather than merely styled: `aria-current` is
+     what a screen reader announces, and the colour follows it instead of being
+     set separately and going out of step with it. */
+  .site-header__nav a[aria-current='page'] {
+    color: var(--k-text-strong);
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--k-space-3);
+  }
+
+  .site-header__icon {
+    display: inline-flex;
+    color: var(--k-text-muted);
+  }
+
+  .site-header__icon:hover {
+    color: var(--k-text-strong);
+  }
+
+  /* ---- What opens up once there is room ---------------------------------- */
+
+  /* Above `--k-bp-sm` there is no menu: the toggle is gone, the panel is a row
+     in the bar, and the standalone `Sign in` that was holding the phone bar
+     together is hidden because the real one is now visible.
+
+     **The `open` attribute is not consulted**, deliberately. The panel is shown
+     by this rule whatever state the `<details>` is in, so a reader who opened
+     the menu on a phone and then turned the device sideways does not arrive at
+     a panel hanging under a header that had room for it all along. */
+  @media (min-width: 40rem) {
+    .site-header {
+      padding-block: var(--k-space-4);
+    }
+
+    .site-header__menu {
+      flex: 1;
+      margin-left: 0;
+    }
+
+    .site-header__menu summary {
+      display: none;
+    }
+
+    /* **Both, and neither is redundant.** How a browser hides a closed
+       `<details>` changed: older engines set `display: none` on the children,
+       which the rule below overrides, and newer ones hide `::details-content`
+       with `content-visibility`, which it does not. A desktop reader whose
+       phone-width visit left the menu closed would find an empty header on one
+       of the two. An engine that does not know the pseudo-element ignores that
+       rule and is served by the other. */
+    .site-header__menu::details-content {
+      content-visibility: visible;
+      block-size: auto;
+    }
+
+    .site-header__panel {
+      position: static;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--k-space-5);
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .site-header__nav {
+      flex-direction: row;
+      gap: var(--k-space-5);
+      /* The middle, which is the half of the reference's shape that matters:
+         the eye lands on the wordmark, crosses the offer, and finishes on the
+         thing to click. */
+      margin-inline: auto;
+    }
+  }
+
+  /* ---- The row without the bar -------------------------------------------- */
+
+  /* Last in the file on purpose: it undoes the bar the rules above draw, and
+     one of those rules is inside the media query, so anything earlier would be
+     overridden at exactly the width where the header is widest. */
+  .site-header--bare {
+    height: 100%;
+    padding: 0;
+    border-bottom: 0;
+    background: transparent;
+  }
+
+  /* The panel is positioned against this header, which without the bar sits
+     inside the wrapper's own gutter — so it is pulled back out to the edges of
+     the screen rather than being indented by a gutter twice. */
+  .site-header--bare .site-header__panel {
+    inset-inline: calc(-1 * var(--k-gutter));
+  }
+</style>

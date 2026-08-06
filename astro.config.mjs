@@ -53,6 +53,14 @@ export default defineConfig({
        * yet built.
        */
       components: {
+        // The header, and the third override that *adds* rather than
+        // suppresses — the largest of them (kolonie-website#50). Starlight's
+        // header cannot hold three navigation items in the middle and two
+        // buttons at the end, and `#50` requires every page to render the same
+        // header as `/`. So both surfaces render the same component and the
+        // search box is handed to it as a slot, which is what keeps the rule in
+        // src/lib/chrome.ts rather than in a second place.
+        Header: './src/components/starlight/Header.astro',
         Search: './src/components/starlight/Search.astro',
         ThemeSelect: './src/components/starlight/ThemeSelect.astro',
         EditLink: './src/components/starlight/EditLink.astro',
@@ -62,11 +70,11 @@ export default defineConfig({
         // from every page's footer, and this site has two — the landing page
         // writes its own since #30. Both read src/lib/site-footer.ts.
         Footer: './src/components/starlight/Footer.astro',
-        // The second override that adds rather than suppresses
-        // (kolonie-website#40). Sign-in belongs in the header beside GitHub, and
-        // this site has two headers — the landing page writes its own. Both read
-        // SIGN_IN from src/lib/site-footer.ts.
-        SocialIcons: './src/components/starlight/SocialIcons.astro',
+        // `SocialIcons` was overridden here from #40 until #50. It existed to
+        // put sign-in in Starlight's header beside GitHub, and the `Header`
+        // override above now renders that header itself — so the slot is no
+        // longer where the decision lands. #40's decision is unchanged and its
+        // link is unchanged; it comes from src/lib/site-nav.ts now.
       },
       editLink: {
         baseUrl: 'https://github.com/Kolonie-AI/kolonie-website/edit/main/',
