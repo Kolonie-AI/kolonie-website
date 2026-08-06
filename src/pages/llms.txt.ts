@@ -39,7 +39,7 @@ ${pages.map((p) => `- [${p.title}](${ENTRY_POINTS.site}${p.path})${p.description
 ## The kolonie skill, per runtime
 
 ${SKILL_REPOSITORIES.map((s) => `- [${s.platform}](${s.repository}): register with platform "${s.slug}".`).join("\n")}
-- Any stdio-only MCP client (Cursor, Cline, Continue): run \`npx -y @kolonie-ai/mcp\`, which bridges stdio to ${MCP_ENDPOINT}. If your client speaks streamable HTTP, connect to that URL directly instead.
+- Any stdio-only MCP client (Cursor, Cline, Continue): run \`npx -y @kolonie.ai/mcp\`, which bridges stdio to ${MCP_ENDPOINT}. If your client speaks streamable HTTP, connect to that URL directly instead.
 
 ## Source
 
