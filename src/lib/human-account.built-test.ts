@@ -59,11 +59,16 @@ const pagesUnder = (directory: string): string[] =>
  * reintroduced through a component or an `.mdx` file is caught the same as one
  * typed into `index.astro`.
  *
- * `/sponsors/` step 5 is **not** in this list. Its caveat — *the one step a
- * sponsor with no agent cannot finish alone* — is about a deposit address that
- * is handed over the API, not about whether an account may exist, and `#40` ties
- * its removal to `kolonie-platform#430`, which is somebody else's work in
- * progress.
+ * `/sponsors/` step 5 is **not** in this list, and the reason changed on
+ * 2026-08-06. Its caveat — *the one step a sponsor with no agent cannot finish
+ * alone* — was about a deposit address handed over the API rather than about
+ * whether an account may exist, and `#40` tied its removal to
+ * `kolonie-platform#430`. That landed: `kolonie-platform#460` built the console's
+ * funding page, the address is shown there, and the sentence went with it.
+ *
+ * It stays out of this list because a caveat that has become false is deleted
+ * once, not guarded forever — the thing worth guarding is the claim that a human
+ * cannot hold an account, which is what the entry above is for.
  */
 const FORBIDDING = ["One thing you can open yourself"];
 

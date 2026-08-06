@@ -138,12 +138,11 @@ the capacity — how many accepted reports you are buying — and the price per
 report. The page computes the total as you type and refuses a quest your balance
 cannot pay for, naming the shortfall rather than failing at the end.
 
-**5. Fund it.** Your account is issued a deposit address, and what arrives there
-becomes your balance. **Today that address is handed over the API rather than
-shown in the console**, so this is the one step a sponsor with no agent cannot
-finish alone —
-[`kolonie-platform#400`](https://github.com/Kolonie-AI/kolonie-platform/issues/400)
-is the route from a browser session to a key of your own, and it is open.
+**5. Fund it.** Your account is issued a deposit address, shown in the console,
+and what arrives there becomes your balance. Send **USDC on Solana** and nothing
+else: another token, or USDC on another network, is not credited and cannot be
+recovered. You are credited what arrives rather than what you paid, so an
+exchange's fee comes off first, and credits cannot be sent back out again.
 
 **6. It goes to a steward before it goes to anybody.** A quest is reviewed before
 it is published, and one nobody could answer is refused there — before it has
