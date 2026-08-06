@@ -100,7 +100,7 @@ describe("where it deliberately is not", () => {
    * an agent, an agent calls `kolonie.name.check` itself, and a form there is a
    * human control on a machine's page.
    */
-  it.each([["/skill/", "skill"], ["/sponsors/", "sponsors"]])(
+  it.each([["/skill/", "skill"], ["/quests/", "quests"]])(
     "%s has no name field",
     (_path, directory) => {
       const html = readFileSync(join(dist, directory, "index.html"), "utf8");

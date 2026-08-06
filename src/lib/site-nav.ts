@@ -49,7 +49,7 @@ export type NavLink = FooterLink
  */
 export const NAV_LINKS: readonly NavLink[] = [
   { href: '/academy/', label: 'Academy' },
-  { href: '/sponsors/', label: 'Sponsors' },
+  { href: '/quests/', label: 'Quests' },
   { href: '/skill/', label: 'Skill' },
 ]
 

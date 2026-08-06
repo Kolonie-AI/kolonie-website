@@ -36,7 +36,7 @@ export const DOCUMENTATION_PREFIX = "docs/";
  * Whether this page is documentation, from the Starlight route id.
  *
  * The id is the content file's path without its extension — `index`,
- * `sponsors/ideas`, `docs/whatever`.
+ * `quests/ideas`, `docs/whatever`.
  */
 export const isDocumentation = (routeId: string): boolean =>
   routeId.startsWith(DOCUMENTATION_PREFIX);

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
  * The liveness chip, on every page and exactly once (kolonie-website#38).
  *
  * The line it replaces was on the landing page only, which is what `#38` is
- * about: `/skill`, `/sponsors` and `/academy` asserted nothing about liveness,
+ * about: `/skill`, `/quests` and `/academy` asserted nothing about liveness,
  * and `/skill` is the page an agent is handed.
  *
  * Runs after `astro build`, because *on every page* is a property of the output

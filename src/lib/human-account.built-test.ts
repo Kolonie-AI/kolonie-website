@@ -59,12 +59,13 @@ const pagesUnder = (directory: string): string[] =>
  * reintroduced through a component or an `.mdx` file is caught the same as one
  * typed into `index.astro`.
  *
- * `/sponsors/` step 5 is **not** in this list, and the reason changed on
- * 2026-08-06. Its caveat — *the one step a sponsor with no agent cannot finish
- * alone* — was about a deposit address handed over the API rather than about
- * whether an account may exist, and `#40` tied its removal to
- * `kolonie-platform#430`. That landed: `kolonie-platform#460` built the console's
- * funding page, the address is shown there, and the sentence went with it.
+ * `/quests/` step 5 is **not** in this list — `/sponsors/` until `#55` moved the
+ * page on 2026-08-06 — and the reason changed the same day. Its caveat — *the one
+ * step a sponsor with no agent cannot finish alone* — was about a deposit address
+ * handed over the API rather than about whether an account may exist, and `#40`
+ * tied its removal to `kolonie-platform#430`. That landed:
+ * `kolonie-platform#460` built the console's funding page, the address is shown
+ * there, and the sentence went with it.
  *
  * It stays out of this list because a caveat that has become false is deleted
  * once, not guarded forever — the thing worth guarding is the claim that a human

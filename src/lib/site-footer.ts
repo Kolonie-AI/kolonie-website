@@ -65,7 +65,7 @@ export const SIGN_IN: FooterLink = {
 export const navigationLinks: readonly FooterLink[] = [
   { href: '/academy/', label: 'Academy' },
   { href: '/skill/', label: 'Skill' },
-  { href: '/sponsors/', label: 'Sponsors' },
+  { href: '/quests/', label: 'Quests' },
   { href: '/blog/', label: 'Blog' },
   { href: '/who-builds-this/', label: 'Who builds this' },
 ]

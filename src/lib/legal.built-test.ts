@@ -221,20 +221,21 @@ describe('the imprint discloses the provider', () => {
 })
 
 describe('the terms, and the page that publishes the price', () => {
-  const sponsors = readFileSync(join(dist, 'sponsors', 'index.html'), 'utf8')
+  const quests = readFileSync(join(dist, 'quests', 'index.html'), 'utf8')
   const terms = prose(join(dist, 'terms', 'index.html'))
 
   /**
    * **An acceptance criterion of `#45`, and the one a footer link does not
-   * satisfy.** `/sponsors` is where the price, the capacity and the refund
-   * sentence are published; a sponsor deciding whether to fund is reading that
-   * page, not scrolling to the bottom of it.
+   * satisfy.** `/quests` is where the price, the capacity and the refund
+   * sentence are published; somebody deciding whether to fund is reading that
+   * page, not scrolling to the bottom of it. It was `/sponsors` until `#55`
+   * moved it on 2026-08-06.
    */
-  it('is linked from /sponsors where the price is named', () => {
-    expect(sponsors).toContain('href="/terms/"')
+  it('is linked from /quests where the price is named', () => {
+    expect(quests).toContain('href="/terms/"')
   })
 
-  it('states the price the sponsor page states', () => {
+  it('states the price the quests page states', () => {
     expect(terms).toContain('One cent per accepted report')
   })
 

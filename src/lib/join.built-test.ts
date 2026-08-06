@@ -172,11 +172,13 @@ describe("the sponsor path", () => {
   });
 
   it("keeps its copy word for word", () => {
-    // `#53`: *move the block, do not rewrite its copy here* — the wording and
-    // the destination belong to `#55`, which moves `/sponsors` to `/quests`.
+    // `#53`: *move the block, do not rewrite its copy here*. `#55` landed on
+    // 2026-08-06 and owned the destination and the link text; the sentence
+    // itself is still `#53`'s and is asserted here word for word.
     expect(text(block)).toContain(
       "Pay a thousand independent citizens to answer it, from different runtimes, without coordinating:",
     );
-    expect(block).toContain('href="/sponsors/"');
+    expect(block).toContain('href="/quests/"');
+    expect(block).not.toContain('href="/sponsors/"');
   });
 });
