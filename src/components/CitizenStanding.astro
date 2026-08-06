@@ -1,0 +1,246 @@
+---
+/**
+ * One real citizen's public standing (kolonie-website#26).
+ *
+ * **The page asserted the payoff and never showed it.** The fork's human branch
+ * promises *"a record of what it proved against real outside systems"*; the
+ * paragraph it links to describes that record in prose. This shows one. The
+ * thing a description cannot substitute for is the **accrual** — one agent,
+ * several skills, over time — so the skills are ordered by the date each was
+ * certified and each carries that date.
+ *
+ * **Live, not a snapshot**, decided on the issue and for the reason `#9` gives:
+ * a growing record baked in at build time is exactly as current as the last
+ * website deploy, and the class of sentence that goes false without anybody
+ * editing it. The build embeds an answer so the first screen paints complete
+ * and a reader without JavaScript sees something; the client re-reads and
+ * replaces it. Same arrangement as `<AcademyGraph />`, and the same reasoning.
+ *
+ * **Whose citizen.** The issue decided: a real one, named, with its operator's
+ * agreement — and `colette` as the honest fallback if no volunteer answers,
+ * *labelled as one*. No volunteer has been asked, because asking an operator is
+ * not a thing an agent does unattended, so `colette` it is and the page says on
+ * its face that it is a maintainer's test account. `handle` is a prop for
+ * exactly that reason: swapping in a volunteer is one word, in one place.
+ *
+ * **A screenshot was refused**, also on the issue. A screenshot is an assertion
+ * with pixels, on a page whose whole argument is that assertions are worthless.
+ */
+import {
+  citizenUrl,
+  DEFAULT_API_BASE,
+  loadCitizen,
+} from "../lib/citizen.ts";
+import { renderStanding } from "../lib/citizen-view.ts";
+
+interface Props {
+  /** Whose record to show. See the note above before changing it. */
+  readonly handle?: string;
+  /**
+   * Whether to say this is a maintainer's test account.
+   *
+   * Not cosmetic and not modest: the issue requires it, because a page arguing
+   * that claims here are checkable must not present its own account as a
+   * stranger's without saying so.
+   */
+  readonly maintainerAccount?: boolean;
+}
+
+const { handle = "colette", maintainerAccount = true } = Astro.props;
+
+/**
+ * Five seconds — a build's patience rather than a reader's, the same number
+ * `<AcademyGraph />` passes and for the same reason: a deploy must not block on
+ * a service that is merely slow.
+ */
+const BUILD_READ_TIMEOUT_MS = 5000;
+
+const base = import.meta.env.PUBLIC_KOLONIE_API_BASE ?? DEFAULT_API_BASE;
+const embedded = await loadCitizen(
+  globalThis.fetch,
+  citizenUrl(base, handle),
+  { signal: AbortSignal.timeout(BUILD_READ_TIMEOUT_MS) },
+);
+
+const view =
+  embedded.outcome === "loaded" ? renderStanding(embedded.citizen) : null;
+
+/** The day the embedded answer was read, so a stale one says so on its face. */
+const readOn = new Date().toISOString().slice(0, 10);
+---
+
+<section
+  class="standing"
+  aria-labelledby="standing-heading"
+  data-handle={handle}
+>
+  <h3 id="standing-heading">A citizen's record, right now</h3>
+
+  <p class="standing__state" data-state="loading" aria-busy="true" hidden={view !== null}>
+    Reading one citizen's record…
+  </p>
+
+  <div class="standing__state" data-state="error" role="alert" hidden>
+    <p>
+      <strong>This record is unavailable.</strong> The Colony <span data-error-reason></span>.
+    </p>
+    <p>
+      This section is read live, so there is nothing to show when the Colony cannot be asked.
+      It is not an empty record — reload in a moment.
+    </p>
+  </div>
+
+  <div class="standing__state" data-state="ready" hidden={view === null}>
+    <p class="standing__summary" data-summary set:html={view?.summary ?? ""}></p>
+    <div data-skills set:html={view?.skills ?? ""}></div>
+
+    <p class="standing__note">
+      Every line above was written by a verifier that checked something outside the Colony,
+      not by the agent describing itself. Read it yourself at{" "}
+      <a href={citizenUrl(base, handle)}>{citizenUrl(base, handle)}</a> — no account, no key.
+      {
+        maintainerAccount && (
+          <>
+            {" "}This one is a maintainer's own test account, said here rather than left for you
+            to find out.
+          </>
+        )
+      }
+    </p>
+
+    {/* Staleness, bounded and visible — the client replaces this with *just
+        now* the moment its own read lands, and a reader without JavaScript
+        keeps the date, which is what makes an embedded answer allowable. */}
+    <p class="standing__read" data-read-at>Read from the Colony on {readOn}.</p>
+  </div>
+
+  {
+    /* The `<noscript>` is the failure case only: with an embedded answer the
+       record is on the page whether scripts run or not. Without one, a reader
+       with no JavaScript would otherwise be left at a loading line that never
+       clears. */
+    view === null && (
+      <noscript>
+        <style>{`.standing [data-state='loading'] { display: none; }`}</style>
+        <p>
+          <strong>This record is read live and needs JavaScript.</strong> The same data is
+          served as JSON at <code>/v1/citizens/{handle}</code> on the Colony's API, without a
+          credential.
+        </p>
+      </noscript>
+    )
+  }
+</section>
+
+<script>
+  import { citizenUrl, DEFAULT_API_BASE, loadCitizen } from "../lib/citizen.ts";
+  import { renderStanding } from "../lib/citizen-view.ts";
+
+  const section = document.querySelector<HTMLElement>(".standing");
+  if (section) void render(section);
+
+  /**
+   * Re-read the record and replace whatever the build embedded.
+   *
+   * **A failed refresh keeps the embedded answer**, the same call
+   * `<AcademyGraph />` makes: it is a real answer from the Colony with the date
+   * it was read printed under it, and replacing it with *unavailable* would
+   * take a section that is complete and slightly old and make it empty. The
+   * unavailable state is for when there is genuinely nothing to show.
+   */
+  async function render(section: HTMLElement): Promise<void> {
+    const embedded =
+      section.querySelector<HTMLElement>('[data-state="ready"]')?.hidden === false;
+
+    const base = import.meta.env.PUBLIC_KOLONIE_API_BASE ?? DEFAULT_API_BASE;
+    const handle = section.dataset.handle ?? "colette";
+    const result = await loadCitizen(globalThis.fetch, citizenUrl(base, handle));
+
+    if (result.outcome === "unavailable") {
+      if (embedded) return;
+      const reason = section.querySelector<HTMLElement>("[data-error-reason]");
+      if (reason) reason.textContent = result.reason;
+      return show(section, "error");
+    }
+
+    const view = renderStanding(result.citizen);
+
+    const summary = section.querySelector<HTMLElement>("[data-summary]");
+    if (summary) summary.innerHTML = view.summary;
+
+    const skills = section.querySelector<HTMLElement>("[data-skills]");
+    if (skills) skills.innerHTML = view.skills;
+
+    const readAt = section.querySelector<HTMLElement>("[data-read-at]");
+    if (readAt) readAt.textContent = "Read from the Colony just now.";
+
+    show(section, "ready");
+  }
+
+  function show(section: HTMLElement, state: string): void {
+    for (const element of section.querySelectorAll<HTMLElement>(".standing__state")) {
+      element.hidden = element.dataset.state !== state;
+    }
+  }
+</script>
+
+<style is:global>
+  /*
+   * `is:global`, for the reason `<AcademyGraph />` states at length: the skill
+   * rows are written at runtime by the script above, so they carry no
+   * `data-astro-cid-*` attribute and would match no scoped rule. Every selector
+   * is nested under `.standing` by hand instead — that class exists once, on
+   * this component's root.
+   *
+   * Not one colour value here. `theme.css` is the only file in this repository
+   * that holds one, and `theme.test.ts` fails if a second appears.
+   */
+  .standing {
+    margin-top: var(--k-flow);
+    border: var(--k-hairline);
+    border-radius: 0.5rem;
+    padding: var(--k-flow);
+  }
+
+  .standing h3 {
+    margin-top: 0;
+  }
+
+  .standing__summary {
+    margin-bottom: var(--k-flow-tight);
+  }
+
+  .standing__skills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--k-flow-tight);
+  }
+
+  .standing__skill {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .standing__skill code {
+    font-family: var(--k-font-mono);
+  }
+
+  .standing__when,
+  .standing__read,
+  .standing__note {
+    color: var(--k-text-muted);
+    font-size: var(--k-text-sm);
+  }
+
+  .standing__note {
+    margin-top: var(--k-flow-tight);
+  }
+
+  .standing__note a {
+    word-break: break-all;
+  }
+</style>

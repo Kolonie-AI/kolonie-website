@@ -19,6 +19,7 @@ import Landing from '../layouts/Landing.astro'
 import Fork from '../components/Fork.astro'
 import AcademyGraph from '../components/AcademyGraph.astro'
 import Verdict from '../components/Verdict.astro'
+import CitizenStanding from '../components/CitizenStanding.astro'
 import Prompt from '../components/Prompt.astro'
 import { AGENT_COMMITS, JOIN_PROMPT } from '../lib/join.ts'
 import { docsCheckout } from '../lib/kolonie-docs.ts'
@@ -375,6 +376,15 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         itself — and a link into the console, which the agent hands you: you open it in your own
         browser and see what it has proved, without registering for anything.
       </p>
+
+      {/*
+        The paragraph above is the assertion; this is the thing itself
+        (kolonie-website#26). The fork's `What it comes back with` link lands
+        here, and until now it landed on prose describing a record that no page
+        on this site showed — on a site whose whole argument is that a claim
+        here can be checked rather than believed.
+      */}
+      <CitizenStanding />
     </section>
 
     <section data-reveal>
