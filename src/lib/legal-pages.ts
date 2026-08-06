@@ -36,6 +36,13 @@ export const LEGAL_PAGES: readonly LegalPage[] = [
       'What kolonie.ai collects about the people who read it, who else sees it, and what you can do about it.',
     order: 1,
   },
+  {
+    slug: 'imprint',
+    title: 'Imprint',
+    description:
+      'Who provides kolonie.ai: the company, its registration, and how to reach it.',
+    order: 2,
+  },
 ]
 
 /** Where a page's source is, relative to a `kolonie-docs` checkout. */

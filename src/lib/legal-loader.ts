@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import type { Loader } from 'astro/loaders'
 
 import { RecordTransformError } from './decision-record.ts'
+import { JURISDICTION, readEntity, type Entity } from './entity.ts'
 import { docsCheckout } from './kolonie-docs.ts'
 import { GOVERNANCE_DIR, LEGAL_PAGES } from './legal-pages.ts'
 
@@ -51,12 +52,83 @@ export function legalPagesLoader(): Loader {
             source: sourceUrl(page.slug),
           },
           rendered: await renderMarkdown(
-            rewriteGovernanceLinks(readFileSync(path, 'utf8'), checkout, page.slug),
+            rewriteGovernanceLinks(
+              expandEntityTable(readFileSync(path, 'utf8'), checkout, page.slug),
+              checkout,
+              page.slug,
+            ),
           ),
         })
       }
     },
   }
+}
+
+/**
+ * The marker a document writes where the entity's registration belongs.
+ *
+ * **`imprint.md` must not type the company's details, and this is why it does
+ * not have to** (kolonie-website#44). `legal-structure.md` is where the licence
+ * number, the address and the formation date are recorded; an imprint that
+ * repeated them would be the *third* page carrying entity facts and the third
+ * chance to hand-copy them — the failure `#41` is named for, on the one page
+ * where being out of date is a legal problem rather than an embarrassment.
+ *
+ * So the document says where the table goes and `src/lib/entity.ts` reads what
+ * fills it. A licence renewal is then a change to one file in `kolonie-docs`,
+ * and every page carrying it follows on the next build.
+ */
+export const ENTITY_TABLE_MARKER = '<!-- ENTITY-TABLE -->'
+
+/**
+ * Replace the marker with the entity as `legal-structure.md` currently states it.
+ *
+ * The free zone appears only once `kolonie-docs` settles it — see
+ * {@link Entity.freeZone}, which is `null` while the repository records the
+ * question as open. Until then the page says so in the row rather than leaving a
+ * blank, because a legal disclosure with an unexplained gap reads as an
+ * oversight and this one is a decision.
+ */
+export function expandEntityTable(
+  markdown: string,
+  checkout: string,
+  slug: string,
+): string {
+  if (!markdown.includes(ENTITY_TABLE_MARKER)) return markdown
+
+  const entity = readEntity(checkout)
+  const rows: Array<[string, string]> = [
+    ['Legal name', `**${entity.legalName}**`],
+    ['Legal form', entity.legalForm],
+    ['Jurisdiction', JURISDICTION],
+    [
+      'Free zone',
+      entity.freeZone ??
+        '*Not published here — the repository records this as unsettled. See below.*',
+    ],
+    ['Registered address', entity.registeredAddress],
+    ['Licence number', entity.licenceNumber],
+    ['Formed', entity.formed],
+  ]
+
+  const table = [
+    '| | |',
+    '|---|---|',
+    ...rows.map(([label, value]) => `| ${label} | ${value} |`),
+    '',
+    `*Read from [\`${GOVERNANCE_DIR}/legal-structure.md\`](${sourceUrl('legal-structure')})` +
+      ` when this page was built, not copied into it.*`,
+  ].join('\n')
+
+  if (!entity.licenceNumber || !entity.registeredAddress) {
+    throw new RecordTransformError(
+      `${slug}: the entity is missing a licence number or a registered address, and ` +
+        'this page is a legal disclosure. Shipping it with the field blank would ' +
+        'disclose less than the page claims to.',
+    )
+  }
+
+  return markdown.replace(ENTITY_TABLE_MARKER, table)
 }
 
 /** Where a reader is sent to check the document against its source. */

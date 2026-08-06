@@ -57,6 +57,42 @@ describe('the legal pages', () => {
   })
 })
 
+describe('the imprint discloses the provider', () => {
+  const html = readFileSync(join(dist, 'imprint', 'index.html'), 'utf8')
+
+  /**
+   * Every field the e-Commerce Directive Art. 5 wants, and the DDG after it.
+   * Asserted against the *served* page because the point of `#44` is that the
+   * facts are read out of `kolonie-docs` at build time — a test over the source
+   * would only prove that a marker is still in a Markdown file.
+   */
+  it('carries the entity, the registration and a working contact', () => {
+    expect(html).toContain('Kolonie AI FZ-LLC')
+    expect(html).toContain('Free Zone Limited Liability Company')
+    expect(html).toContain('Meydan Grandstand')
+    expect(html).toContain('16026')
+    expect(html).toContain('2026-08-04')
+    expect(html).toContain('hello@kolonie.ai')
+    expect(html).toContain('Gregor Sprint')
+  })
+
+  /**
+   * **The field that is missing says so, in the page.** `#44`'s decision was to
+   * ship what is known and name what is not — literally — rather than leave a
+   * blank that reads as an oversight or a placeholder that reads as an answer.
+   */
+  it('says the free zone is unpublished rather than leaving a gap', () => {
+    expect(html).toMatch(/Free zone/)
+    expect(html).toMatch(/unsettled|not named here/i)
+  })
+
+  it('is one screen of facts and not a second /who-builds-this/', () => {
+    // Two pages making the same argument is how one of them goes stale. The
+    // imprint carries the disclosure; the argument stays where it was.
+    expect(html).not.toContain('most of the commits are written by AI')
+  })
+})
+
 describe('what the privacy policy has to say to be one', () => {
   const html = readFileSync(join(dist, 'privacy', 'index.html'), 'utf8')
 
