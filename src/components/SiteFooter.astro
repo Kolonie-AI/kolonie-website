@@ -1,0 +1,229 @@
+---
+/**
+ * The footer, and there is one (kolonie-website#51).
+ *
+ * Measured on 2026-08-06 it was a single row of links. The footer is the
+ * cheapest maturity signal a page has and the one place a reader looks when
+ * deciding whether a project is a project or a weekend — and it is where the
+ * legal pages have to be reachable from, which is what `#42` and `#44`
+ * established.
+ *
+ * **Four columns, and what was left out was left out on purpose** (`#51`):
+ *
+ * - **No newsletter field.** There is no newsletter, and an input that does
+ *   nothing is worse than no input.
+ * - **No compliance badge.** There is no SOC 2 and this site will not imply one.
+ * - **No support address.** A published address nobody reads costs more than an
+ *   absent one, and there is no mailbox for this yet.
+ *
+ * All three are refusals rather than omissions, so that the space they would
+ * have taken does not read as a gap for the next person to fill.
+ *
+ * **The liveness chip stays and this arranges around it** (`#38`). It is this
+ * site's version of the reference's *All systems online*, and it is the better
+ * one, because it is read at page load rather than asserted.
+ *
+ * **One component, two surfaces**, for the reason `SiteHeader.astro` is one:
+ * `/` left the framework in `#30` and wrote its own footer, and the Starlight
+ * pages had theirs — two hand-maintained footers is how `/privacy/` ends up
+ * linked from five pages out of six.
+ */
+
+import StatusChip from './StatusChip.astro'
+import { SITE_DESCRIPTION } from '../lib/head.ts'
+import { docsCheckout } from '../lib/kolonie-docs.ts'
+import { readEntity } from '../lib/entity.ts'
+import {
+  legalLinks,
+  navigationLinks,
+  socialLinks,
+} from '../lib/site-footer.ts'
+
+/**
+ * The copyright holder, read from `kolonie-docs` at build time rather than
+ * typed (kolonie-website#41). The same argument the imprint and
+ * `/who-builds-this` already make: a company name typed into a page is a copy
+ * that nobody greps when the company changes.
+ */
+const ENTITY = readEntity(docsCheckout())
+
+/**
+ * The build's year.
+ *
+ * A static site cannot know today's date, only the date it was built — and this
+ * one is rebuilt and redeployed on every push to `main` (AGENTS.md §4), so in
+ * practice the two are never far apart. Naming the reason here because a bare
+ * `getFullYear()` in a template is exactly the kind of value this repository
+ * otherwise refuses.
+ */
+const YEAR = new Date().getFullYear()
+---
+
+<footer class="site-footer">
+  <div class="site-footer__columns">
+    <div class="site-footer__about">
+      <a href="/" class="site-footer__mark">Kolonie AI</a>
+      {/* The sentence `/llms.txt` opens with and `kolonie.about` returns — see
+          `SITE_DESCRIPTION`. Not a fourth wording of what this is. */}
+      <p class="site-footer__lede">{SITE_DESCRIPTION}</p>
+      <StatusChip />
+    </div>
+
+    <nav class="site-footer__column" aria-labelledby="footer-navigation">
+      <h2 id="footer-navigation">Navigation</h2>
+      <ul>
+        {navigationLinks.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <nav class="site-footer__column" aria-labelledby="footer-social">
+      <h2 id="footer-social">Social</h2>
+      <ul>
+        {socialLinks.map((link) => (
+          <li>
+            <a href={link.href} rel="me">{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+
+  <div class="site-footer__bottom">
+    <p class="site-footer__copyright">© {YEAR} {ENTITY.legalName}</p>
+    <nav aria-label="Legal">
+      {legalLinks.map((link) => (
+        <a href={link.href}>{link.label}</a>
+      ))}
+    </nav>
+  </div>
+</footer>
+
+<style>
+  /* Not one colour value in this file — every one is a token (AGENTS.md). */
+  .site-footer {
+    margin-top: var(--k-flow-section);
+    padding: var(--k-space-6) var(--k-gutter) var(--k-space-5);
+    border-top: var(--k-border) solid var(--k-hairline);
+    color: var(--k-text-muted);
+    font-size: var(--k-type-small);
+  }
+
+  /* Stacked on a phone and a row once there is width, without a breakpoint:
+     `auto-fit` collapses the columns to one when `min(100%, …)` says there is
+     no room for two, which is the same device the card grids use. `#51` asks
+     for columns that stack rather than wrap awkwardly, and a grid that decides
+     for itself cannot be told the wrong width. */
+  .site-footer__columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: var(--k-space-6) var(--k-space-5);
+    max-width: 60rem;
+    margin: 0 auto;
+  }
+
+  /* The first column carries the wordmark, the sentence and the chip, and is
+     worth more than one share of the row when there is room for it. */
+  .site-footer__about {
+    grid-column: span 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--k-space-3);
+    align-items: flex-start;
+  }
+
+  .site-footer__mark {
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-lg);
+    font-weight: 500;
+    letter-spacing: var(--k-tracking-label);
+    text-decoration: none;
+  }
+
+  .site-footer__lede {
+    max-width: var(--k-measure-lede);
+    margin: 0;
+  }
+
+  .site-footer__column h2 {
+    margin: 0 0 var(--k-space-3);
+    color: var(--k-text-faint);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-xs);
+    font-weight: 600;
+    letter-spacing: var(--k-tracking-label);
+    text-transform: uppercase;
+  }
+
+  .site-footer__column ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--k-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__column a {
+    color: var(--k-text-muted);
+    text-decoration: none;
+  }
+
+  .site-footer__column a:hover {
+    color: var(--k-accent);
+    text-decoration: underline;
+  }
+
+  /* ---- The bottom bar ----------------------------------------------------- */
+
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--k-space-2) var(--k-space-4);
+    align-items: baseline;
+    justify-content: space-between;
+    max-width: 60rem;
+    margin: var(--k-space-6) auto 0;
+    padding-top: var(--k-space-4);
+    border-top: var(--k-border) solid var(--k-hairline);
+    color: var(--k-text-faint);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-xs);
+  }
+
+  .site-footer__copyright {
+    margin: 0;
+  }
+
+  .site-footer__bottom nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--k-space-2) var(--k-space-4);
+  }
+
+  .site-footer__bottom a {
+    color: var(--k-text-faint);
+    text-decoration: none;
+  }
+
+  .site-footer__bottom a:hover {
+    color: var(--k-accent);
+    text-decoration: underline;
+  }
+
+  @media (min-width: 40rem) {
+    .site-footer {
+      padding-block: var(--k-space-7) var(--k-space-6);
+    }
+
+    /* The about column takes two shares of the row: it holds a sentence, and
+       the two link columns hold single words. */
+    .site-footer__about {
+      grid-column: span 2;
+    }
+  }
+</style>

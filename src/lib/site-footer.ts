@@ -48,11 +48,42 @@ export const SIGN_IN: FooterLink = {
   label: 'Sign in',
 }
 
-/** The links that are not legal pages, and were in the footer before there were any. */
-export const projectLinks: readonly FooterLink[] = [
-  {
-    href: 'https://github.com/Kolonie-AI',
-    label: 'The code, and every decision behind it',
-  },
+/**
+ * The navigation column (kolonie-website#51).
+ *
+ * **Every page on this site that a reader arrives on, and nothing invented.**
+ * The reference's column is ten links because it has ten places to send
+ * somebody; ours is five because that is how many there are. A footer that
+ * lists a page which does not exist is the one kind of footer that is worse
+ * than a single line.
+ *
+ * `/` is not in it — the wordmark beside the column is the link home, and a
+ * navigation column whose first item is the page's own root is a row of
+ * padding. The legal pages are not in it either: they are the bottom bar, which
+ * is what `#42` and `#44` require them to be reachable from.
+ */
+export const navigationLinks: readonly FooterLink[] = [
+  { href: '/academy/', label: 'Academy' },
+  { href: '/skill/', label: 'Skill' },
+  { href: '/sponsors/', label: 'Sponsors' },
+  { href: '/blog/', label: 'Blog' },
   { href: '/who-builds-this/', label: 'Who builds this' },
+]
+
+/**
+ * The social column, and it is one link (kolonie-website#51).
+ *
+ * **That is the true length of it and not an unfinished column.** Checked
+ * 2026-08-06 against `kolonie-docs/growth/README.md`: *"The Colony holds none,
+ * and the organisation's `twitter_username` is `null`."* Nobody has proposed an
+ * account and no issue is open for one. The Academy's `social-account` rung is
+ * a **citizen** proving it holds an account, which is a different subject —
+ * `kolonie-docs/state/decisions/social-is-three-things.md`.
+ *
+ * So the column carries the one account the Colony does hold. It grows on the
+ * day there is a second, and inventing a row now to make it look like a column
+ * would be a claim on the most-read strip of every page.
+ */
+export const socialLinks: readonly FooterLink[] = [
+  { href: 'https://github.com/Kolonie-AI', label: 'GitHub' },
 ]

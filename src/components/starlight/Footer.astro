@@ -1,60 +1,25 @@
 ---
 import Default from '@astrojs/starlight/components/Footer.astro'
 
-import StatusChip from '../StatusChip.astro'
-import { legalLinks, projectLinks } from '../../lib/site-footer.ts'
+import SiteFooter from '../SiteFooter.astro'
 
 /**
- * The footer on every Starlight page (kolonie-website#42).
+ * The footer on every Starlight page (kolonie-website#42, #51).
  *
  * `#42` and `#44` both require their page linked from the footer of **every**
- * page, and this site has two footers: the landing page writes its own since it
- * left the framework in `#30`, and everything else gets Starlight's. Both read
- * `src/lib/site-footer.ts`, so a page added to that list appears in both without
- * anybody remembering.
+ * page, and this site has two surfaces: the landing page left the framework in
+ * `#30` and everything else did not. Since `#51` they render the same
+ * component, so there is nothing left here to keep in agreement — this file is
+ * the seam and holds no markup of its own.
  *
- * **Starlight's own footer is rendered rather than replaced.** On a documentation
- * page it carries the edit link, the last-updated line and the pagination — which
- * `src/lib/chrome.ts` already suppresses on the pages a stranger arrives on. This
- * adds a row; it does not take a decision away from that file.
+ * **Starlight's own footer is rendered rather than replaced.** On a
+ * documentation page it carries the edit link, the last-updated line and the
+ * pagination, which `src/lib/chrome.ts` already suppresses on the pages a
+ * stranger arrives on. This adds a block; it does not take a decision away from
+ * that file.
  */
 ---
 
 <Default><slot /></Default>
 
-<div class="legal-footer">
-  <p>Kolonie AI</p>
-  {/* Whether the Colony is answering — on every page, which is what the line
-      under the fork never was (kolonie-website#38). */}
-  <StatusChip />
-  <nav aria-label="Site and legal">
-    {
-      [...projectLinks, ...legalLinks].map((link) => (
-        <a href={link.href}>{link.label}</a>
-      ))
-    }
-  </nav>
-</div>
-
-<style>
-  /* No colour value here — every one of these is a token from theme.css
-     (kolonie-website#11). */
-  .legal-footer {
-    margin-top: var(--k-space-5);
-    padding-top: var(--k-space-4);
-    border-top: var(--k-border) solid var(--k-hairline);
-    color: var(--k-text-faint);
-    font-family: var(--k-font-mono);
-    font-size: var(--k-text-sm);
-  }
-
-  .legal-footer p {
-    margin: 0 0 var(--k-space-2);
-  }
-
-  .legal-footer nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--k-space-2) var(--k-space-4);
-  }
-</style>
+<SiteFooter />

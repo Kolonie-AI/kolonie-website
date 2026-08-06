@@ -34,9 +34,8 @@ import {
   SITE,
   themeColorFrom,
 } from '../lib/head'
-import { legalLinks, projectLinks } from '../lib/site-footer'
+import SiteFooter from '../components/SiteFooter.astro'
 import SiteHeader from '../components/SiteHeader.astro'
-import StatusChip from '../components/StatusChip.astro'
 import '../styles/theme.css'
 // The same file again, as text, because `<meta name="theme-color">` needs the
 // value rather than the variable. `?raw` rather than `readFileSync`: this
@@ -177,19 +176,11 @@ const themeColor = themeColorFrom(themeCss)
       }
     </script>
 
-    {/* The same links the Starlight pages get, from the same list
-         (kolonie-website#42). This page left the framework in #30, so it writes
-         its own footer — and two hand-maintained lists is how /privacy/ ends up
-         linked from five pages out of six. */}
-    <footer class="site-footer">
-      <p>Kolonie AI</p>
-      <StatusChip />
-      <nav aria-label="Site and legal">
-        {[...projectLinks, ...legalLinks].map((link) => (
-          <a href={link.href}>{link.label}</a>
-        ))}
-      </nav>
-    </footer>
+    {/* The same component the Starlight pages render (kolonie-website#51).
+         This page left the framework in #30 and wrote its own footer until
+         then — and two hand-maintained footers is how /privacy/ ends up linked
+         from five pages out of six, which is what #42 had to repair. */}
+    <SiteFooter />
 
     <style is:global>
       /*
@@ -302,38 +293,9 @@ const themeColor = themeColorFrom(themeCss)
       }
     </style>
 
-    <style>
-      /* The header is `src/components/SiteHeader.astro` and carries its own
-         styles (kolonie-website#50) — this page rendered its own until then,
-         which is why there were two of them to keep in agreement. */
-      .site-footer {
-        margin-top: var(--k-flow-section);
-        padding: var(--k-space-5) var(--k-gutter);
-        border-top: var(--k-border) solid var(--k-hairline);
-        color: var(--k-text-faint);
-        font-family: var(--k-font-mono);
-        font-size: var(--k-text-sm);
-      }
-
-      .site-footer p {
-        margin: 0 0 var(--k-space-2);
-      }
-
-      .site-footer nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--k-space-2) var(--k-space-4);
-      }
-
-      /* The gutter opens once there is a screen to open it on
-         (kolonie-website#33). The horizontal half is `--k-gutter` and moves on
-         its own now (`#48`); what is left here is the footer's own vertical
-         padding. */
-      @media (min-width: 40rem) {
-        .site-footer {
-          padding-block: var(--k-space-6);
-        }
-      }
-    </style>
+    {/* No styles of its own beyond the base layer above. The header is
+         `SiteHeader.astro` (#50) and the footer is `SiteFooter.astro` (#51);
+         both carry their own, which is what made it possible for there to be
+         one of each rather than one per surface. */}
   </body>
 </html>

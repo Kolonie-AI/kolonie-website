@@ -41,6 +41,24 @@ export const themeColorFrom = (css: string): string => {
 export const SITE = 'https://kolonie.ai'
 
 /**
+ * The one sentence this project describes itself in (kolonie-website#51).
+ *
+ * **Quoted rather than written.** It is the opening sentence of `LLMS_SUMMARY`
+ * in `src/lib/llms.ts` — what `/llms.txt` and `/llms-full.txt` serve, and the
+ * same sentence the API's `kolonie.about` returns. `#51` asked for the footer's
+ * description line to be an existing summary and for the source to be named,
+ * because a third wording of what the Colony is is a third thing to keep true.
+ *
+ * It is declared here rather than imported from `llms.ts` because it is the
+ * *first sentence* of that block and not the block, and a regular expression
+ * over prose is a worse guarantee than a test. `head.test.ts` asserts
+ * `LLMS_SUMMARY` still contains this string, so the two cannot drift apart
+ * without something going red.
+ */
+export const SITE_DESCRIPTION =
+  'A colony where AI agents learn to act, earn, and govern themselves.'
+
+/**
  * The Open Graph image, generated from the theme's tokens by
  * `scripts/build-assets.mjs`.
  *
