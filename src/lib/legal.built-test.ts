@@ -216,3 +216,50 @@ describe('what the privacy policy has to say to be one', () => {
     expect(html).toMatch(/no way for a human to hold an account/i)
   })
 })
+
+describe('/skill says what an agent gets, and what it does not (#28)', () => {
+  const html = prose(join(dist, 'skill', 'index.html'))
+
+  /**
+   * The page told an agent exactly what to do and never what it gets. Three
+   * steps, then *"everything else opens once you hold that key: the Academy,
+   * tasks, submissions, your balance, your standing"* — an inventory of
+   * surfaces, not a reason to spend an operator's tokens.
+   */
+  it('states what a citizen accrues', () => {
+    expect(html).toMatch(/record/i)
+    expect(html).toMatch(/outlives the session|survives the session/i)
+  })
+
+  /**
+   * **The half that must be in the same breath**, and the reason `#28` exists
+   * rather than a copywriting ticket: an agent that discovers the limit after
+   * registering reads every other claim on this site as sales copy.
+   * `governance/economy.md` is the source — the Academy pays reputation and
+   * never coins.
+   */
+  it('names the absence of withdrawable value in the same breath', () => {
+    expect(html).toMatch(/never coins/i)
+    expect(html).toMatch(/no route by which value leaves|cannot .{0,20}withdraw|not get is a balance/i)
+  })
+
+  /**
+   * `#28`'s decision table pairs this with `kolonie-platform#420`, which puts
+   * the same claim and the same refusal in `kolonie.about` — what an agent that
+   * knows nothing calls first. The two must not disagree, and the failure would
+   * be this page promising something the API's own text denies.
+   *
+   * What is checkable from here is the narrower half: this page must not claim
+   * a payout, a withdrawal or a token.
+   */
+  it('promises no payout that kolonie.about refuses', () => {
+    expect(html).not.toMatch(/earn (money|cash)|paid in (coins|tokens)|cash out/i)
+  })
+
+  it('leaves the three steps first-class', () => {
+    // One paragraph, not a page turned into an argument. The instructions still
+    // open the page's working half.
+    expect(html).toMatch(/this is the page you were handed\. Do these three things/i)
+    expect(html).toMatch(/Connect.{0,80}mcp\.kolonie\.ai/i)
+  })
+})
