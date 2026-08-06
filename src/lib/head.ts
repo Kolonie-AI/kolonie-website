@@ -5,15 +5,19 @@
  * It lived in `astro.config.mjs`, inside Starlight's `head` option, which was
  * the only place a page could be described from while every page was a
  * Starlight page. `/` is not one any more — it is `src/pages/index.astro` — and
- * a landing page that quietly lost the Open Graph image, the theme colour or
- * the analytics tag would fail in the place it costs most: the preview card of
- * the link somebody shared.
+ * a landing page that quietly lost the Open Graph image or the theme colour
+ * would fail in the place it costs most: the preview card of the link somebody
+ * shared.
  *
  * So the tags are declared here and consumed twice — by the Starlight
  * integration for the four documentation-framework pages, and by
- * `src/layouts/Site.astro` for the one that left. `analytics.built-test.ts`
- * reads the built output and checks the analytics tag survived on every page,
- * which is the assertion that would catch this drifting anyway.
+ * `src/layouts/Site.astro` for the one that left.
+ *
+ * **Nothing here is an analytics tag, and nothing guards one any more**
+ * (`kolonie-website#58`). This block used to name `analytics.built-test.ts` as
+ * the assertion that caught the tag drifting off a page;
+ * `no-analytics.built-test.ts` now asserts the opposite over the same built
+ * output, and it is the file to read before adding a script to this head.
  */
 
 /**

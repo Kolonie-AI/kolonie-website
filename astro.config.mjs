@@ -2,7 +2,6 @@
 import { readFileSync } from 'node:fs'
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
-import { PAGESENSE_ATTRS } from './src/lib/analytics.ts'
 import { sharedHeadTags, themeColorFrom } from './src/lib/head.ts'
 
 /**
@@ -94,14 +93,12 @@ export default defineConfig({
         // within a month and the disagreement is invisible until somebody
         // shares the link that renders wrong.
         ...sharedHeadTags(themeColor),
-        // Zoho PageSense, on every page of this site and on no host that serves
-        // a token (kolonie-website#17). The URL and that rule are in
-        // src/lib/analytics.ts; this is the one place it is emitted from, so a
-        // page added later carries it without anybody remembering.
-        {
-          tag: 'script',
-          attrs: PAGESENSE_ATTRS,
-        },
+        // No analytics tag here either (kolonie-website#58). This used to be the
+        // one place the PageSense script was emitted from for the Starlight
+        // pages, with src/layouts/Site.astro emitting it for the landing page.
+        // Both are gone and nothing replaced them;
+        // src/lib/no-analytics.built-test.ts reads the built output and fails if
+        // a tracker reappears on any page, whichever of the two it came from.
       ],
     }),
   ],

@@ -307,19 +307,36 @@ describe('what the privacy policy has to say to be one', () => {
    * parties*.
    */
   it('names every processor rather than implying them', () => {
-    expect(html).toContain('Zoho')
     expect(html).toContain('Cloudflare')
+    expect(html).toContain('Auth0')
   })
 
   /**
-   * **The uncomfortable paragraph, asserted.** The analytics cookie is set
-   * without consent, `#43` is open about it, and a later edit that softened this
-   * page into boilerplate would be indistinguishable from an improvement. The
-   * measured cookie name is what makes the claim checkable.
+   * **This test used to assert the opposite, and inverting it was the point.**
+   *
+   * Until `kolonie-website#58` it read *names the analytics cookie, and does not
+   * omit the consent gap*, and required the string `zfccn` — the uncomfortable
+   * paragraph, asserted, so that a later edit could not soften it into
+   * boilerplate. The tracker is gone and nothing replaced it, so the honest
+   * page is now the one that claims nothing is set, and the assertion that
+   * protects a reader is the one that catches a tracker coming back.
+   *
+   * `AGENTS.md` §3 is binding in both directions: *every claim on this site must
+   * be true today* is a claim about today, not about the day the test was
+   * written.
    */
-  it('names the analytics cookie, and does not omit the consent gap', () => {
-    expect(html).toContain('zfccn')
-    expect(html).toMatch(/consent/i)
+  it('claims no analytics, and describes no live tracker', () => {
+    expect(html).toMatch(/no analytics/i)
+    expect(html).toMatch(/no cookie of its own/i)
+
+    // The cookie names and the vendor endpoints, which are what a page
+    // describing a *live* tracker carries. The vendor's name itself is not
+    // forbidden: §3 keeps one sentence saying what used to be set and when it
+    // stopped, and a policy that silently improves is as hard to trust as one
+    // that silently degrades.
+    for (const gone of ['zfccn', 'zabUserId', 'zps-tgr-dts', 'pagesense.io', 'zoho.eu']) {
+      expect(html).not.toContain(gone)
+    }
   })
 
   /**

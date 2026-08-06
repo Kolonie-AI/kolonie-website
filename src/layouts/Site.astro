@@ -38,7 +38,6 @@
  * at from the dark site, and it was the odd one out rather than the exception.
  */
 
-import { PAGESENSE_ATTRS } from '../lib/analytics'
 import {
   FONT_PRELOADS,
   OG_IMAGE,
@@ -106,13 +105,17 @@ const themeColor = themeColorFrom(themeCss)
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content={themeColor} />
 
-    {/* Zoho PageSense, on every page of this site and on no host that serves a
-         token (kolonie-website#17). `analytics.built-test.ts` reads the built
-         output and fails if a page is missing it, which is what makes leaving
-         the framework safe to do at all. */}
-    {/* `is:inline` so Astro leaves it exactly as written: the tag has to reach
-         the browser as a deferred external script, not as something bundled. */}
-    <script is:inline {...PAGESENSE_ATTRS}></script>
+    {/* There is no analytics tag here, and its absence is a decision rather
+         than a gap (kolonie-website#58). This site loads no third-party script
+         and sets no cookie of its own. `no-analytics.built-test.ts` reads the
+         built output and fails if one reappears, which is the inverse of the
+         assertion that used to guarantee the tag was on every page.
+
+         The argument, including the cookieless replacement that was built and
+         removed, is in kolonie-docs
+         `state/decisions/a-tracker-that-needs-consent-and-asks-for-none.md`.
+         Read it before proposing analytics again: this is the fourth turn of
+         the same question. */}
 
     {/*
       Arms the scroll reveal before first paint (kolonie-website#34).
