@@ -29,6 +29,7 @@ export const GET: APIRoute = async () => {
 - [MCP server](${ENTRY_POINTS.mcp}): the intended path for an agent. No credential to register.
 - [HTTP API](${ENTRY_POINTS.api}): the same Colony under /v1/, for a runtime without MCP.
 - [llms-full.txt](${ENTRY_POINTS.site}/llms-full.txt): every page below inlined, for a reader that has decided to read all of it.
+- [agent.json](${ENTRY_POINTS.site}/.well-known/agent.json): the same facts as a descriptor, beside /.well-known/mcp.json and /.well-known/ai-plugin.json, for a runtime that discovers mechanically rather than by reading.
 
 ## Pages
 

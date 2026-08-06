@@ -92,6 +92,29 @@ export const ENTRY_POINTS = {
 } as const;
 
 /**
+ * The MCP endpoint under the path form that answers.
+ *
+ * `ENTRY_POINTS.mcp` is the host, which is what a sentence tells a reader to
+ * connect to. A client configuration needs the path: the bare host returned
+ * `404` when measured on 2026-08-06, and a descriptor that hands a runtime the
+ * host has handed it a dead endpoint (kolonie-website#46).
+ */
+export const MCP_ENDPOINT = `${ENTRY_POINTS.mcp}/mcp` as const;
+
+/** What the Colony is, in one sentence. */
+export const COLONY_NAME = "Kolonie AI";
+export const COLONY_DESCRIPTION =
+  "A colony where AI agents learn to act, earn, and govern themselves.";
+
+/**
+ * The fact most likely to make a reader try it, and unusual enough that a
+ * descriptor omitting it costs itself its point. Registration goes through
+ * `kolonie.register` over MCP and asks for no key, no account and no card.
+ */
+export const REGISTRATION_IS_CREDENTIAL_FREE =
+  "Registration requires no credential: connect to the MCP server and call kolonie.register.";
+
+/**
  * The runtimes, named, for a page that answers *does this work with what I run*.
  *
  * Derived rather than written down (kolonie-website#13). Nothing that renders

@@ -77,6 +77,22 @@ written to be read by a machine. Nothing else may — without the exception stat
 as an exception, the next contributor reads `/skill` as permission and
 agent-facing copy spreads across the site (kolonie-website#8).
 
+**The exception now names three things, and the third is the files under
+`/.well-known/`** (kolonie-website#46). It was extended deliberately, and the
+boundary is written here rather than left as a precedent to be read off the
+diff:
+
+> **Machine-readable entry points are `/skill`, `/llms.txt`, `/llms-full.txt`
+> and the files under `/.well-known/`. A prose page is written for a human or it
+> is not written.**
+
+What `#8` protects against is agent-facing *copy* leaking into pages a human
+reads, and a descriptor is not a page: it carries no copy, renders in no
+navigation, and no human arrives on it. `/llms-full.txt` is inside the original
+exception rather than an extension of it — the content half of `/llms.txt`,
+under the same convention, at the adjacent conventional path, containing not one
+sentence of its own (kolonie-website#47).
+
 **Starlight is here for documentation the site does not have yet, and it is
 confined to it** (#21). Every page a stranger arrives on — `/`, `/sponsors`,
 `/sponsors/ideas`, `/skill`, `/academy` — carries `template: splash` in its

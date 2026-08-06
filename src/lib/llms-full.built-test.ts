@@ -28,9 +28,20 @@ describe("the built /llms-full.txt", () => {
   // The `## Pages` section of `/llms.txt`, which is the list this file has to
   // match. Parsed rather than hard-coded: a hard-coded list is the drift both
   // files exist to avoid.
-  const indexed = [...index.matchAll(/^- \[([^\]]+)\]\(https:\/\/kolonie\.ai(\/[^)]*)\)/gm)]
-    .map(([, title, path]) => ({ title, path }))
-    .filter(({ path }) => !path.startsWith("/llms"));
+  const pagesSection = (() => {
+    const start = index.indexOf("\n## Pages\n");
+    expect(start).toBeGreaterThan(-1);
+    const rest = index.slice(start + "\n## Pages\n".length);
+    const end = rest.indexOf("\n## ");
+    return end === -1 ? rest : rest.slice(0, end);
+  })();
+
+  // Only the `## Pages` section. The `## Endpoints` list above it is the same
+  // bullet shape and names `/llms-full.txt` and `/.well-known/agent.json`,
+  // which are not pages and have no section in this file.
+  const indexed = [...pagesSection.matchAll(/^- \[([^\]]+)\]\(https:\/\/kolonie\.ai(\/[^)]*)\)/gm)].map(
+    ([, title, path]) => ({ title, path }),
+  );
 
   it("indexed some pages at all", () => {
     // An assertion over an empty list passes, and Astro emits a site with no
