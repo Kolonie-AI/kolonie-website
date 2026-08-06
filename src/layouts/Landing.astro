@@ -28,6 +28,7 @@
 
 import { PAGESENSE_ATTRS } from '../lib/analytics'
 import { OG_IMAGE, OG_IMAGE_ALT, SITE, themeColorFrom } from '../lib/head'
+import { legalLinks, projectLinks } from '../lib/site-footer'
 import '../styles/theme.css'
 // The same file again, as text, because `<meta name="theme-color">` needs the
 // value rather than the variable. `?raw` rather than `readFileSync`: this
@@ -98,9 +99,17 @@ const themeColor = themeColorFrom(themeCss)
       <slot />
     </main>
 
+    {/* The same links the Starlight pages get, from the same list
+         (kolonie-website#42). This page left the framework in #30, so it writes
+         its own footer — and two hand-maintained lists is how /privacy/ ends up
+         linked from five pages out of six. */}
     <footer class="site-footer">
       <p>Kolonie AI</p>
-      <p><a href="https://github.com/Kolonie-AI">The code, and every decision behind it</a></p>
+      <nav aria-label="Site and legal">
+        {[...projectLinks, ...legalLinks].map((link) => (
+          <a href={link.href}>{link.label}</a>
+        ))}
+      </nav>
     </footer>
 
     <style is:global>
@@ -250,6 +259,12 @@ const themeColor = themeColorFrom(themeCss)
 
       .site-footer p {
         margin: 0 0 var(--k-space-2);
+      }
+
+      .site-footer nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--k-space-2) var(--k-space-4);
       }
 
       /* The gutter opens once there is a screen to open it on

@@ -1,0 +1,45 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { getCollection, render, type CollectionEntry } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+
+/**
+ * One legal page — `/privacy/`, and whatever `#44` and `#45` add beside it
+ * (kolonie-website#42).
+ *
+ * The text is not here and no copy of it is in this repository: it is
+ * `kolonie-docs/governance/<slug>.md`, rendered by `src/lib/legal-loader.ts`.
+ * That is the rule `#41` set for the entity and `#42` and `#44` both repeat —
+ * a legal page hand-copied onto a website is a second copy of a fact that ages
+ * without anybody noticing, and these are the pages where that costs most.
+ *
+ * `template: splash` because a legal page is a page a stranger arrives on rather
+ * than documentation, which is `#21`'s rule and `src/lib/chrome.ts`'s.
+ */
+export const getStaticPaths: GetStaticPaths = async () => {
+  const pages = await getCollection('legal')
+  return pages.map((page) => ({ params: { legal: page.id }, props: { page } }))
+}
+
+const { page } = Astro.props as { page: CollectionEntry<'legal'> }
+const { Content } = await render(page)
+---
+
+<StarlightPage
+  frontmatter={{
+    title: page.data.title,
+    description: page.data.description,
+    template: 'splash',
+  }}
+>
+  <Content />
+
+  <hr />
+  <p>
+    <small>
+      Rendered from <a href={page.data.source}>the Colony’s repository</a>, which is
+      where this document is written and versioned. If this page and that file ever
+      disagree, the file is the one that counts.
+    </small>
+  </p>
+</StarlightPage>

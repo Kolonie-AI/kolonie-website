@@ -57,6 +57,11 @@ export default defineConfig({
         ThemeSelect: './src/components/starlight/ThemeSelect.astro',
         EditLink: './src/components/starlight/EditLink.astro',
         LastUpdated: './src/components/starlight/LastUpdated.astro',
+        // The footer, and the one override here that *adds* rather than
+        // suppresses (kolonie-website#42). The legal pages have to be linked
+        // from every page's footer, and this site has two — the landing page
+        // writes its own since #30. Both read src/lib/site-footer.ts.
+        Footer: './src/components/starlight/Footer.astro',
       },
       editLink: {
         baseUrl: 'https://github.com/Kolonie-AI/kolonie-website/edit/main/',
