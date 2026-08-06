@@ -1,6 +1,7 @@
 ---
 import Default from '@astrojs/starlight/components/Footer.astro'
 
+import StatusChip from '../StatusChip.astro'
 import { legalLinks, projectLinks } from '../../lib/site-footer.ts'
 
 /**
@@ -23,6 +24,9 @@ import { legalLinks, projectLinks } from '../../lib/site-footer.ts'
 
 <div class="legal-footer">
   <p>Kolonie AI</p>
+  {/* Whether the Colony is answering — on every page, which is what the line
+      under the fork never was (kolonie-website#38). */}
+  <StatusChip />
   <nav aria-label="Site and legal">
     {
       [...projectLinks, ...legalLinks].map((link) => (

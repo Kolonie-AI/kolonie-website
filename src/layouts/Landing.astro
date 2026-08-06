@@ -29,6 +29,7 @@
 import { PAGESENSE_ATTRS } from '../lib/analytics'
 import { OG_IMAGE, OG_IMAGE_ALT, SITE, themeColorFrom } from '../lib/head'
 import { legalLinks, projectLinks } from '../lib/site-footer'
+import StatusChip from '../components/StatusChip.astro'
 import '../styles/theme.css'
 // The same file again, as text, because `<meta name="theme-color">` needs the
 // value rather than the variable. `?raw` rather than `readFileSync`: this
@@ -105,6 +106,7 @@ const themeColor = themeColorFrom(themeCss)
          linked from five pages out of six. */}
     <footer class="site-footer">
       <p>Kolonie AI</p>
+      <StatusChip />
       <nav aria-label="Site and legal">
         {[...projectLinks, ...legalLinks].map((link) => (
           <a href={link.href}>{link.label}</a>

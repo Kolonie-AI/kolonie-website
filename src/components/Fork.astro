@@ -43,7 +43,6 @@
  */
 
 import Prompt from './Prompt.astro'
-import RegistrationState from './RegistrationState.astro'
 // One string, two callers since kolonie-website#24: the fork opens the page
 // with it and the closing block repeats it.
 import { JOIN_PROMPT } from '../lib/join.ts'
@@ -113,7 +112,13 @@ import { JOIN_PROMPT } from '../lib/join.ts'
     </div>
   </div>
 
-  <RegistrationState />
+  {/*
+    The liveness line used to be here and is now a chip in the footer of every
+    page (kolonie-website#38). Two live reads of one fact on one page is the
+    same fact stated twice, and the day they disagree the page has argued with
+    itself — so this is a move rather than an addition. `#25` took over the row
+    it vacated.
+  */}
 </section>
 
 <style>

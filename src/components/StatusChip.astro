@@ -1,0 +1,131 @@
+---
+/**
+ * Whether the Colony is answering, as a chip in the footer of every page
+ * (kolonie-website#38).
+ *
+ * **The class is `liveness` and not `chip`, which it was for one build.**
+ * `<AcademyGraph />` already renders `.chip` — 146 of them on `/academy` — for
+ * the skill chips on a task. Astro scopes both, so nothing rendered wrong; what
+ * broke was a test asserting *exactly one chip per page*, and the next thing to
+ * break would have been a selector. A generic class name in a component that
+ * ships on every page is a collision waiting for the component that has not been
+ * written yet.
+ *
+ * **This replaces `<RegistrationState />` rather than joining it.** That
+ * component put the same fact in a sentence under the fork, and two live
+ * liveness reads on one page is the same fact stated twice — the day they
+ * disagree the page has argued with itself. `#38`'s decision table is explicit.
+ *
+ * **What moved, and why the footer is the right place.** *Is this project alive*
+ * is a question a reader asks at the **end**, after reading the argument and
+ * before deciding to act. The line spent a whole row of the first screen on it
+ * before the reader had the question, and `#25` has since put the offer in that
+ * space. A chip is also cheap enough to be on **every** page, which the line
+ * never was: `/skill`, `/sponsors` and `/academy` asserted nothing about
+ * liveness, and `/skill` is the page an agent is handed.
+ *
+ * Everything `#9` established survives the move and none of it is re-argued
+ * here — the reasoning is in `RegistrationState.astro`'s history and in
+ * `src/lib/registration.ts`, which is where the decision half lives so the
+ * unreachable case is a test rather than an intention.
+ *
+ * **Two states and never a third.** *Could not be reached* is not *closed*. A
+ * page that cannot reach the Colony knows exactly one thing, and rendering that
+ * as a closed door is `#9`'s false sentence pointing the other way — which costs
+ * a first-time reader permanently, because they leave.
+ *
+ * **One request per page load, and no polling.** A landing page that heartbeats
+ * against the API is load the Colony did not ask for, from readers who are not
+ * customers.
+ */
+---
+
+<p class="liveness" data-state="checking">
+  <span class="liveness__dot" aria-hidden="true"></span>
+  <span data-liveness-text>Checking the Colony…</span>
+</p>
+
+{/*
+  Without JavaScript the chip says what it is rather than disappearing or
+  claiming a state it has not read. Same discipline as `registration.ts`: state
+  the failure, or show nothing — never a false answer.
+*/}
+<noscript>
+  <p class="liveness" data-state="unknown">
+    <span class="liveness__dot" aria-hidden="true"></span>
+    <span>Liveness is read live and needs JavaScript</span>
+  </p>
+</noscript>
+
+<style>
+  /* No colour value here — every one is a token from theme.css (#11). */
+  .liveness {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--k-space-2);
+    margin: 0;
+    color: var(--k-text-faint);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-sm);
+  }
+
+  /* The dot is the quiet half of the signal and the words are the load-bearing
+     half — the state is legible with the dot removed, which is what makes it
+     safe for a colour to do any of the work at all. */
+  .liveness__dot {
+    flex: none;
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 50%;
+    background: var(--k-text-faint);
+  }
+
+  .liveness[data-state='open'] {
+    color: var(--k-text-muted);
+  }
+
+  .liveness[data-state='open'] .liveness__dot {
+    background: var(--k-good);
+  }
+
+  .liveness[data-state='unknown'] .liveness__dot {
+    background: var(--k-caution);
+  }
+</style>
+
+<script>
+  import {
+    DEFAULT_API_BASE,
+    healthUrl,
+    loadRegistrationState,
+  } from '../lib/registration.ts'
+
+  // `querySelectorAll` and not `querySelector`: this component renders in the
+  // footer of every page, and a page that ever carried two footers would
+  // otherwise leave the second one saying "Checking the Colony…" forever.
+  const chips = document.querySelectorAll<HTMLElement>(
+    '.liveness[data-state="checking"]',
+  )
+
+  if (chips.length) {
+    const base = import.meta.env.PUBLIC_KOLONIE_API_BASE ?? DEFAULT_API_BASE
+    // One fetch for the page, however many chips read it. Not a loop over the
+    // chips: that would be one request per element for one fact.
+    const state = await loadRegistrationState(globalThis.fetch, healthUrl(base))
+
+    for (const chip of chips) {
+      const text = chip.querySelector<HTMLElement>('[data-liveness-text]')
+      if (!text) continue
+
+      if (state.outcome === 'open') {
+        chip.dataset.state = 'open'
+        text.textContent = 'The Colony answered as this page loaded'
+      } else {
+        // **Never "closed".** See the component comment; this is the whole of
+        // what `#9` was.
+        chip.dataset.state = 'unknown'
+        text.textContent = `The Colony ${state.reason} when this page asked`
+      }
+    }
+  }
+</script>
