@@ -89,8 +89,15 @@ import { JOIN_PROMPT } from '../lib/join.ts'
         **The same command in both states**, and it is the panel that was
         already on the page rather than a second design: `src/lib/skills.ts` is
         the only place an install line is written, and `/skill`, the hero and
-        this all read it. The six runtime tabs are inside this panel once, not
-        once per state — duplicating them per state is what `#53` refuses.
+        this all read it.
+
+        **What `#53`'s *not duplicated* means, settled by the maintainer on
+        2026-08-06.** The tabs are inside this panel **once, not once per
+        state** — a second set that changed with the switch would make one
+        artefact look like two instructions, which is the failure the whole
+        pattern exists to avoid. It does *not* mean the hero gives its panel up:
+        that was tried in `aa800ed` and reversed, because `#36` put the panel in
+        the hero deliberately and still stands.
       */}
       <InstallPanel id="join" label="the command, whichever of you is reading" />
 

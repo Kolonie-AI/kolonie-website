@@ -47,8 +47,9 @@ describe("the install panel", () => {
     expect(landing).toContain(">other<");
     // The word boundary matters: `panel__tabs` is the fieldset around them.
     expect(landing.match(/class="panel__tab[ "]/g)?.length).toBe(
-      // Two panels — the hero's and the closing one — of seven tabs each.
-      (SKILL_REPOSITORIES.length + 1) * 2,
+      // Three panels — the hero's, the join block's and the closing one — of
+      // seven tabs each (kolonie-website#36, #53).
+      (SKILL_REPOSITORIES.length + 1) * 3,
     );
   });
 
@@ -78,14 +79,20 @@ describe("the install panel", () => {
     // page (kolonie-website#53). The join block's two-state switch is a checked
     // radio too and is not a runtime tab; matching the bare attribute counted
     // it, which is a test measuring the page rather than the panel it is about.
+    //
+    // Three panels since `#53`: the hero's, the join block's and the closing
+    // one. `#36` puts a panel in the hero and repeats it as the closing call to
+    // action, and `#53` adds the switch's — one set of tabs each, which is what
+    // that issue's *not duplicated* is about.
     expect(
       landing.match(/name="[a-z]+-runtime"[^>]*\schecked/g),
-    ).toHaveLength(2);
+    ).toHaveLength(3);
   });
 
-  it("carries the two panels in separate radio groups", () => {
+  it("carries each panel in its own radio group", () => {
     // Sharing a `name` would make them one group, and a click on a tab at the
     // foot of the page would silently change the tab in the hero.
+    expect(landing).toContain('name="hero-runtime"');
     expect(landing).toContain('name="join-runtime"');
     expect(landing).toContain('name="closing-runtime"');
   });
@@ -94,7 +101,7 @@ describe("the install panel", () => {
     // Every body is in the document. A panel that rendered only the selected
     // runtime would be invisible to Ctrl-F, to a crawler, and to an agent.
     expect(landing.match(/class="panel__body[ "]/g)?.length).toBe(
-      (SKILL_REPOSITORIES.length + 1) * 2,
+      (SKILL_REPOSITORIES.length + 1) * 3,
     );
   });
 });

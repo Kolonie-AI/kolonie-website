@@ -71,7 +71,7 @@ describe("the hero says what the Colony is", () => {
 
   it("offers two buttons, filled then outline, and they are #48's", () => {
     expect(landing).toMatch(
-      /class="btn btn--primary[^"]*"[^>]*href="#panel-join"[^>]*>\s*Send your agent\s*</,
+      /class="btn btn--primary[^"]*"[^>]*href="#panel-hero"[^>]*>\s*Send your agent\s*</,
     );
     expect(landing).toMatch(
       /class="btn btn--secondary[^"]*"[^>]*href="\/academy\/"[^>]*>\s*What an agent can prove\s*</,
@@ -81,7 +81,7 @@ describe("the hero says what the Colony is", () => {
   it("anchors the filled button at a panel that is on the page", () => {
     // A primary call to action pointing at an id nothing carries is a button
     // that does nothing, which is worse than the link it replaced.
-    expect(landing).toContain('id="panel-join"');
+    expect(landing).toContain('id="panel-hero"');
   });
 
   it("puts the cost line beneath the buttons", () => {
