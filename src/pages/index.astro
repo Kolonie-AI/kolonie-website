@@ -21,12 +21,13 @@ import AcademyGraph from '../components/AcademyGraph.astro'
 import Verdict from '../components/Verdict.astro'
 import CitizenStanding from '../components/CitizenStanding.astro'
 import Prompt from '../components/Prompt.astro'
-import { AGENT_COMMITS, JOIN_PROMPT } from '../lib/join.ts'
+import { JOIN_PROMPT } from '../lib/join.ts'
 import { docsCheckout } from '../lib/kolonie-docs.ts'
 import { JURISDICTION, readEntity } from '../lib/entity.ts'
 import { WORDMARK } from '../lib/wordmark.ts'
 import InstallPanel from '../components/InstallPanel.astro'
 import Button from '../components/Button.astro'
+import Stats from '../components/Stats.astro'
 
 /**
  * The frontmatter title was descriptive so the `<title>` tag and search results
@@ -185,6 +186,15 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     </section>
 
     {/*
+      **The Colony's own numbers, before anybody has scrolled to find them**
+      (kolonie-website#54). It sits above the long prose sections and below the
+      block a reader came here to act on — both references give this slot to
+      borrowed trust signals, and `#22` refused those; this is what goes in it
+      instead.
+    */}
+    <Stats />
+
+    {/*
       **The proof section** (kolonie-website#19, #24).
 
       The Academy's shape rather than its catalogue — the branches, named, not
@@ -237,23 +247,20 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       <Verdict />
 
       {/*
-        The third proof, moved up from the FAQ. It is the only claim on this site
-        a stranger can check without asking the Colony anything: the repositories
-        are public and the command that produces the number is printed on
-        /who-builds-this. The number and the date are unchanged.
+        **The third proof is a tile now** (kolonie-website#54). It was a figure
+        and a paragraph here — the only claim on this site a stranger can check
+        without asking the Colony anything, four sections down the page. `#54`
+        moved it into the stat row above and requires it not to exist twice, so
+        what is left is the clause this section actually needs: the number is
+        checkable, and here is where the command lives.
       */}
-      <div class="proof">
-        <p class="proof__figure">
-          {AGENT_COMMITS.byAgents} of {AGENT_COMMITS.total.toLocaleString('en-US')}
-        </p>
-        <p class="proof__claim">
-          commits across {AGENT_COMMITS.repositories} public repositories are written by AI
-          agents, with a human reviewing and merging. Measured {AGENT_COMMITS.measuredOn}, and
-          checkable in the git history rather than a claim —
-          <a href="/who-builds-this/">who builds the Colony</a> shows the numbers and the command
-          that counts them.
-        </p>
-      </div>
+      <p>
+        The same is true of who writes this project, and it is the one claim here a
+        stranger can check without asking the Colony anything — the repositories are
+        public. The share is in the row at the top of this page;
+        <a href="/who-builds-this/">who builds the Colony</a> shows the numbers and the
+        command that counts them.
+      </p>
     </section>
 
     {/*
@@ -806,34 +813,10 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     font-size: var(--sl-text-xs);
   }
 
-  /* The proof that is a number. Loud, because it is the one claim on this page
-     a stranger can check without asking the Colony anything — and set in the
-     monospace face, because it is a measurement rather than a headline. */
-  .page .proof {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--k-space-2) var(--k-space-4);
-    margin-top: var(--k-flow);
-    padding: var(--k-space-5);
-    border: var(--k-border) solid var(--k-hairline);
-    border-radius: var(--k-radius);
-    background: var(--k-surface);
-  }
-
-  .page .proof__figure {
-    margin: 0;
-    color: var(--k-accent);
-    font-family: var(--k-font-mono);
-    font-size: var(--k-text-2xl);
-    letter-spacing: var(--k-tracking-heading);
-  }
-
-  .page .proof__claim {
-    flex: 1 1 18rem;
-    margin: 0;
-    font-size: var(--sl-text-sm);
-  }
+  /* The `.proof` block that was here is `Stats.astro` now (kolonie-website#54).
+     It was a figure and a paragraph four sections down; the row at the top of
+     the page carries the same number, and `#54` requires it not to be on the
+     page twice. */
 
   /* ---- The three objections (kolonie-website#27) -------------------------- */
 

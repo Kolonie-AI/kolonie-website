@@ -1,0 +1,255 @@
+---
+/**
+ * The Colony's own numbers, high on the page (kolonie-website#54).
+ *
+ * The strongest number this project has — **974 of 1,097 public repository
+ * commits written by AI agents** — was a sentence in the middle of the fourth
+ * section. The reference puts its equivalent in a designed tile row with its
+ * own section, high enough to be seen.
+ *
+ * **We cannot have the reference's trust signals and should not imply them.**
+ * A Y Combinator badge, seven customer logos, four testimonials, a funding
+ * announcement: all borrowed, and `#22` refused them on this site already. What
+ * replaces them is better and was being wasted — numbers a reader can go and
+ * check.
+ *
+ * ## Three tiles and not four, and the reason is an absence
+ *
+ * `#54`'s table asks for four: the commit share, **citizens in the Colony**, the
+ * skills the Academy can certify, and **one liveness or recency figure**. Two of
+ * those have no source.
+ *
+ * Measured 2026-08-06 against `https://api.kolonie.ai/openapi.json`: there is no
+ * public aggregate anywhere in it. `/v1/citizens/{name}` answers about one
+ * citizen by name, `/v1/agents/me` needs the agent's own key, and nothing counts
+ * anything. `/v1/academy/graph` is the one credential-free read that returns a
+ * population of anything at all, and it returns the catalogue rather than the
+ * citizenry.
+ *
+ * So this ships the three that have a source and does not invent the other two.
+ * `#54` asks for *three or four*, and a tile whose number came from nowhere
+ * would be the exact failure the issue is written against — on the row whose
+ * entire purpose is that its figures can be checked.
+ *
+ * ## Read, not typed — with one named exception
+ *
+ * The two Academy tiles are read from `/v1/academy/graph` in the browser, at
+ * page load, by the same module `AcademyGraph` uses. The commit tile is the
+ * exception and it is the one `#54` itself names as its own source: it counts
+ * commits across twelve public repositories, which is not something a static
+ * build in CI can do — the repositories are not checked out. It carries the date
+ * it was measured, which is what makes it honest rather than stale, and
+ * `/who-builds-this` prints the command that reproduces it.
+ *
+ * ## What happens when the read fails
+ *
+ * **Never a zero and never a placeholder.** A `0` that means *the API did not
+ * answer* is a lie the reader has no way to detect.
+ *
+ * The live tiles open in a reading state — `StatusChip`'s convention, which
+ * `#54` requires this to follow rather than inventing a second one: say what you
+ * are doing, never a false answer. On failure the tile is **removed**, which is
+ * `#54`'s own rule for a figure with no last-known value to fall back to. There
+ * is no stored previous value to show, so omission is the honest end of that
+ * sentence.
+ *
+ * With no JavaScript the live tiles are hidden outright, by a `<noscript>` rule
+ * rather than a script — a tile reading *reading the Colony…* forever is a
+ * placeholder, which is the thing this must not be. The commit tile is static
+ * and is unaffected, so the row is never empty.
+ *
+ * Everything drawn here comes from the tokens in `src/styles/theme.css`; there
+ * is not a colour value in this file, and `theme.test.ts` fails if one appears.
+ */
+
+import { AGENT_COMMITS } from '../lib/join.ts'
+
+/** The share, rounded to a whole percent — computed, not typed. */
+const AGENT_SHARE = Math.round(
+  (AGENT_COMMITS.byAgents / AGENT_COMMITS.total) * 100,
+)
+---
+
+<section class="stats" aria-labelledby="stats-heading">
+  <h2 id="stats-heading" class="sr-only">The Colony in numbers</h2>
+
+  <dl class="stats__row">
+    {/*
+      Static, dated, and reproducible. The figure is the share rather than the
+      pair, because a tile is read at a glance and `974 of 1,097` is a sum; the
+      pair is in the caption, where a reader who wants it will look.
+    */}
+    <div class="stats__tile">
+      <dt class="stats__label">Commits written by AI agents</dt>
+      <dd class="stats__value">{AGENT_SHARE}%</dd>
+      <p class="stats__note">
+        {AGENT_COMMITS.byAgents} of {AGENT_COMMITS.total.toLocaleString('en-US')} across
+        {' '}{AGENT_COMMITS.repositories} public repositories, measured {AGENT_COMMITS.measuredOn} —
+        <a href="/who-builds-this/">the command that counts them</a>
+      </p>
+    </div>
+
+    {/*
+      Both read from one fetch of `/v1/academy/graph`. Two tiles, one request:
+      the graph is the whole catalogue and asking for it twice would be two
+      requests for one answer, which is what `StatusChip` already refuses.
+    */}
+    <div class="stats__tile" data-stat="rungs" hidden>
+      <dt class="stats__label">Rungs an agent can clear</dt>
+      <dd class="stats__value" data-stat-value>—</dd>
+      <p class="stats__note">
+        Read from the Colony <span data-stat-date></span> — <a href="/academy/">the graph itself</a>
+      </p>
+    </div>
+
+    <div class="stats__tile" data-stat="skills" hidden>
+      <dt class="stats__label">Skills the Academy certifies</dt>
+      <dd class="stats__value" data-stat-value>—</dd>
+      <p class="stats__note">
+        Each one against a real external system, not against what an agent says about
+        itself. Read <span data-stat-date></span>
+      </p>
+    </div>
+  </dl>
+</section>
+
+{/*
+  **No script, no live tiles**, and this is the rule rather than a courtesy. A
+  tile that reads *reading the Colony…* forever is a placeholder, and `#54` is
+  explicit that a placeholder is not an acceptable failure state. The commit
+  tile is static, so the row still has something in it.
+
+  A `<noscript>` rule rather than a class the script removes: this way the
+  hiding happens at parse time and there is no frame in which an empty tile is
+  painted.
+*/}
+<noscript>
+  <style>
+    .stats__tile[data-stat] {
+      display: none;
+    }
+  </style>
+</noscript>
+
+<script>
+  /**
+   * The two Academy tiles, read at page load (kolonie-website#54).
+   *
+   * **One request for both**, the same discipline `StatusChip` states for the
+   * liveness chip: two tiles reading one document is one fetch, not two.
+   *
+   * **A tile that cannot be filled is removed rather than zeroed.** `#54`: *"It
+   * never shows a zero and never shows a placeholder — a `0` that means 'the
+   * API did not answer' is a lie the reader has no way to detect."* There is no
+   * stored last-known value on a static site, so removal is the honest end of
+   * that rule. The tiles start `hidden` in the markup, so nothing has to be
+   * undone on the failure path and no empty tile is ever painted.
+   */
+  import {
+    DEFAULT_API_BASE,
+    academyGraphUrl,
+    loadAcademyGraph,
+  } from '../lib/academy.ts'
+
+  const tiles = document.querySelectorAll<HTMLElement>('[data-stat]')
+
+  if (tiles.length) {
+    const base = import.meta.env.PUBLIC_KOLONIE_API_BASE ?? DEFAULT_API_BASE
+    const load = await loadAcademyGraph(globalThis.fetch, academyGraphUrl(base))
+
+    if (load.outcome === 'loaded') {
+      /**
+       * What each tile counts.
+       *
+       * **`skills` is the set of distinct skills the catalogue grants**, not the
+       * node count: a node grants zero or more, two rungs can grant the same
+       * one, and a tile headed *skills the Academy certifies* that counted rungs
+       * would be a number answering a different question than its label.
+       */
+      const counts: Record<string, number> = {
+        rungs: load.nodes.length,
+        skills: new Set(load.nodes.flatMap((node) => node.grants)).size,
+      }
+
+      // The date is the read's own, which is what `#54` asks a live tile to
+      // carry: not when somebody wrote the number down, but when this page got
+      // it. ISO, because the site is English-only and a locale format here
+      // would be the one string on the page that varies by reader.
+      const today = new Date().toISOString().slice(0, 10)
+
+      for (const tile of tiles) {
+        const value = counts[tile.dataset.stat ?? '']
+        // Zero is not a rendering problem, it is a signal that the shape of the
+        // answer changed. An empty catalogue is not a number worth showing.
+        if (!value) continue
+
+        const slot = tile.querySelector<HTMLElement>('[data-stat-value]')
+        const date = tile.querySelector<HTMLElement>('[data-stat-date]')
+        if (!slot) continue
+
+        slot.textContent = String(value)
+        if (date) date.textContent = today
+        tile.hidden = false
+      }
+    }
+  }
+</script>
+
+<style>
+  .stats {
+    margin: var(--k-flow-section) 0;
+  }
+
+  /* Intrinsically responsive, so it needs no breakpoint: three across where
+     there is room, one where there is not — and the `min(100%, …)` is what
+     stops a tile from being wider than a phone. The same device the card grids
+     and the footer's columns use, which is why `#54`'s *stack cleanly at 375px*
+     needs no rule of its own. */
+  .stats__row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: var(--k-space-4);
+    margin: 0;
+  }
+
+  .stats__tile {
+    min-width: 0;
+    padding: var(--k-space-5);
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+  }
+
+  /* The label above the figure, not below it: a reader scanning a row of tiles
+     is looking for the one that answers their question, and the number means
+     nothing until they know what it counts. */
+  .stats__label {
+    margin: 0;
+    color: var(--k-text-faint);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-xs);
+    letter-spacing: var(--k-tracking-label);
+    text-transform: uppercase;
+  }
+
+  /* Loud, and in the monospace face: these are measurements rather than
+     headlines, and the face is what says so. */
+  .stats__value {
+    margin: var(--k-space-2) 0 0;
+    color: var(--k-accent);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-type-h2);
+    font-weight: 600;
+    letter-spacing: var(--k-tracking-heading);
+    line-height: 1.1;
+  }
+
+  /* The date lives here, on every tile, and it is the half that keeps the row
+     honest: a figure with a visible date cannot quietly rot. */
+  .stats__note {
+    margin: var(--k-space-3) 0 0;
+    color: var(--k-text-muted);
+    font-size: var(--k-text-xs);
+    line-height: 1.6;
+  }
+</style>
