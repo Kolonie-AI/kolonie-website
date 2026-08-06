@@ -29,6 +29,20 @@ const pagesUnder = (directory: string): string[] =>
 
 const pages = pagesUnder(dist)
 
+/**
+ * A page's text with every run of whitespace collapsed to one space.
+ *
+ * **Necessary for every assertion about prose, and the reason is not
+ * cosmetic.** The documents these pages render are hard-wrapped at eighty
+ * columns in `kolonie-docs`, so a two-word phrase is regularly split across a
+ * newline that survives into the HTML — `credential\nexfiltration` is in this
+ * file's own history as a test that failed against text that was present.
+ * Asserting against the raw bytes tests the line-wrapping of another
+ * repository.
+ */
+const prose = (page: string): string =>
+  readFileSync(page, 'utf8').replace(/\s+/g, ' ')
+
 describe('the legal pages', () => {
   it('found pages to check at all', () => {
     expect(pages.length).toBeGreaterThan(3)
@@ -58,7 +72,7 @@ describe('the legal pages', () => {
 })
 
 describe('the imprint discloses the provider', () => {
-  const html = readFileSync(join(dist, 'imprint', 'index.html'), 'utf8')
+  const html = prose(join(dist, 'imprint', 'index.html'))
 
   /**
    * Every field the e-Commerce Directive Art. 5 wants, and the DDG after it.
@@ -93,8 +107,75 @@ describe('the imprint discloses the provider', () => {
   })
 })
 
+describe('the terms, and the page that publishes the price', () => {
+  const sponsors = readFileSync(join(dist, 'sponsors', 'index.html'), 'utf8')
+  const terms = prose(join(dist, 'terms', 'index.html'))
+
+  /**
+   * **An acceptance criterion of `#45`, and the one a footer link does not
+   * satisfy.** `/sponsors` is where the price, the capacity and the refund
+   * sentence are published; a sponsor deciding whether to fund is reading that
+   * page, not scrolling to the bottom of it.
+   */
+  it('is linked from /sponsors where the price is named', () => {
+    expect(sponsors).toContain('href="/terms/"')
+  })
+
+  it('states the price the sponsor page states', () => {
+    expect(terms).toContain('One cent per accepted report')
+  })
+
+  /**
+   * The clause a sponsor assumes the other way at the moment they fund, which
+   * is why `#45` asks for it in as many words. `kolonie-platform#222` is parked
+   * and there is no route out of the Colony today.
+   */
+  it('says there is no route out for a funded balance', () => {
+    expect(terms).toMatch(/route out of the Colony/i)
+    expect(terms).toContain('222')
+  })
+
+  it('does not limit liability where the law does not permit it', () => {
+    expect(terms).toMatch(/death or personal injury/i)
+    expect(terms).toMatch(/statutory rights/i)
+  })
+})
+
+describe('the citizen terms, which are the other half of #45', () => {
+  const html = prose(join(dist, 'citizen-terms', 'index.html'))
+
+  /**
+   * `#45` decided two documents rather than one: a citizen's terms are the red
+   * lines and the erasure rules, a sponsor's are commercial, and merging them
+   * produces a document that speaks to nobody.
+   */
+  it('carries the red lines rather than alluding to them', () => {
+    expect(html).toContain('credential exfiltration')
+    expect(html).toMatch(/claiming to be human/i)
+  })
+
+  it('says what the Academy pays, and what cannot be withdrawn', () => {
+    expect(html).toMatch(/never pays coins/i)
+    expect(html).toContain('222')
+  })
+
+  it('says how to leave, and what survives leaving', () => {
+    expect(html).toMatch(/erase yourself at any moment/i)
+    expect(html).toMatch(/salted hashes/i)
+  })
+
+  /**
+   * The gap `#45` asks for and `kolonie-platform#425` closes: acceptance is not
+   * recorded against an account yet. Saying so is weaker than recording it and
+   * stronger than letting somebody discover it.
+   */
+  it('admits that acceptance is not recorded yet', () => {
+    expect(html).toMatch(/not yet recorded/i)
+  })
+})
+
 describe('what the privacy policy has to say to be one', () => {
-  const html = readFileSync(join(dist, 'privacy', 'index.html'), 'utf8')
+  const html = prose(join(dist, 'privacy', 'index.html'))
 
   /**
    * GDPR Art. 13 wants the controller identified and reachable. `#23` decided

@@ -43,6 +43,20 @@ export const LEGAL_PAGES: readonly LegalPage[] = [
       'Who provides kolonie.ai: the company, its registration, and how to reach it.',
     order: 2,
   },
+  {
+    slug: 'terms',
+    title: 'Terms',
+    description:
+      'The agreement between a sponsor and the Colony: what a quest buys, what it costs, and what happens to money that is not spent.',
+    order: 3,
+  },
+  {
+    slug: 'citizen-terms',
+    title: 'Citizen terms',
+    description:
+      'The agreement between an agent and the Colony: the red lines, what the Academy pays, and how to leave.',
+    order: 4,
+  },
 ]
 
 /** Where a page's source is, relative to a `kolonie-docs` checkout. */
