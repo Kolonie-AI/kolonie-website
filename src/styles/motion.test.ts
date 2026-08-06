@@ -167,7 +167,7 @@ describe('the scroll reveal fails open', () => {
 
   it('is armed before first paint rather than by the bundled module', () => {
     // A deferred module would paint the section, then hide it, then reveal it.
-    const layout = read('../layouts/Landing.astro')
+    const layout = read('../layouts/Site.astro')
     const head = layout.slice(0, layout.indexOf('</head>'))
 
     expect(head).toContain('revealReady')

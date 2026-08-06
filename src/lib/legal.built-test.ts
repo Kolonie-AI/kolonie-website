@@ -71,6 +71,119 @@ describe('the legal pages', () => {
   })
 })
 
+/**
+ * **The legal pages are on this site's design system** (kolonie-website#49).
+ *
+ * Measured 2026-08-06 against the deployed site: `/terms/` rendered near-white
+ * where `/` rendered near-black — two design systems on one domain, one click
+ * apart in the footer. The cause was `[legal].astro` calling `StarlightPage`,
+ * which brings the framework's theme with it, on pages the same file's comment
+ * already called *not documentation*. The two measured grounds are quoted on
+ * `#49` rather than here: this file is scanned by `theme.test.ts` too.
+ *
+ * **The rejection case is the ground.** A page whose background is not `--k-bg`
+ * fails here — and it fails the way the defect actually arrived, which was not
+ * somebody choosing a light colour but somebody rendering through a layout that
+ * chose one. So both halves are asserted: the page declares the dark theme, and
+ * the CSS it loads paints the document from `--k-bg`.
+ */
+/** Every rule a built page would apply: what it links, plus what it inlines. */
+const cssOf = (html: string): string =>
+  [
+    ...[...html.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)]
+      .map((tag) => tag[0].match(/href="([^"]+)"/)?.[1])
+      .filter((href): href is string => href !== undefined && href.startsWith('/'))
+      .map((href) => readFileSync(join(dist, href.slice(1)), 'utf8')),
+    ...[...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]),
+  ].join('\n')
+
+/**
+ * What `--k-bg` resolves to in the CSS a page loads.
+ *
+ * **Read rather than written, and that is not laziness.** The built value is
+ * whatever the minifier chose — the source declares a hue-saturation-lightness
+ * triple and the output carries a hex one — and a test spelling either out
+ * would be a colour
+ * value in a file that is not `theme.css`, which `theme.test.ts` fails on even
+ * inside a comment and AGENTS.md forbids outright. So the
+ * question asked here is the one that matters anyway: *is this the same ground
+ * the rest of the site is painted on*, answered by comparison rather than by a
+ * constant somebody has to keep in step.
+ */
+const groundOf = (css: string): string | undefined =>
+  css.match(/--k-bg:\s*([^;}]+)/)?.[1]?.trim()
+
+const landing = readFileSync(join(dist, 'index.html'), 'utf8')
+
+describe.each(LEGAL_PAGES.map((page) => page.slug))(
+  '/%s/ is the site, not a second one',
+  (slug) => {
+    const html = readFileSync(join(dist, slug, 'index.html'), 'utf8')
+    const css = cssOf(html)
+
+    it('declares the dark theme rather than inheriting a light one', () => {
+      expect(html).toMatch(/<html[^>]+data-theme="dark"/)
+    })
+
+    it('paints the document on the same ground as /', () => {
+      expect(css).toMatch(/html\s*\{[^}]*background:\s*var\(--k-bg\)/)
+
+      const ground = groundOf(css)
+      expect(ground, 'the page loads no CSS that declares --k-bg').toBeTruthy()
+      expect(ground).toBe(groundOf(cssOf(landing)))
+    })
+
+    it('tells the browser chrome the same colour / does', () => {
+      // The one place the value survives the minifier unchanged, so it is also
+      // the one place the two pages can be compared without reading a token.
+      const themeColor = (page: string) =>
+        page.match(/<meta name="theme-color" content="([^"]+)"/)?.[1]
+
+      expect(themeColor(html)).toBeTruthy()
+      expect(themeColor(html)).toBe(themeColor(landing))
+    })
+
+    it('no longer renders through StarlightPage', () => {
+      // `#49`'s criterion, and the markers are the framework's own page frame.
+      // Reverting the layout brings all three back at once.
+      expect(html).not.toContain('class="page sl-flex"')
+      expect(html).not.toContain('sl-markdown-content')
+      expect(html).not.toContain('main-frame')
+    })
+
+    it('carries the site header and the site footer', () => {
+      expect(html).toContain('class="site-header')
+      expect(html).toContain('class="site-footer')
+    })
+
+    it('renders its heading once', () => {
+      // It rendered twice: the frontmatter title and the document's own `#`.
+      // The page adds none now, so this also fails if a governance file loses
+      // its leading heading — a page with no heading is the other failure.
+      expect(html.match(/<h1/g)).toHaveLength(1)
+    })
+
+    it('sets the prose to a readable measure', () => {
+      // `#49` asks for roughly 60–75 characters. `--k-measure` is 68ch and is
+      // applied by the container rather than per element on these pages.
+      expect(css).toMatch(/--k-measure:\s*68ch/)
+      expect(css).toMatch(/max-width:\s*var\(--k-measure\)/)
+    })
+
+    it('gives a table its own scroll rather than widening the page', () => {
+      // `privacy.md` alone is 26 table rows and the imprint's is generated. A
+      // table that widens the document scrolls every paragraph with it, which
+      // is what `#49` names at 375px.
+      expect(css).toMatch(/table[^{]*\{[^}]*overflow-x:\s*auto/)
+    })
+
+    it('still names the document it was rendered from', () => {
+      expect(html).toContain('kolonie-docs/blob/main/governance/')
+      expect(html).toMatch(/the file is the one that counts/)
+    })
+  },
+)
+
 describe('the imprint discloses the provider', () => {
   const html = prose(join(dist, 'imprint', 'index.html'))
 

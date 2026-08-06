@@ -11,7 +11,7 @@
  *
  * So the tags are declared here and consumed twice — by the Starlight
  * integration for the four documentation-framework pages, and by
- * `src/layouts/Landing.astro` for the one that left. `analytics.built-test.ts`
+ * `src/layouts/Site.astro` for the one that left. `analytics.built-test.ts`
  * reads the built output and checks the analytics tag survived on every page,
  * which is the assertion that would catch this drifting anyway.
  */

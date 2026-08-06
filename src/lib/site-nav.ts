@@ -5,7 +5,7 @@ import { SIGN_IN, type FooterLink } from './site-footer.ts'
  *
  * **One list, because there is one header rendered from two places.** The
  * landing page left the framework in `#30` and the documentation pages did not,
- * so `src/components/SiteHeader.astro` is consumed by `Landing.astro` and by
+ * so `src/components/SiteHeader.astro` is consumed by `Site.astro` and by
  * the Starlight `Header` override. The markup is shared; this is what the
  * markup is filled with, and it is here for the same reason `site-footer.ts`
  * exists one layer down the page.

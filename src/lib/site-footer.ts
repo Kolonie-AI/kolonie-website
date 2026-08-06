@@ -38,7 +38,7 @@ export const legalLinks: readonly FooterLink[] = [...LEGAL_PAGES]
  * routes *what are you and what do you want*, and a login is not a fourth kind
  * of reader, it is a returning one.
  *
- * It lives in this file rather than in `Landing.astro` because the landing page
+ * It lives in this file rather than in `Site.astro` because the landing page
  * left the framework in `#30` and the Starlight pages did not, so there are two
  * headers to keep in agreement — the same argument this file already makes about
  * the two footers, one layer up the page.

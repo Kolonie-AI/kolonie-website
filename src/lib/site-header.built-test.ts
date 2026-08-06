@@ -9,7 +9,7 @@ import { DOCS, GITHUB, NAV_LINKS, SIGN_IN } from "./site-nav.ts";
  *
  * That is the whole of `#50`'s first acceptance criterion, and it is a property
  * of the output rather than of any one file: this site renders its header from
- * two places — `Landing.astro` for `/` and the Starlight `Header` override for
+ * two places — `Site.astro` for `/` and the Starlight `Header` override for
  * everything else — because `/` left the framework in `#30`. A header that is
  * right in one of them and stale in the other is precisely the state `#40` and
  * `#42` each had to repair by hand, one link at a time.

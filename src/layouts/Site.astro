@@ -1,6 +1,14 @@
 ---
 /**
- * The shell for the one page that is not a document (kolonie-website#30).
+ * The shell for the pages that are not documents (kolonie-website#30, #49).
+ *
+ * **It was `Landing.astro` and served one page until `#49`.** The legal pages
+ * rendered through `StarlightPage`, which brought the framework's own light
+ * theme with it — two design systems on one domain, one click apart in the
+ * footer. `[legal].astro`'s own comment already said a legal page *"is a page a
+ * stranger arrives on rather than documentation"*, which is `#21`'s rule, and
+ * then called `StarlightPage` anyway. They render through this instead, and the
+ * name follows what the file is: the site's layout, not the landing page's.
  *
  * `/` was `src/content/docs/index.mdx` with `template: splash`: a Markdown file
  * rendered by a documentation framework, which meant a hero of a centred title
@@ -20,10 +28,14 @@
  * **Dark only, and only here.** Decided by the maintainer on 2026-08-05: both
  * references are dark-only, the brand is terminal-adjacent, and a light theme
  * is a second design that will always be the worse one. `#22` chose *follow the
- * system* and that was right for a documentation site. The other pages keep
- * both themes and `theme.test.ts` keeps checking both — which is why the light
- * block in `theme.css` is not dead code and must not be removed on the strength
- * of this page.
+ * system* and that was right for a documentation site. The documentation pages
+ * keep both themes and `theme.test.ts` keeps checking both — which is why the
+ * light block in `theme.css` is not dead code and must not be removed on the
+ * strength of this layout.
+ *
+ * `#49` widened *only here* from one page to five and did not reopen the
+ * decision: a legal page reached from a dark footer is a page a reader arrived
+ * at from the dark site, and it was the odd one out rather than the exception.
  */
 
 import { PAGESENSE_ATTRS } from '../lib/analytics'

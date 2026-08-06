@@ -1,20 +1,40 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import type { GetStaticPaths } from 'astro'
 
+import Site from '../layouts/Site.astro'
+
 /**
- * One legal page — `/privacy/`, and whatever `#44` and `#45` add beside it
- * (kolonie-website#42).
+ * One legal page — `/privacy/`, `/imprint/`, `/terms/`, `/citizen-terms/`
+ * (kolonie-website#42, #49).
  *
  * The text is not here and no copy of it is in this repository: it is
  * `kolonie-docs/governance/<slug>.md`, rendered by `src/lib/legal-loader.ts`.
  * That is the rule `#41` set for the entity and `#42` and `#44` both repeat —
  * a legal page hand-copied onto a website is a second copy of a fact that ages
  * without anybody noticing, and these are the pages where that costs most.
+ * **`#49` changed nothing about that**: the loader is untouched and this is a
+ * rendering change only.
  *
- * `template: splash` because a legal page is a page a stranger arrives on rather
- * than documentation, which is `#21`'s rule and `src/lib/chrome.ts`'s.
+ * **It rendered through `StarlightPage` until `#49`, and that was the defect.**
+ * Measured 2026-08-06 against the deployed site, `/terms/` came out near-white
+ * where `/` was near-black — the two grounds are quoted on `#49`, and not here,
+ * because a colour value outside `theme.css` fails `theme.test.ts` even in a
+ * comment, which is the rule working. Two design systems on one domain, one
+ * click apart in the footer. The cause was this file: `StarlightPage` brings
+ * the framework's own theme with it.
+ *
+ * `#21`'s rule is *a page under `src/content/docs/docs/` is documentation and
+ * gets the furniture; everything else is not and gets none of it*, and the
+ * comment this replaces already said a legal page is not documentation — and
+ * then called `StarlightPage` anyway. The code agrees with the comment now:
+ * legal pages use the site's own layout, and Starlight stays for documentation.
+ *
+ * **The heading is the document's own `#`, and this page adds none.** Rendering
+ * the frontmatter title as a heading above the content is what put it on the
+ * page twice. Every one of the four source files opens with its own, and
+ * `legal.built-test.ts` fails if one stops doing so — a page with no heading is
+ * the failure at the other end of the same fix.
  */
 export const getStaticPaths: GetStaticPaths = async () => {
   const pages = await getCollection('legal')
@@ -25,21 +45,148 @@ const { page } = Astro.props as { page: CollectionEntry<'legal'> }
 const { Content } = await render(page)
 ---
 
-<StarlightPage
-  frontmatter={{
-    title: page.data.title,
-    description: page.data.description,
-    template: 'splash',
-  }}
->
-  <Content />
+<Site title={page.data.title} description={page.data.description}>
+  <article class="legal">
+    <Content />
 
-  <hr />
-  <p>
-    <small>
-      Rendered from <a href={page.data.source}>the Colony’s repository</a>, which is
-      where this document is written and versioned. If this page and that file ever
-      disagree, the file is the one that counts.
-    </small>
-  </p>
-</StarlightPage>
+    {/*
+      **The sentence that makes the arrangement checkable**, and `#49` requires
+      it to survive the move: a reader who wants to know whether the page and
+      the document agree is told where the document is.
+    */}
+    <hr />
+    <p class="legal__source">
+      <small>
+        Rendered from <a href={page.data.source}>the Colony’s repository</a>, which is
+        where this document is written and versioned. If this page and that file ever
+        disagree, the file is the one that counts.
+      </small>
+    </p>
+  </article>
+</Site>
+
+<style>
+  /*
+   * The prose layer for a long legal document.
+   *
+   * Starlight was providing this, and it came with Starlight — the same trade
+   * `#30` made for the landing page, one layer down. Nothing here is a colour
+   * value; every one is a token from `theme.css`.
+   *
+   * `:global()` because the content is rendered markdown and carries no scope
+   * class: Astro scopes the `.legal` half of each selector and leaves the
+   * element half alone, which keeps these rules off every other page without
+   * reaching for `is:global`.
+   */
+  .legal {
+    max-width: var(--k-measure);
+    margin: 0 auto;
+    padding: var(--k-section-y) var(--k-gutter) var(--k-flow-section);
+  }
+
+  /* **The measure is on the container here and not on the elements**, which is
+     the opposite of the landing page's rule (`#22`) and is right for the
+     opposite reason: `/` holds a graph, a verdict and code blocks composed at
+     full width, and this holds one column of prose and its tables. A table
+     narrowed to the text's measure is a table that reads with it. `#49` asks
+     for roughly 60–75 characters and `--k-measure` is 68ch. */
+  .legal :global(:is(h1, h2, h3, h4, p, ul, ol, dl, blockquote)) {
+    max-width: var(--k-measure);
+  }
+
+  /* Vertical rhythm as one rule rather than a margin per element: blocks are one
+     step apart, and a heading takes a section's step above it and a tight one
+     below — which is what makes a heading read as belonging to what follows it
+     rather than floating between two things. */
+  .legal :global(* + *) {
+    margin-top: var(--k-flow);
+  }
+
+  .legal :global(* + :is(h2, h3)) {
+    margin-top: var(--k-flow-section);
+  }
+
+  .legal :global(:is(h1, h2, h3) + *) {
+    margin-top: var(--k-flow-tight);
+  }
+
+  .legal :global(h1) {
+    margin-top: 0;
+    font-size: var(--k-type-h1);
+  }
+
+  /* An h2 opens a section, so it is given a line to sit on — the same treatment
+     `/` gives its own, so the two surfaces separate sections the same way. */
+  .legal :global(h2) {
+    padding-top: var(--k-space-4);
+    border-top: var(--k-border) solid var(--k-hairline);
+    font-size: var(--k-type-h2);
+  }
+
+  .legal :global(h3) {
+    font-size: var(--k-type-h3);
+  }
+
+  .legal :global(:is(ul, ol)) {
+    padding-left: var(--k-space-5);
+  }
+
+  .legal :global(li + li) {
+    margin-top: var(--k-space-2);
+  }
+
+  .legal :global(blockquote) {
+    padding-left: var(--k-space-4);
+    border-left: 2px solid var(--k-accent-dim);
+    color: var(--k-text-muted);
+  }
+
+  .legal :global(hr) {
+    border: 0;
+    border-top: var(--k-border) solid var(--k-hairline);
+  }
+
+  /* **Tables, and 375px is the width that decides their shape.** `privacy.md`
+     alone is 26 table rows, and the imprint's registration table is generated
+     from `legal-structure.md`. The table scrolls rather than the page: a table
+     that widens the document makes every paragraph on it scroll sideways too,
+     which is the failure `#49` names at that width.
+
+     `display: block` is what gives a `<table>` its own scroll container without
+     a wrapper element that markdown cannot produce. */
+  .legal :global(table) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: var(--k-type-small);
+  }
+
+  .legal :global(:is(th, td)) {
+    padding: var(--k-space-2) var(--k-space-3);
+    border: var(--k-border) solid var(--k-hairline);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .legal :global(th) {
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-xs);
+    letter-spacing: var(--k-tracking-label);
+    text-transform: uppercase;
+  }
+
+  .legal :global(pre) {
+    overflow-x: auto;
+    padding: var(--k-space-4);
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+  }
+
+  .legal__source {
+    color: var(--k-text-faint);
+  }
+</style>
