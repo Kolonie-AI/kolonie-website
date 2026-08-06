@@ -59,20 +59,28 @@ const text = code.trim()
      layout and type — the colours arrive on the tokens themselves, as variables
      pointing back at `theme.css`. */
   /*
-   * **Phone-first, and the wrapping is the point** (kolonie-website#33).
+   * **Every snippet wraps, at every width** (kolonie-website#33, #52).
    *
-   * These boxes were `white-space: pre` with `overflow-x: auto` at every width.
-   * On a 390px screen that turns the join prompt and every install line into a
-   * horizontal scroller sitting next to a copy button — so the button works and
-   * the reader cannot see what they are about to paste, which is the one thing
-   * this site asks them to do.
+   * These boxes were `white-space: pre` with `overflow-x: auto`. On a 390px
+   * screen that turns the join prompt and every install line into a horizontal
+   * scroller sitting next to a copy button — so the button works and the reader
+   * cannot see what they are about to paste, which is the one thing this site
+   * asks them to do. `#33` fixed that on a phone and left the desktop alone,
+   * arguing there was room for the line as written.
    *
-   * So a phone wraps. `overflow-wrap: anywhere` because the things that
-   * overflow are URLs and package names, which have no spaces to break at.
-   * Above `--k-bp-sm` there is room for the line as it was written, and the
-   * snippet goes back to `pre` — an install line that wraps on a desktop is
-   * harder to read than one that does not, and there the scroller is a
-   * scroller the reader can actually see.
+   * **There was not, and `#52` measured it.** In the hero the panel is two
+   * fifths of a 60rem column — about 24rem — and the OpenClaw line is 73 bytes.
+   * At 1440px it rendered as `$ openclaw skills install git:Koloni` and stopped:
+   * the single command the whole page exists to deliver, cut off, on the widest
+   * screen anybody reads this on. A scroller inside a panel inside a hero is one
+   * the reader has no reason to look for, and `#52` is explicit that the fix is
+   * wrapping rather than a scrollbar somebody has to find.
+   *
+   * So the `min-width: 40rem` half of `#33`'s rule is gone and the phone's
+   * behaviour is now everybody's. `overflow-wrap: anywhere` because the things
+   * that overflow are URLs and package names, which have no spaces to break at.
+   * What is left at `--k-bp-sm` is the padding and the type size, which is what
+   * that breakpoint was always for.
    */
   .snippet > pre {
     margin: 0;
@@ -94,18 +102,7 @@ const text = code.trim()
     .snippet > pre {
       padding: var(--k-space-4);
       font-size: var(--sl-text-sm);
-      overflow-x: auto;
-      white-space: pre;
-      overflow-wrap: normal;
     }
-  }
-
-  /* A sentence wraps at every width. `lang={null}` is prose — the join prompt
-     and the sponsor prompt — and prose set to scroll sideways on a desktop is
-     not a decision anybody would take deliberately. */
-  .snippet > pre.snippet-plain {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
   }
 
   .snippet > pre code {

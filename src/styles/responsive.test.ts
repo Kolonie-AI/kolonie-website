@@ -112,18 +112,39 @@ describe("a copy-box on a phone", () => {
     expect(phoneFirst).not.toMatch(/white-space:\s*pre;/);
   });
 
-  it("goes back to the line as written once there is room for it", () => {
+  /**
+   * **This test asserted the opposite until `#52`, and inverting it is the
+   * point.**
+   *
+   * `#33` wrapped the snippets on a phone and let them go back to
+   * `white-space: pre` above `--k-bp-sm`, on the reasoning that a desktop has
+   * room for the line as it was written. `#52` measured that a desktop does
+   * not: in the hero the panel is about two fifths of a 60rem column, and the
+   * OpenClaw line — 73 bytes — rendered as `$ openclaw skills install
+   * git:Koloni` and stopped at 1440px.
+   *
+   * So there is no width at which a snippet stops wrapping, and the media query
+   * that remains carries the padding and the type size only. What was a
+   * reasonable inference in `#33` was contradicted by a measurement, and the
+   * assertion follows the measurement rather than being deleted.
+   */
+  it("does not stop wrapping at any width", () => {
     const wide = snippet.slice(snippet.indexOf("@media"));
 
-    expect(wide).toMatch(/white-space:\s*pre;/);
+    expect(wide).not.toMatch(/white-space:\s*pre;/);
+    expect(wide).not.toMatch(/overflow-wrap:\s*normal/);
   });
 
   it("keeps a sentence wrapping at every width", () => {
-    // `lang={null}` is prose. Prose set to scroll sideways on a desktop is not
-    // a decision anybody would take deliberately.
-    const plain = snippet.slice(snippet.indexOf(".snippet-plain"));
-
-    expect(plain).toMatch(/white-space:\s*pre-wrap/);
+    // `lang={null}` is prose, and prose set to scroll sideways is not a
+    // decision anybody would take deliberately. It needed its own rule while
+    // the base went back to `pre` above `--k-bp-sm`; the base wraps everywhere
+    // now, so the rule is gone and this asserts the property rather than the
+    // selector that used to carry it.
+    expect(snippet).not.toMatch(/\.snippet-plain\s*\{[^}]*white-space:\s*pre;/);
+    expect(snippet.slice(0, snippet.indexOf("@media"))).toMatch(
+      /white-space:\s*pre-wrap/,
+    );
   });
 });
 

@@ -52,7 +52,12 @@ const { id, label = 'install the skill' } = Astro.props
 const tabs = [...SKILL_REPOSITORIES, null]
 ---
 
-<div class="panel">
+{/* The id is a link target as well as a radio-group prefix since #52: the
+    hero's primary button is `Send your agent`, and what it sends the reader to
+    is the panel that holds the command. On a phone that is a scroll of one
+    screen; on a desktop the panel is already beside the button, and the anchor
+    costs nothing there. */}
+<div class="panel" id={`panel-${id}`}>
   <p class="panel__label">{label}</p>
 
   <fieldset class="panel__tabs">
