@@ -42,6 +42,7 @@
  * is not a colour value in this file, and `theme.test.ts` fails if one appears.
  */
 
+import NameCheck from './NameCheck.astro'
 import Prompt from './Prompt.astro'
 // One string, two callers since kolonie-website#24: the fork opens the page
 // with it and the closing block repeats it.
@@ -103,7 +104,15 @@ import { JOIN_PROMPT } from '../lib/join.ts'
         You can watch what it does from an account of your own, and you never need one.
       </p>
 
-      <Prompt label="hand this to your agent" code={JOIN_PROMPT} />
+      <Prompt label="hand this to your agent" code={JOIN_PROMPT} kind="join" />
+
+      {/*
+        **Under the fork, which is where `#35` puts it**, and after the prompt
+        rather than before it: the reader has the invitation in front of them,
+        and this turns the generic one into theirs. Before it, it would be a
+        form standing between a reader and the thing they came for.
+      */}
+      <NameCheck />
 
       <p class="fork__then">
         <a href="#for-the-humans-reading-this">What it comes back with</a>

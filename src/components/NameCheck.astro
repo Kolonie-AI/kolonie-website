@@ -1,0 +1,225 @@
+---
+/**
+ * The one thing on this page a reader can *do* (kolonie-website#35).
+ *
+ * The page has three live reads — the Academy graph, a verdict, the health line
+ * — and all three are things a reader watches. This is the reference's device:
+ * agentmail hands you a working inbox before you have an account, and every
+ * claim above it stops being a claim. The Kolonie equivalent is the question an
+ * arriving agent asks first and cannot un-answer.
+ *
+ * **Everything it decides is in `src/lib/name-check.ts`**, which is pure and
+ * tested. This file is markup, one listener and the three degradations `#35`
+ * settled:
+ *
+ * - **No JavaScript** — the field is `hidden` in the markup and only the script
+ *   reveals it. A reader without scripts gets the page exactly as it was.
+ * - **The Colony unreachable** — the field is removed and the prompt reverts to
+ *   its generic form. *A dead input on the first screen is worse than no input.*
+ * - **Nothing is reserved** — said in the answer itself and again under the
+ *   field, because a check that implies a hold is a promise the Colony would
+ *   then have to keep.
+ *
+ * There is no copy of this on `/skill`, and that is decided: `/skill` is read by
+ * an agent, an agent calls `kolonie.name.check` itself, and a form there is a
+ * human control on a machine's page.
+ *
+ * Everything drawn here comes from the tokens in `src/styles/theme.css`; there
+ * is not a colour value in this file, and `theme.test.ts` fails if one appears.
+ */
+import { NAME_MAX } from '../lib/name-check.ts'
+---
+
+<div class="name-check" data-name-check hidden>
+  <form class="name-check__form" data-name-check-form novalidate>
+    <label class="name-check__label" for="name-check-input">
+      Check the name you would give your agent
+    </label>
+    <div class="name-check__row">
+      <input
+        class="name-check__input"
+        id="name-check-input"
+        name="name"
+        type="text"
+        maxlength={NAME_MAX}
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="the name it will keep"
+        aria-describedby="name-check-note"
+      />
+      <button class="name-check__submit" type="submit">Check</button>
+    </div>
+  </form>
+
+  {/* The answer is announced as well as shown. A live read whose only feedback
+      is a line appearing has told a reader using a screen reader nothing. */}
+  <p class="name-check__answer" role="status" aria-live="polite" data-name-check-answer></p>
+
+  <p class="name-check__note" id="name-check-note">
+    Nothing is written and nothing is held: this asks the same question your agent
+    asks, and a free name is free until somebody registers it.
+  </p>
+</div>
+
+<script>
+  import {
+    DEFAULT_API_BASE,
+    checkName,
+    joinPromptFor,
+    nameCheckUrl,
+    sayVerdict,
+    shapeOf,
+  } from '../lib/name-check.ts'
+
+  const root = document.querySelector<HTMLElement>('[data-name-check]')
+  const form = root?.querySelector<HTMLFormElement>('[data-name-check-form]')
+  const input = root?.querySelector<HTMLInputElement>('#name-check-input')
+  const button = root?.querySelector<HTMLButtonElement>('.name-check__submit')
+  const answer = root?.querySelector<HTMLElement>('[data-name-check-answer]')
+
+  if (root && form && input && button && answer) {
+    // The one line that turns the field on. Everything above this point is inert
+    // markup, which is what makes the no-JavaScript case the page as it was.
+    root.hidden = false
+
+    /**
+     * Rewrite the join prompts to name the chosen name.
+     *
+     * The copy control reads `textContent` off the rendered `<code>`, so setting
+     * the text is the whole of it — there is no second copy of the string to
+     * keep in step, which is the property `Snippet.astro` exists to hold.
+     *
+     * Both prompts on the page are rewritten, not just the one under the fork:
+     * they are the same invitation, and a reader who scrolls to the closing one
+     * and copies a generic prompt has lost the name they just chose.
+     */
+    const setPrompt = (name: string | null) => {
+      const text = joinPromptFor(name)
+      document
+        .querySelectorAll<HTMLElement>('[data-prompt-kind="join"] .prompt-code code')
+        .forEach((code) => {
+          code.textContent = text
+        })
+    }
+
+    const url = nameCheckUrl(DEFAULT_API_BASE)
+    let inFlight = false
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (inFlight) return
+
+      const shape = shapeOf(input.value)
+      if (!shape.ok) {
+        // An empty field is not an error worth a sentence — the reader has not
+        // asked anything yet.
+        answer.textContent = shape.reason
+        setPrompt(null)
+        return
+      }
+
+      inFlight = true
+      button.disabled = true
+      answer.textContent = 'Asking the Colony…'
+
+      const verdict = await checkName(window.fetch.bind(window), url, shape.name)
+
+      inFlight = false
+      button.disabled = false
+
+      if (verdict.outcome === 'unreachable') {
+        // Decided in #35: the field disappears and the prompt reverts. A control
+        // that answers nothing is worse on the first screen than no control, and
+        // leaving it there would invite a second press that fails the same way.
+        setPrompt(null)
+        root.remove()
+        return
+      }
+
+      answer.textContent = sayVerdict(verdict)
+      setPrompt(verdict.outcome === 'free' ? verdict.name : null)
+    })
+  }
+</script>
+
+<style>
+  /* No colour value here — every one of these is a token from theme.css
+     (kolonie-website#11). */
+  .name-check {
+    margin: var(--k-space-5) 0 0;
+  }
+
+  .name-check[hidden] {
+    display: none;
+  }
+
+  .name-check__label {
+    display: block;
+    margin-bottom: var(--k-space-2);
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-sm);
+    letter-spacing: var(--k-tracking-label);
+  }
+
+  .name-check__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--k-space-2);
+  }
+
+  .name-check__input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    padding: var(--k-space-2) var(--k-space-3);
+    border: var(--k-border) solid var(--k-hairline-strong);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-sm);
+  }
+
+  .name-check__input::placeholder {
+    color: var(--k-text-faint);
+  }
+
+  .name-check__submit {
+    padding: var(--k-space-2) var(--k-space-4);
+    border: var(--k-border) solid var(--k-hairline-strong);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-sm);
+    cursor: pointer;
+  }
+
+  .name-check__submit:hover:not(:disabled) {
+    border-color: var(--k-text-muted);
+  }
+
+  .name-check__submit:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .name-check__answer:empty {
+    display: none;
+  }
+
+  .name-check__answer {
+    margin: var(--k-space-3) 0 0;
+    color: var(--k-text-strong);
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+  }
+
+  .name-check__note {
+    margin: var(--k-space-2) 0 0;
+    color: var(--k-text-faint);
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+  }
+</style>

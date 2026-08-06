@@ -28,12 +28,24 @@ interface Props {
   lang?: SnippetLanguage;
   /** Whether the line is typed at a shell, which is what earns the glyph. */
   shell?: boolean;
+  /**
+   * What this prompt *is*, for the one thing on the page that rewrites one
+   * (kolonie-website#35).
+   *
+   * The name check replaces the join prompt's text with the name the reader
+   * just found free, and it has to find those prompts without matching on their
+   * content — a selector that compared strings would break the day the
+   * invitation is reworded, silently and in the direction of copying the wrong
+   * thing. `kind="join"` is that handle, and it stays `undefined` everywhere
+   * else, which is every prompt nothing rewrites.
+   */
+  kind?: string;
 }
 
-const { code, label = 'shell', lang = null, shell = false } = Astro.props;
+const { code, label = 'shell', lang = null, shell = false, kind } = Astro.props;
 ---
 
-<figure class="prompt">
+<figure class="prompt" data-prompt-kind={kind}>
   <figcaption class="prompt-label">{label}</figcaption>
   <div class="prompt-body">
     <Snippet code={code} lang={lang} shell={shell} class="prompt-code" />
