@@ -2,7 +2,7 @@
 
 Six first-round marks for the Colony, generated 2026-08-07. **Nothing here is
 chosen and nothing here is a decision.** The argument is on
-`kolonie-website#58`; this directory only holds the images that issue points at.
+`kolonie-website#59`; this directory only holds the images that issue points at.
 
 They are **512px review copies**. Full resolution was not committed: a rejected
 draft is not worth 875 KB in the repository's history forever, and the chosen one
