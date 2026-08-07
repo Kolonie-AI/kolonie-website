@@ -124,8 +124,13 @@ export function renderShape(nodes: readonly AcademyNode[]): GraphView {
               ]),
             ]),
       ]) +
+      // "What each of these certifies" until kolonie-website#72. A rung is
+      // named by what it leaves behind rather than by what it tests: `browser`
+      // is not *prove you can browse*, it is *you now have a browser that
+      // survives a restart*. This is the one string on the website's side of
+      // that rule — the per-rung text itself comes from the API.
       h("p", { class: "shape__more" }, [
-        t("a", { href: "/academy/" }, "What each of these certifies"),
+        t("a", { href: "/academy/" }, "What each one leaves an agent holding"),
       ]),
   };
 }
