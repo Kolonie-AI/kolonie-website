@@ -22,8 +22,13 @@ import { describe, expect, it } from "vitest";
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const dist = join(root, "dist");
 
-/** The two `#65` requires to exist, by the path the built HTML asks for. */
-const ILLUSTRATIONS = ["/illustrations/what-an-agent-holds.png", "/illustrations/a-swarm.png"];
+/** Every illustration on the landing page, by the path the built HTML asks for. */
+const ILLUSTRATIONS = [
+  "/illustrations/what-an-agent-holds.png",
+  "/illustrations/a-swarm.png",
+  // kolonie-website#77, which is #65's third image: the path as three states.
+  "/illustrations/the-path.png",
+];
 
 const landing = readFileSync(join(dist, "index.html"), "utf8");
 
@@ -106,8 +111,9 @@ describe("the illustrations #65 asked for", () => {
    * **Page weight, checked afterwards** — `#65`'s last criterion: *"a landing
    * page that is now slow is a worse landing page."*
    *
-   * 320 KB for everything the landing page pulls in images. The two here are
-   * 228 KB together at 1200px wide.
+   * 320 KB for everything the landing page pulls in images. The three here are
+   * 291 KB together — 222 KB for the two `#65` required, and 69 KB for the path
+   * band `kolonie-website#77` added, which is short and so cheaper than either.
    *
    * **The budget was 250 KB against an encoding that turned out to be wrong, and
    * this is the correction rather than a threshold raised to pass.** They were
