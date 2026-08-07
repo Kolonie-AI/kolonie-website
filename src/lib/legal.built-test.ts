@@ -235,18 +235,52 @@ describe('the terms, and the page that publishes the price', () => {
     expect(quests).toContain('href="/terms/"')
   })
 
-  it('states the price the quests page states', () => {
-    expect(terms).toContain('One cent per accepted report')
+  /**
+   * **`#45`'s requirement was that the two agree, not that either say a
+   * number** — and after `kolonie-docs#222` neither does. D-106 replaced a fixed
+   * pilot price with a price the sponsor sets, so *"One cent per accepted
+   * report"*, which this used to pin, is a figure that no longer exists on
+   * either page. What is asserted instead is the property `#45` bought: a
+   * sponsor reading `/quests` and a sponsor reading `/terms` learn the same
+   * thing about what a quest costs.
+   */
+  it('describes the price the way the quests page describes it', () => {
+    for (const page of [prose(join(dist, 'quests', 'index.html')), terms]) {
+      expect(page).toMatch(/capacity/i)
+      expect(page).toMatch(/price per accepted report|price and the capacity/i)
+    }
+    // Neither may quote a figure: the steward's numbers page is where those
+    // live, and a price in a document is what goes stale first.
+    expect(terms).not.toMatch(/one cent|\$0\.\d/i)
   })
 
   /**
-   * The clause a sponsor assumes the other way at the moment they fund, which
-   * is why `#45` asks for it in as many words. `kolonie-platform#222` is parked
-   * and there is no route out of the Colony today.
+   * **The clause a sponsor assumes the other way at the moment they fund**,
+   * which is why `#45` asks for it in as many words. That clause has changed.
+   *
+   * It used to be *there is no route out of the Colony* — true of a design in
+   * which the Colony held a sponsor's balance. `kolonie-docs#222` removed that
+   * design: a sponsor's unspent money is in its own wallet under its own key, so
+   * there is nothing to route out. The clause a sponsor now assumes the other
+   * way is **publishing is the purchase**, and that is what is pinned here.
+   *
+   * `kolonie-platform#222` is still asserted on the *citizen* terms below, and
+   * correctly: a citizen converting a ledger balance is the leg that is parked.
    */
-  it('says there is no route out for a funded balance', () => {
-    expect(terms).toMatch(/route out of the Colony/i)
-    expect(terms).toContain('222')
+  it('says the money does not come back', () => {
+    expect(terms).toMatch(/publishing is the purchase/i)
+    expect(terms).toMatch(/does not come back/i)
+    expect(terms).toMatch(/not returned when the quest expires/i)
+  })
+
+  /**
+   * The reversal is dated in the document rather than made silently. A contract
+   * that turns a term around without saying so is the thing that cannot be
+   * defended later, whether or not anybody was affected — and here nobody was.
+   */
+  it('dates the reversal and says whom it affected', () => {
+    expect(terms).toMatch(/deliberate reversal, made on 2026-08-07/i)
+    expect(terms).toMatch(/no third party ever funded a quest under the previous text/i)
   })
 
   it('does not limit liability where the law does not permit it', () => {
