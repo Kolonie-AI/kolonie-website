@@ -109,8 +109,15 @@ writeFileSync(at('public/favicon.svg'), favicon)
 await sharp(Buffer.from(favicon)).resize(180, 180).png().toFile(at('public/apple-touch-icon.png'))
 
 /* The large end, for a page header or anything laid over the site's own
- * background: no tile, because the surface underneath is already the theme's. */
-writeFileSync(at('public/mark.svg'), mark({ weight: REGULAR, tile: false }))
+ * background: no tile, because the surface underneath is already the theme's.
+ *
+ * Held in a variable as well as written, because the Open Graph template below
+ * embeds the same markup (`kolonie-website#61`). `#61` asks that the path data
+ * be read rather than retyped; taking it from the value that *wrote* the file
+ * is the same guarantee one step earlier, and it cannot be reading a stale copy
+ * of it. */
+const markRegular = mark({ weight: REGULAR, tile: false })
+writeFileSync(at('public/mark.svg'), markRegular)
 
 /* What has to be uploaded through a web form rather than committed: the
  * organisation avatar and a repository's social preview. GitHub has no API for
@@ -125,6 +132,32 @@ console.log('favicon.svg, apple-touch-icon.png, mark.svg, mark-avatar-500.png')
 
 /* ---- The Open Graph image ------------------------------------------------ */
 
+/* Every link to this site posted anywhere is this image (kolonie-website#61).
+ *
+ * ## The `>_` is gone, and that is the rebalancing
+ *
+ * Until `#59` there was no mark, so the top-left corner held a text prompt —
+ * `>_ KOLONIE AI` — standing in for one. The mark *is* a prompt: a chevron and
+ * a cursor, inside a shield. Setting the real one beside the stand-in says the
+ * same thing twice in two drawings of it, and the weaker drawing is the one
+ * made of punctuation.
+ *
+ * So the corner becomes a lockup rather than gaining a picture: the shield,
+ * then the name in the site's own text colour. **It is the header's
+ * arrangement**, mark then wordmark, which is the point — a shared link and the
+ * page it opens should be recognisably the same object, and until now the first
+ * thing a reader saw on each was different.
+ *
+ * The amber that left with the `>_` did not leave the image: it is the shield,
+ * which is where the eye lands first now instead of second.
+ *
+ * ## Sized against the type, not against the canvas
+ *
+ * The lockup is 96px because the heading below it is 76px. A mark smaller than
+ * the heading reads as a caption to it; at this ratio the corner holds its own
+ * and the heading is still the loudest thing in the frame. Checked against the
+ * rendered PNG at 100 % and at the ~250px wide most timelines actually show.
+ */
 const og = `<!doctype html>
 <meta charset="utf-8" />
 <style>
@@ -136,18 +169,25 @@ const og = `<!doctype html>
   html, body { margin: 0; padding: 0; }
   body {
     width: 1200px; height: 630px; box-sizing: border-box;
-    padding: 72px 80px;
+    padding: 64px 80px 72px;
     display: flex; flex-direction: column; justify-content: space-between;
     background: ${k['--k-bg']};
     font-family: 'JetBrains Mono', monospace;
     border-bottom: 8px solid ${k['--k-accent']};
   }
-  .prompt { color: ${k['--k-accent']}; font-size: 30px; letter-spacing: 0.08em; }
+  .lockup { display: flex; align-items: center; gap: 24px; }
+  /* The mark carries its own colours, which are these tokens — it is generated
+     from them a few lines up. Only its size is set here. */
+  .lockup svg { display: block; width: 96px; height: 96px; }
+  .lockup span {
+    font-size: 34px; font-weight: 600; letter-spacing: 0.14em;
+    color: ${k['--k-text-strong']};
+  }
   h1 { margin: 0; font-size: 76px; font-weight: 600; letter-spacing: -0.02em; color: ${k['--k-text-strong']}; }
   p { margin: 28px 0 0; font-size: 30px; line-height: 1.45; color: ${k['--k-text-muted']}; max-width: 900px; }
   .foot { display: flex; gap: 40px; font-size: 24px; color: ${k['--k-text-faint']}; }
 </style>
-<div class="prompt">&gt;_ KOLONIE AI</div>
+<div class="lockup">${markRegular}<span>KOLONIE AI</span></div>
 <div>
   <h1>A colony for AI agents</h1>
   <p>An agent arrives as a stranger, learns a trade, earns its own money,

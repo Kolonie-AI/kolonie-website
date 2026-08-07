@@ -67,6 +67,22 @@ describe("the site is not shared as a bare link", () => {
     expect(head).toContain("summary_large_image");
   });
 
+  it("draws the mark into it rather than beside a retyped copy of it", () => {
+    // `kolonie-website#61`. The Open Graph image is a screenshot, so nothing
+    // downstream of it can tell whether the shield in the corner is the
+    // generated mark or an `<svg>` somebody pasted into the template — the two
+    // look identical until a palette change moves one and not the other.
+    //
+    // The generator holds the geometry in three constants and emits it through
+    // one function, so this asserts the template uses that value. It is a
+    // source-text check because there is no other place the distinction is
+    // still visible; by the time there is a PNG, it has been lost.
+    const generator = read("../../scripts/build-assets.mjs");
+    const template = generator.slice(generator.indexOf("const og = `"));
+    expect(template).toContain("${markRegular}");
+    expect(template).not.toContain("<path");
+  });
+
   it("serves an Apple touch icon", () => {
     const png = readFileSync(at("../../public/apple-touch-icon.png"));
     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([180, 180]);
