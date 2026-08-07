@@ -79,6 +79,9 @@ const themeColor = themeColorFrom(themeCss)
     <link rel="canonical" href={canonical} />
     <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {/* The second of the two places this has to be declared since `#30` — the
+        other is `sharedHeadTags`, which carries the reasoning (`#62`). */}
+    <link rel="manifest" href="/site.webmanifest" />
 
     {/* The same two files the Starlight pages preload, from the same list
         (kolonie-website#48) — the reason `sharedHeadTags` exists at all is that

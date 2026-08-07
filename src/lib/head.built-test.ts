@@ -43,6 +43,10 @@ describe("the shared head tags in the built site", () => {
       expect(html).toContain(OG_IMAGE);
       expect(html).toContain("summary_large_image");
       expect(html).toMatch(/name="theme-color"/);
+      // kolonie-website#62. In the same list and for the same reason as the
+      // rest: it has to be declared twice, and the copy that goes missing is
+      // the one nobody is looking at.
+      expect(html).toMatch(/rel="manifest" href="\/site\.webmanifest"/);
     },
   );
 

@@ -128,7 +128,138 @@ await sharp(Buffer.from(mark({ weight: HEAVY, tile: true })))
   .png()
   .toFile(at('public/mark-avatar-500.png'))
 
-console.log('favicon.svg, apple-touch-icon.png, mark.svg, mark-avatar-500.png')
+/* ---- /favicon.ico, and why it is a real one ------------------------------ */
+
+/* Every current browser reads the SVG favicon, so this is not for browsers
+ * (kolonie-website#62). It is for the clients that request `/favicon.ico`
+ * blindly without reading the HTML — feed readers, link-preview services and
+ * several of the directory crawlers `growth/README.md` lists. Those got a 404
+ * and fell back to nothing.
+ *
+ * `#62` offered three answers and asked for one of them to be recorded here.
+ *
+ * **Chosen: write the container by hand.** ICO is a six-byte header, a
+ * sixteen-byte directory entry per image, and the images concatenated after
+ * them — and since Vista the images may be PNGs rather than DIBs, which is what
+ * makes it thirty lines instead of a codec. `sharp` already produces the PNGs.
+ *
+ * **Rejected: a dependency.** `sharp` cannot write ICO, which is why this was
+ * not simply added alongside the rest, and the obvious repair is a small
+ * package. But the whole of what a package would do is the arithmetic below,
+ * and this repository's `package.json` is read by the people deciding whether
+ * to trust an MCP server — a supply-chain entry earning us one file format is a
+ * bad trade at any package size.
+ *
+ * **Rejected: a PNG served at `/favicon.ico`.** It mostly works, because most
+ * consumers sniff the magic bytes. *Mostly* is the problem: the clients this
+ * file exists for are the old and unattended ones, which is exactly the
+ * population that does not sniff. Serving one format under another's extension
+ * to a reader that cannot object is not a smaller version of the correct fix.
+ *
+ * **It is deliberately not declared in the head.** `<link rel="icon">` points
+ * at the SVG, which is the better image wherever it is understood; a second
+ * declaration would let a browser prefer 48 fixed pixels over a vector for no
+ * reason. This file is answered *when asked for*, and never offered.
+ *
+ * 16, 32 and 48 because that is where a favicon is actually drawn. The heavy
+ * cut, for the same reason the favicon itself takes it. */
+const ICO_SIZES = [16, 32, 48]
+
+const icoFrames = await Promise.all(
+  ICO_SIZES.map(async (size) => ({
+    size,
+    png: await sharp(Buffer.from(favicon)).resize(size, size).png().toBuffer(),
+  })),
+)
+
+const directory = Buffer.alloc(16 * icoFrames.length)
+let offset = 6 + directory.length
+icoFrames.forEach(({ size, png }, index) => {
+  const entry = index * 16
+  directory.writeUInt8(size, entry) // width, and 0 would mean 256
+  directory.writeUInt8(size, entry + 1) // height
+  directory.writeUInt8(0, entry + 2) // palette size: 0 for truecolour
+  directory.writeUInt8(0, entry + 3) // reserved
+  directory.writeUInt16LE(1, entry + 4) // colour planes
+  directory.writeUInt16LE(32, entry + 6) // bits per pixel
+  directory.writeUInt32LE(png.length, entry + 8)
+  directory.writeUInt32LE(offset, entry + 12)
+  offset += png.length
+})
+
+const header = Buffer.alloc(6)
+header.writeUInt16LE(1, 2) // 1 is an icon; 2 would be a cursor
+header.writeUInt16LE(icoFrames.length, 4)
+
+writeFileSync(
+  at('public/favicon.ico'),
+  Buffer.concat([header, directory, ...icoFrames.map(({ png }) => png)]),
+)
+
+/* ---- The web manifest ---------------------------------------------------- */
+
+/* No manifest meant no Android home-screen icon and no install name
+ * (kolonie-website#62).
+ *
+ * **It carries icons and a name, and it makes no claim about being an
+ * application.** `display: standalone` says *this is software, open it without
+ * a browser around it*; this site is documentation, and a reader who added it
+ * to a home screen and lost the back button would have been told something
+ * untrue about it. `#62` asked for the minimum and for the refusal to be
+ * written down rather than left as a field somebody assumes was forgotten.
+ *
+ * **`start_url` is in the minimum**, which is the one place this goes past the
+ * literal list. Without it a home-screen icon opens whichever page it was added
+ * from — `/blog/monorepo-reversed/` for the reader who added it while reading
+ * that — and an icon that opens a two-month-old blog post is a defect rather
+ * than a smaller feature.
+ *
+ * **The icons are the heavy tiled cut**, like the avatar and unlike `mark.svg`,
+ * despite being 192 and 512. The rule is *drawn at* rather than *stored at*: a
+ * launcher renders these somewhere around 48 to 96 physical pixels, which is
+ * the heavy cut's half of the range. And they are tiled because a transparent
+ * icon on a home screen sits on whatever the wallpaper happens to be.
+ *
+ * **No `purpose: maskable`.** A maskable icon is cropped to a circle by many
+ * Android launchers, and the shield's point is the first thing that would go.
+ * Drawing a third cut with the safe-zone padding that needs is a design
+ * decision, not a manifest field, and it is not one this issue took. */
+const manifestIcons = [192, 512]
+await Promise.all(
+  manifestIcons.map((size) =>
+    sharp(Buffer.from(mark({ weight: HEAVY, tile: true })))
+      .resize(size, size)
+      .png()
+      .toFile(at(`public/mark-${size}.png`)),
+  ),
+)
+
+writeFileSync(
+  at('public/site.webmanifest'),
+  JSON.stringify(
+    {
+      name: 'Kolonie AI',
+      short_name: 'Kolonie',
+      start_url: '/',
+      icons: manifestIcons.map((size) => ({
+        src: `/mark-${size}.png`,
+        sizes: `${size}x${size}`,
+        type: 'image/png',
+      })),
+      // The same token the `theme-color` tag reads, so the browser chrome and
+      // the install prompt cannot disagree about what colour this site is.
+      theme_color: k['--k-bg'],
+      background_color: k['--k-bg'],
+    },
+    null,
+    2,
+  ) + '\n',
+)
+
+console.log(
+  'favicon.svg, favicon.ico, apple-touch-icon.png, mark.svg,',
+  'mark-avatar-500.png, mark-192.png, mark-512.png, site.webmanifest',
+)
 
 /* ---- The Open Graph image ------------------------------------------------ */
 

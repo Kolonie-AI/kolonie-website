@@ -142,6 +142,18 @@ export const sharedHeadTags = (themeColor: string): HeadTag[] => [
     tag: 'link',
     attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
   },
+  // The Android half of the same thing (kolonie-website#62): an icon and a
+  // name for a home screen. It carries no `display` field, so nothing here
+  // claims this documentation site is an application — `build-assets.mjs`
+  // records that refusal beside the rest of the manifest.
+  //
+  // `/favicon.ico` is deliberately *not* declared beside these. It exists for
+  // clients that request that path without reading this head at all, and
+  // offering it here would let a browser prefer 48 fixed pixels to a vector.
+  {
+    tag: 'link',
+    attrs: { rel: 'manifest', href: '/site.webmanifest' },
+  },
   // So a mobile reader does not get a white bar above a near-black page.
   {
     tag: 'meta',

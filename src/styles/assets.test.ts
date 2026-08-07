@@ -44,6 +44,81 @@ describe("the favicon is the theme's colours", () => {
   });
 });
 
+describe("the paths a client asks for without reading the page", () => {
+  // kolonie-website#62. Both answered 404 until then. The clients that ask for
+  // them are the unattended ones — feed readers, link-preview services,
+  // crawlers, an Android launcher — so nothing complains when they are missing;
+  // the entry simply renders without an icon.
+
+  it("answers /favicon.ico with an actual icon container", () => {
+    const ico = readFileSync(at("../../public/favicon.ico"));
+    // `sharp` cannot write ICO, so the container is assembled in the generator.
+    // The arithmetic is the whole risk: an offset that is wrong by a few bytes
+    // still produces a plausible file that no test on this side would notice.
+    expect(ico.readUInt16LE(0)).toBe(0); // reserved
+    expect(ico.readUInt16LE(2)).toBe(1); // an icon, not a cursor
+
+    const count = ico.readUInt16LE(4);
+    expect(count).toBe(3);
+
+    const frames = Array.from({ length: count }, (_, index) => {
+      const entry = 6 + index * 16;
+      return {
+        width: ico.readUInt8(entry),
+        height: ico.readUInt8(entry + 1),
+        length: ico.readUInt32LE(entry + 8),
+        offset: ico.readUInt32LE(entry + 12),
+      };
+    });
+
+    expect(frames.map((frame) => frame.width)).toEqual([16, 32, 48]);
+
+    for (const frame of frames) {
+      expect(frame.height).toBe(frame.width);
+      // Every offset points at a PNG that is the size the directory claims,
+      // and the last one ends exactly at the end of the file.
+      const image = ico.subarray(frame.offset, frame.offset + frame.length);
+      expect(image.subarray(1, 4).toString()).toBe("PNG");
+      expect([image.readUInt32BE(16), image.readUInt32BE(20)]).toEqual([
+        frame.width,
+        frame.height,
+      ]);
+    }
+    const last = frames[frames.length - 1]!;
+    expect(last.offset + last.length).toBe(ico.length);
+  });
+
+  describe("the web manifest", () => {
+    const manifest = JSON.parse(read("../../public/site.webmanifest"));
+
+    it("takes its colours from the tokens rather than being typed", () => {
+      expect(manifest.theme_color).toBe(tokens["--k-bg"]);
+      expect(manifest.background_color).toBe(tokens["--k-bg"]);
+    });
+
+    it("makes no claim about being an application", () => {
+      // `#62`: `display: standalone` says *this is software*. This site is
+      // documentation, and a reader who added it to a home screen and lost the
+      // back button would have been told something untrue about it. A refusal,
+      // so it is asserted rather than left as an absence somebody fills in.
+      expect(manifest.display).toBeUndefined();
+    });
+
+    it("opens the site rather than the page it was added from", () => {
+      expect(manifest.start_url).toBe("/");
+    });
+
+    it("names icons that exist, at the sizes it claims", () => {
+      expect(manifest.icons).toHaveLength(2);
+      for (const icon of manifest.icons) {
+        const png = readFileSync(at(`../../public${icon.src}`));
+        const [width, height] = [png.readUInt32BE(16), png.readUInt32BE(20)];
+        expect(`${width}x${height}`).toBe(icon.sizes);
+      }
+    });
+  });
+});
+
 describe("the site is not shared as a bare link", () => {
   // Every link anyone posts is this image, so its absence is the entire visual
   // impression of the project for a reader who has not clicked yet.
