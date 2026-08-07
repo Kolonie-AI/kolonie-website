@@ -48,10 +48,37 @@
 export const DOCUMENTATION_PREFIX = "docs/";
 
 /**
+ * The routes that are documentation despite not living under that directory.
+ *
+ * **This set exists because the directory rule did not survive its first real
+ * member** (kolonie-website#71). `/quests/` became documentation when `#71`
+ * rewrote it as the reference for the SOL flow, and moving it under `docs/` to
+ * satisfy the predicate would have changed a published URL — one linked from the
+ * landing page, from `Join.astro`, from `/skill` and from the header — in order
+ * to tidy an internal classification. That is the wrong way round.
+ *
+ * **The default the directory rule was protecting is unchanged**, and it was the
+ * important half: a page is persuasion unless something says otherwise, so
+ * adding a marketing page still needs no decision. What changed is that making a
+ * page documentation is now one line here rather than a move, which matches
+ * `layers.ts` calling documentation the deliberate act.
+ *
+ * **It is a set of exceptions and should not grow into the rule.** A page
+ * written as documentation from the start belongs under `docs/` and needs no
+ * entry; this is for URLs that predate the split.
+ */
+export const DOCUMENTATION_ROUTES: ReadonlySet<string> = new Set(["quests"]);
+
+/**
  * Whether this page is documentation, from the Starlight route id.
  *
  * The id is the content file's path without its extension — `index`,
  * `quests/ideas`, `docs/whatever`.
+ *
+ * Note that `quests` and `quests/ideas` are deliberately on opposite sides:
+ * the first is the reference for commissioning, and the second is a gallery of
+ * examples written for somebody who has not decided yet. Membership is exact
+ * rather than by prefix for that reason.
  */
 export const isDocumentation = (routeId: string): boolean =>
-  routeId.startsWith(DOCUMENTATION_PREFIX);
+  routeId.startsWith(DOCUMENTATION_PREFIX) || DOCUMENTATION_ROUTES.has(routeId);
