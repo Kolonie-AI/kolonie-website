@@ -19,22 +19,74 @@ import { describe, expect, it } from "vitest";
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 const html = readFileSync(join(dist, "index.html"), "utf8");
 
+/**
+ * Whether a block's `data-state` element is *visible* in the built page.
+ *
+ * **Scoped to one block, which is the whole of `#57`.** This read
+ * `data-state="loading"` across the entire document, and by the time it was
+ * written there was one such element. `#26` added a second — `CitizenStanding`,
+ * whose `hidden` turns on its own data — so a build where the Academy answered
+ * and the standing query did not failed an assertion about the Academy, for a
+ * reason that had nothing to do with it.
+ *
+ * That is worse than a flake. This file's own header says it must not couple
+ * the site's build to a separate service, which is the position `#32` was told
+ * to keep it out of; the over-broad match had coupled it to a *second* service
+ * it never meant to name. It passed only when both answered.
+ *
+ * **A helper rather than a tighter regular expression**, which was the third of
+ * the three shapes `#57` offered. The two blocks are the same design — a
+ * loading line, an error, a ready panel, each `hidden` on its own data — so the
+ * assertion is a property of that design and not of the Academy. A third block
+ * built the same way gets a line here rather than a fourth copy of a regex that
+ * has now been wrong once.
+ */
+const visible = (block: string, state: string): boolean =>
+  new RegExp(`class="${block}__state" data-state="${state}"(?![^>]*\\bhidden\\b)`).test(html);
+
+/**
+ * Exactly one of *painted* and *reading*, for one block.
+ *
+ * Both blocks render `data-state="ready"` hidden when there is nothing to show
+ * and `data-state="loading"` hidden when there is — so the pair is the invariant
+ * whichever way the build went, and neither half of it says anything about
+ * whether the Colony was up.
+ */
+const assertOneOrTheOther = (block: string, name: string): void => {
+  const painted = visible(block, "ready");
+  const reading = visible(block, "loading");
+
+  expect(painted || reading, `${name} shows neither an answer nor a loading line`).toBe(true);
+  expect(painted && reading, `${name} shows an answer and a loading line at once`).toBe(false);
+};
+
 /** The branch list only exists when the build got an answer to embed. */
 const paints = html.includes('class="shape"');
 
-/** Hidden means the build embedded an answer and this line never shows. */
-const readingVisible = /data-state="loading"(?![^>]*\bhidden\b)/.test(html);
-
 describe("the Academy graph on the built landing page", () => {
   it("either paints the catalogue or says it is reading it, never both", () => {
-    expect(
-      paints || readingVisible,
-      "the landing page shows neither a graph nor a loading line",
-    ).toBe(true);
-    expect(
-      paints && readingVisible,
-      "the landing page shows a graph and a loading line at once",
-    ).toBe(false);
+    assertOneOrTheOther("academy", "the Academy block");
+  });
+
+  /**
+   * **The sibling `#57` asked about, and it is worth having on its own terms.**
+   * Not because the standing block is likely to break — because an assertion
+   * that covers two blocks by accident is exactly what produced this issue, and
+   * one that covers them on purpose is a different thing with the same reach.
+   */
+  it("says the same of the citizen standing block, separately", () => {
+    assertOneOrTheOther("standing", "the citizen standing block");
+  });
+
+  /**
+   * The rejection case: the helper has to be able to fail, and it has to fail
+   * for the block it was given rather than for its neighbour. Asserted against
+   * a name no block uses, so a helper that quietly matched the whole document
+   * would answer `true` here and be caught.
+   */
+  it("finds nothing for a block that is not on the page", () => {
+    expect(visible("nosuchblock", "loading")).toBe(false);
+    expect(visible("nosuchblock", "ready")).toBe(false);
   });
 
   it("dates an embedded answer, because an undated one is a claim it has not checked", () => {
