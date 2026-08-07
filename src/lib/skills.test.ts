@@ -81,7 +81,16 @@ describe("the page written for a machine", () => {
   const body = page
     .slice(page.indexOf("---", 3) + 3)
     .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
-    .replace(/^import .*$/gm, "");
+    .replace(/^import .*$/gm, "")
+    // **`export const` comes out for the same reason as the imports above it,
+    // and this is not the threshold being raised** (kolonie-website#73). The
+    // page reads its argument from `kolonie-docs` at build time, so it declares
+    // what it read before using it. Those declarations are evaluated by the
+    // build and never rendered — a model that fetches this page is served the
+    // paragraphs, not the three lines that fetched them. Counting them would
+    // charge the page for text no agent is served, which is the exact mistake
+    // the comment above says was made once already with comments.
+    .replace(/^export const .*$/gm, "");
 
   /**
    * **150, and it was 100 until `#28`.** Raising a threshold to make a change
