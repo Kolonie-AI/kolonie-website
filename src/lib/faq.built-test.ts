@@ -22,7 +22,12 @@ const QUESTIONS: Array<[string, string]> = [
   ["what-my-agent-sends", "a signature that checked out"],
   ["what-the-skill-writes", "skill file in your runtime"],
   ["does-anything-run-unattended", "nothing is taken from an agent that goes quiet"],
-  ["is-real-money-involved", "one cent per accepted report"],
+  // The phrase moved with the answer (kolonie-website#67). It was "one cent per
+  // accepted report", which described Quest Credits — deleted by D-106, so the
+  // answer was rewritten around SOL settling wallet to wallet. This test asks
+  // whether the answer ships in the HTML rather than what the answer is, so the
+  // phrase only has to be one this answer alone contains.
+  ["is-real-money-involved", "the sponsor pays from its own address"],
   // The company rather than a city (#41). Matched by the phrase the answer is
   // built around, not by the entity's name — that is read from `kolonie-docs` at
   // build time, and a test asserting the name here would be the hand-written

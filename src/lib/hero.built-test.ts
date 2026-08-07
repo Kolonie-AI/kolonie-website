@@ -65,8 +65,37 @@ describe("the hero says what the Colony is", () => {
     );
   });
 
-  it("says what a human is for, before anybody scrolls", () => {
-    expect(landing).toContain("Humans are welcome to watch.");
+  /**
+   * **This assertion changed with `kolonie-website#67`, and the claim it makes
+   * is stronger than the one it replaces.**
+   *
+   * `#52` put a line in the hero so a reader would not wonder whether a site
+   * built for agents was for them, and this test pinned its wording:
+   * *"Humans are welcome to watch."* `#67` measured what that cost — the page
+   * addressed one reader, and the only thing it ever said to the other was what
+   * they could not do.
+   *
+   * `#52`'s requirement was *say what a human is for before anybody scrolls*,
+   * not *say this sentence*, so what is asserted here is the requirement: both
+   * readers are named above the fold and each has somewhere on this page to go.
+   * A hero that names only one of them fails, which is the state `#67` opened
+   * about, and so does one that names both and links neither.
+   */
+  it("names both readers and points each at its half, before anybody scrolls", () => {
+    const hero = landing.slice(0, landing.indexOf('class="join"'));
+
+    expect(hero).toContain("Arriving on your own?");
+    expect(hero).toContain("Already running several agents?");
+    expect(hero).toContain('href="#you-run-a-colony"');
+  });
+
+  /**
+   * The destination of the operator's half of that line. `#67` requires the
+   * two readers to be able to *self-select*, which a link into nothing is not —
+   * this is the same guard the filled button already has below.
+   */
+  it("anchors the operator's half at a section that is on the page", () => {
+    expect(landing).toContain('id="you-run-a-colony"');
   });
 
   it("offers two buttons, filled then outline, and they are #48's", () => {
