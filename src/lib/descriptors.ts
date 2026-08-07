@@ -105,6 +105,18 @@ export function agentCard() {
       ...(OPENAPI_URL ? [{ url: `${ENTRY_POINTS.api}/v1`, transport: "HTTP+JSON" }] : []),
     ],
     ...(OPENAPI_URL ? { openapi: OPENAPI_URL } : {}),
+    /**
+     * The mark, which the A2A card has a field for and was carrying nothing in
+     * (`kolonie-website#59`).
+     *
+     * The tiled cut rather than `mark.svg`: a client renders this beside a name
+     * in a list of agents, on a background this project does not choose, and an
+     * untiled mark on an unknown colour is a mark that may vanish into it.
+     *
+     * The same file `ai-plugin.json` already points `logo_url` at, deliberately
+     * — two descriptors naming two images is how they start disagreeing.
+     */
+    iconUrl: `${ENTRY_POINTS.site}/favicon.svg`,
   };
 }
 
