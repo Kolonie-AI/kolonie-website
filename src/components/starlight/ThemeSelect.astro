@@ -1,15 +1,26 @@
 ---
 /**
- * ThemeSelect, on documentation pages only (kolonie-website#21).
+ * ThemeSelect, rendered nowhere (kolonie-website#64).
  *
- * See `src/lib/chrome.ts` for the rule and the reasoning. This file exists to
- * apply it and holds no judgement of its own.
+ * This file used to render Starlight's own control on documentation pages and
+ * nothing elsewhere, which was `#21`'s rule and correct while the site had two
+ * themes to choose between. `#64` settled that it has one, so there is no
+ * choice left for a control to offer.
+ *
+ * **It renders nothing rather than being hidden, and `#64` asks for exactly
+ * that**: *"not by hiding the toggle with CSS — a control that exists and does
+ * nothing is worse than one that is absent."* A hidden `<select>` is still in
+ * the accessibility tree and still reachable by keyboard, so hiding it would
+ * have left the failure in place for the readers most likely to meet it.
+ *
+ * **It is unconditional, and that is the point of keeping the file.** The old
+ * version asked `isDocumentation`, which is false for every route today and
+ * would become true the moment somebody adds a page under `docs/`. That would
+ * have restored a toggle whose script `ThemeProvider.astro` no longer emits —
+ * a control that throws rather than one that does nothing. The override stays
+ * so that page cannot bring it back by accident.
+ *
+ * The rule about the rest of the furniture is unchanged and still lives in
+ * `src/lib/chrome.ts`; this component no longer participates in it.
  */
-
-import Default from '@astrojs/starlight/components/ThemeSelect.astro'
-import { isDocumentation } from '../../lib/chrome'
-
-const documentation = isDocumentation(Astro.locals.starlightRoute.id)
 ---
-
-{documentation && <Default><slot /></Default>}

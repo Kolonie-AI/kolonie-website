@@ -61,6 +61,14 @@ export default defineConfig({
         // src/lib/chrome.ts rather than in a second place.
         Header: './src/components/starlight/Header.astro',
         Search: './src/components/starlight/Search.astro',
+        // The two halves of one theme (kolonie-website#64). `ThemeProvider`
+        // is the script that wrote `data-theme` from the visitor's system
+        // setting, which is what made a documentation page render white under
+        // a dark landing page; `ThemeSelect` is the control that would offer a
+        // choice this site no longer has. Both render nothing, and each file
+        // says why — the second is unconditional so that adding a page under
+        // `docs/` cannot restore a toggle whose script is gone.
+        ThemeProvider: './src/components/starlight/ThemeProvider.astro',
         ThemeSelect: './src/components/starlight/ThemeSelect.astro',
         EditLink: './src/components/starlight/EditLink.astro',
         LastUpdated: './src/components/starlight/LastUpdated.astro',

@@ -25,8 +25,23 @@
  * decision.
  *
  * What is **not** decided here, because it is not chrome and not optional: the
- * skip link, the keyboard order, and both colour themes. `#21` is explicit that
- * removing chrome must not remove accessibility.
+ * skip link and the keyboard order. `#21` is explicit that removing chrome must
+ * not remove accessibility.
+ *
+ * **Colour themes were on that list until `#64` and are not any more.** `#21`
+ * read *both themes* as an accessibility guarantee, and on a site that offered
+ * a choice it was one. The site did not offer it: the landing page has been a
+ * single theme since `#30`, so what the Starlight pages actually provided was a
+ * second theme the rest of the site could not follow — a visitor on a light
+ * system read a dark page and then a white one. `#64` settled the site on the
+ * theme it already committed to, and the guarantee that replaces *both themes*
+ * is the contrast test, which computes every text-on-background pair in the
+ * remaining set rather than trusting the palette.
+ *
+ * The theme is now applied by absence — nothing writes `data-theme`, so
+ * `theme.css`'s dark `:root` block is what matches. The two files that make
+ * that true are `../components/starlight/ThemeProvider.astro` and
+ * `ThemeSelect.astro` beside it, and both carry the reasoning.
  */
 
 /** The one directory whose pages are documentation. */
