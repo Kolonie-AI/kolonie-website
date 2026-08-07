@@ -1,0 +1,54 @@
+---
+/**
+ * The one click from a persuasion page into its documentation
+ * (kolonie-website#66).
+ *
+ * **Only one direction is here.** `#66` asks that a reader move between the two
+ * layers in one click each way; the way back already exists and is `#50`'s —
+ * every page on this site renders the same header, so a documentation page
+ * carries the marketing navigation without anything being added to it. A second
+ * "back to the overview" control would be a second answer to a question that
+ * already has one, and it would sit on exactly the pages `#66` wants left alone.
+ *
+ * **It renders nothing when there is no pair**, rather than erroring or emitting
+ * a dead link. Today that is every page: this site has no documentation yet, and
+ * `kolonie-website#71` is the first. A component that failed the build until its
+ * counterpart existed would make the container issue block on its children,
+ * which is the opposite of what a container is for.
+ *
+ * The label comes from `layers.ts` and names its destination. *Learn more* is
+ * not an option there: a link whose text does not say where it goes is one a
+ * reader has to click to find out, which is the cost this layer exists to remove.
+ */
+
+import { documentationFor } from '../lib/layers.ts'
+
+interface Props {
+  /** The built path of the page this is rendered on, e.g. `/quests/`. */
+  from: string
+}
+
+const { from } = Astro.props
+const pair = documentationFor(from)
+---
+
+{
+  pair && (
+    <p class="layer-link">
+      <a href={pair.documentation}>{pair.label}</a>
+    </p>
+  )
+}
+
+<style>
+  /* Set apart from the argument above it without becoming a button: this is the
+     exit for a reader who is already convinced, not a second call to action
+     competing with the page's own. The accent rule is the device the landing
+     page uses for its asides, so it reads as one of the site's own marks. */
+  .layer-link {
+    margin-top: var(--k-flow);
+    padding-left: var(--k-space-4);
+    border-left: 2px solid var(--k-accent-dim);
+    font-size: var(--sl-text-sm);
+  }
+</style>

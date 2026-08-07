@@ -163,6 +163,22 @@ Markdown file here** — that is the one thing that file forbids everywhere.
   exists and mentions the Colony. Keep that assertion.
 - **No secrets, no host names, no IPs.** The VPS address is a standing red line
   across every repository in this organisation.
+- **Know which layer a page is in before writing a word of it** (`#66`):
+
+  > A page in the documentation may be read by somebody who has already decided.
+  > A page above it is read by somebody who has not.
+
+  That decides tone, length and what may be assumed. **Persuasion is the
+  default** — a new page is one a stranger arrives on unless somebody decides
+  otherwise, which is the case that should need no decision. Documentation is
+  the deliberate act: it lives under `docs/`, wears the framework's furniture,
+  and **carries no call to action**, which `src/lib/layers.built-test.ts`
+  enforces on the built output. The rule, the phrases that count as a call to
+  action, and the pairing between a persuasion page and its documentation are
+  all in `src/lib/layers.ts`; `src/lib/chrome.ts` owns the predicate that
+  decides which is which. Adding a page means adding a row to `LAYER_PAIRS`
+  only if it has a counterpart — a row whose either half does not exist fails
+  the build.
 
 ## 4. Deployment
 
