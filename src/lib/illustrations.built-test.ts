@@ -23,7 +23,7 @@ const root = fileURLToPath(new URL("../..", import.meta.url));
 const dist = join(root, "dist");
 
 /** The two `#65` requires to exist, by the path the built HTML asks for. */
-const ILLUSTRATIONS = ["/illustrations/what-an-agent-holds.webp", "/illustrations/a-swarm.webp"];
+const ILLUSTRATIONS = ["/illustrations/what-an-agent-holds.png", "/illustrations/a-swarm.png"];
 
 const landing = readFileSync(join(dist, "index.html"), "utf8");
 
@@ -59,6 +59,13 @@ describe("the illustrations #65 asked for", () => {
    * run by hand on a freshly generated candidate, before it ever reaches
    * `public/`. Its threshold was set by its own rejection case: a 60x60 patch of
    * a plausible-but-wrong amber is 0.229% of a 1536x1024 frame and must fail.
+   *
+   * **It is Node and `sharp` because the Python version did not run in CI.** The
+   * first one imported Pillow, passed locally and failed the build with
+   * `ModuleNotFoundError: No module named 'PIL'`. The choice was to install
+   * Pillow for one check or to let the test skip on a failed import — and a
+   * check that silently does not run is worse than no check. `sharp` is already
+   * a dependency of this repository.
    */
   it("every illustration is drawn from the theme tokens", () => {
     const files = ILLUSTRATIONS.map((src) => join(root, "public", src));
@@ -66,8 +73,8 @@ describe("the illustrations #65 asked for", () => {
     // Throws on a non-zero exit, which is the failure. stdio is captured so a
     // pass is quiet and a failure prints which colour and how far off it was.
     const output = execFileSync(
-      "python3",
-      [join(root, "scripts", "check-illustration-palette.py"), ...files],
+      process.execPath,
+      [join(root, "scripts", "check-illustration-palette.mjs"), ...files],
       { encoding: "utf8" },
     );
 
@@ -99,11 +106,24 @@ describe("the illustrations #65 asked for", () => {
    * **Page weight, checked afterwards** — `#65`'s last criterion: *"a landing
    * page that is now slow is a worse landing page."*
    *
-   * 250 KB for everything the landing page pulls in images. The two here are
-   * ~92 KB together at 1200px wide in WebP, so the budget is roughly two and a
-   * half times what was spent — room for a third illustration, and not room for
-   * somebody committing a 1.2 MB PNG straight out of the generator, which is
-   * exactly what these were before conversion.
+   * 320 KB for everything the landing page pulls in images. The two here are
+   * 228 KB together at 1200px wide.
+   *
+   * **The budget was 250 KB against an encoding that turned out to be wrong, and
+   * this is the correction rather than a threshold raised to pass.** They were
+   * lossy WebP at 96 KB, and the palette check — once it stopped quantising
+   * before measuring, which was hiding the spread — put the swarm at 0.24%
+   * off-palette. Lossy DCT rings around 1px amber strokes on a near-black field,
+   * and no quality setting or chroma mode fixed it: 4:4:4 at q95 was still
+   * 0.27%. Resampling mattered too; `lanczos3` overshoots on those strokes and
+   * `mitchell` does not.
+   *
+   * What is committed is **palettised PNG at 16 colours**, which scores 0.000%
+   * on both because the format cannot invent a colour that is not in the
+   * palette. That guarantee is the point of the pictures, and it costs bytes.
+   * The budget is sized to what a correct encoding costs plus room for a third
+   * illustration — and it is still nowhere near the 2.4 MB the two came out of
+   * the generator as.
    */
   it("the landing page's images stay inside a budget", () => {
     const sources = [...landing.matchAll(/<img[^>]*\bsrc="(\/[^"]+)"/g)].map((m) => m[1]!);
@@ -113,7 +133,7 @@ describe("the illustrations #65 asked for", () => {
 
     expect(unique.length).toBeGreaterThan(0);
     expect(total, `${unique.join(", ")} total ${Math.round(total / 1024)}KB`).toBeLessThan(
-      250 * 1024,
+      320 * 1024,
     );
   });
 });
