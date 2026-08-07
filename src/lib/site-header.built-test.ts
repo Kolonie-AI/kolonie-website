@@ -48,7 +48,31 @@ describe.each(pages)("%s", (file) => {
   // Astro appends a scoped class to every styled element, so every class match
   // here is a prefix rather than an equality.
   it("carries the wordmark, linked home", () => {
-    expect(page).toMatch(/<a href="\/" class="site-header__mark[^"]*">Kolonie AI</);
+    expect(page).toMatch(
+      /<a href="\/" class="site-header__mark[^"]*">[\s\S]*?Kolonie AI\s*<\/a>/,
+    );
+  });
+
+  it("carries the mark beside it, in the same link", () => {
+    // `#60`: on every page, in both themes, linking to `/`. Both themes is the
+    // `var(--k-…)` — an inlined SVG with a literal hex in it is a mark that
+    // ignores the reader's theme toggle, which is the defect `mark.ts` exists
+    // to make impossible and this is where it is checked on the real output.
+    const link = page.match(
+      /<a href="\/" class="site-header__mark[^"]*">([\s\S]*?)<\/a>/,
+    )?.[1];
+    expect(link).toBeDefined();
+    expect(link).toContain("<svg");
+    expect(link).toContain("var(--k-accent)");
+    expect(link).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+  });
+
+  it("does not announce the mark and the wordmark as two things", () => {
+    const link = page.match(
+      /<a href="\/" class="site-header__mark[^"]*">([\s\S]*?)<\/a>/,
+    )?.[1];
+    expect(link).toContain('aria-hidden="true"');
+    expect(link).not.toContain("aria-label");
   });
 
   it.each(NAV_LINKS)("navigates to $label", (link) => {

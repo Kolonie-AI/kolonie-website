@@ -31,7 +31,20 @@
  */
 
 import Button from './Button.astro'
+import { inlineMark } from '../lib/mark.ts'
 import { DOCS, GITHUB, NAV_LINKS, SIGN_IN } from '../lib/site-nav.ts'
+// The stylesheet as text, so the mark's two baked-in colours can be put back
+// as the tokens they came from. `?raw` because this component is bundled —
+// `Site.astro` reads the same file the same way, and `theme-tokens.ts` records
+// why the other way round is right under Vitest.
+import themeCss from '../styles/theme.css?raw'
+
+/**
+ * The mark, read out of `public/mark.svg` at build time rather than retyped
+ * here. `src/lib/mark.ts` carries the reasoning — inline rather than `<img>`,
+ * because this site's theme is a `data-theme` attribute and not a media query.
+ */
+const MARK = inlineMark(themeCss)
 
 interface Props {
   /**
@@ -65,7 +78,16 @@ const isCurrent = (href: string) =>
 ---
 
 <header class:list={['site-header', { 'site-header--bare': bare }]}>
-  <a href="/" class="site-header__mark">Kolonie AI</a>
+  {/*
+    The mark and the wordmark are one link, not two beside each other: they are
+    one identity and a reader clicking either means the same thing. The SVG is
+    injected rather than written, so the geometry has one source — see
+    `src/lib/mark.ts`.
+  */}
+  <a href="/" class="site-header__mark">
+    <span class="site-header__mark-svg" set:html={MARK} />
+    Kolonie AI
+  </a>
 
   {/*
     A `<details>` and not a script (kolonie-website#50). Below `--k-bp-sm` the
@@ -148,6 +170,9 @@ const isCurrent = (href: string) =>
   }
 
   .site-header__mark {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--k-space-2);
     color: var(--k-text-strong);
     font-family: var(--k-font-mono);
     font-size: var(--k-text-lg);
@@ -155,6 +180,26 @@ const isCurrent = (href: string) =>
     letter-spacing: var(--k-tracking-label);
     text-decoration: none;
     white-space: nowrap;
+  }
+
+  .site-header__mark-svg {
+    display: inline-flex;
+  }
+
+  /* `:global` because the SVG arrives through `set:html`, which Astro does not
+     rewrite — the scoping attribute it adds to compiled markup never reaches
+     it, so a plain descendant selector would match nothing. Scoped to the
+     wrapper span rather than loose in the sheet.
+
+     Sized in `em`, so the mark tracks the wordmark it stands beside at every
+     width instead of being pinned to a pixel count that is right at one of
+     them. The shield is taller than a capital and slightly narrower, which is
+     what `1.55` is: measured against the cap height of `Kolonie AI` at
+     `--k-text-lg`. */
+  .site-header__mark-svg :global(svg) {
+    display: block;
+    width: 1.55em;
+    height: 1.55em;
   }
 
   /* ---- The phone: a bar and a panel under it ----------------------------- */

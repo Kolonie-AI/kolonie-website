@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { darkTokensFrom } from "../lib/theme-tokens.ts";
 
 /**
  * The favicon and the Open Graph image are generated from the theme's tokens by
@@ -13,29 +14,15 @@ import { describe, expect, it } from "vitest";
 const at = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 const read = (p: string) => readFileSync(at(p), "utf8");
 
-const hex = (h: number, s: number, l: number) => {
-  const a = s * Math.min(l, 1 - l);
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))));
-  };
-  return (
-    "#" + [f(0), f(8), f(4)].map((v) => v.toString(16).padStart(2, "0")).join("")
-  );
-};
-
-/** The dark block's colours, as the generator computes them. */
-const tokens = (() => {
-  const css = read("./theme.css");
-  const dark = css.slice(css.indexOf(":root,"), css.indexOf("[data-theme='light']"));
-  const out: Record<string, string> = {};
-  for (const [, name, h, s, l] of dark.matchAll(
-    /(--k-[a-z0-9-]+)\s*:\s*hsl\(\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%\s*\)/g,
-  )) {
-    out[name] = hex(Number(h), Number(s) / 100, Number(l) / 100);
-  }
-  return out;
-})();
+/**
+ * The dark block's colours, as the generator computes them.
+ *
+ * Read through `src/lib/theme-tokens.ts` since `#60`, which needed the same
+ * answer in the header component and would otherwise have been a third copy of
+ * the HSL-to-hex conversion. The generator still holds its own, for the reason
+ * that file gives.
+ */
+const tokens = darkTokensFrom(read("./theme.css"));
 
 describe("the favicon is the theme's colours", () => {
   const svg = read("../../public/favicon.svg");
