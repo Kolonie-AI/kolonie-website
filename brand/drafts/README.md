@@ -42,3 +42,25 @@ not coming back.
 
 `r2-32px.png` is the file that decides this. A logo is chosen at the size it is
 used at, and the size it is used at is the favicon and the repository avatar.
+
+## Round three — the outlined crest, with a cursor
+
+`r2-03-outline` is the chosen drawing (maintainer, 2026-08-07). Round three keeps
+its construction — thick amber outline, hollow interior, solid glyph inside — and
+adds the cursor bar from `r2-04-full`, so the mark reads as a command line rather
+than as a play button. Six variants across stroke weight, glyph size and spacing.
+
+| File | Variant |
+|---|---|
+| `r3-01-bar.png` | Medium outline, chevron and bar at matching weight |
+| `r3-02-heavy.png` | Very heavy outline, glyph at the same heavy weight |
+| `r3-03-light.png` | Thin outline, large glyph |
+| `r3-04-airy.png` | Compact glyph with generous space around it |
+| `r3-05-stacked.png` | Chevron above an underscore, rather than a bar beside it |
+| `r3-06-stroke.png` | Rounded strokes throughout, one consistent weight |
+| `r3-contact-sheet.png` | All six |
+| `r3-sizes.png` | All six at **16/24/32/48px on both backgrounds** — rows are `01`…`06`, dark four then light four |
+
+`r3-sizes.png` is what decides it, and it decides against the two variants that
+looked best large: thin outlines vanish on the light background, and a compact
+glyph is gone entirely by 16px.
