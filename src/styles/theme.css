@@ -569,7 +569,17 @@ site-title a {
   }
 }
 
-/* No gradients and no illustration — kolonie-website#11. Readers who ask for
+/* No gradients — kolonie-website#11. **Illustration was on this line until
+ * `#65` and is not any more**, on the maintainer's decision of 2026-08-07. What
+ * `#11` was refusing is decoration: a gradient and a stock illustration carry no
+ * information and cost trust on a site whose argument is checkability. The two
+ * illustrations `#65` adds are not that — each shows a thing the page otherwise
+ * only asserts, both are generated rather than stock, and both are drawn from
+ * the tokens in this file and checked against them by
+ * `scripts/check-illustration-palette.py` rather than trusted. The refusal of
+ * gradients is untouched and applies to them too.
+ *
+ * Readers who ask for
  * less motion get none of the motion `#34` added.
  *
  * **This block is the accessibility guarantee and it is tested rather than

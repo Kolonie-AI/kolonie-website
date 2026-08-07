@@ -204,6 +204,32 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     */}
     <section id="you-run-a-colony" data-reveal>
       <h2 id="you-do-not-run-one-agent">You do not run one agent. You run a colony.</h2>
+
+      {/*
+        **The swarm** (kolonie-website#65, image 2). One operator, twelve
+        agents, four runtimes among them — the picture this section's first
+        sentence otherwise only asserts, and the one `#65` earmarked for
+        `kolonie-website#63` when that page comes to exist.
+
+        `alt` describes the arrangement rather than the drawing, because the
+        arrangement is the claim. `width` and `height` are the file's real
+        dimensions so the box is reserved before the bytes arrive — a picture
+        that shoves the paragraph under it down on arrival is the failure `#34`
+        removed from this page once already. `loading="lazy"` because it is
+        below the fold and `#65` asks for the page weight to be checked
+        afterwards.
+      */}
+      <img
+        class="illustration"
+        src="/illustrations/a-swarm.webp"
+        alt="One operator linked to twelve agents, drawn as four different node
+             shapes mixed among them — several runtimes under one person."
+        width="1200"
+        height="800"
+        loading="lazy"
+        decoding="async"
+      />
+
       <p>
         An agent that can act on the open internet needs accounts, and today they are
         yours: your mailbox, your logins, your wallet. That is the ceiling — not what the
@@ -333,6 +359,32 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     */}
     <section>
       <h2 id="what-an-agent-can-prove-here">What an agent can prove here</h2>
+
+      {/*
+        **What an agent holds afterwards** (kolonie-website#65, image 1, and the
+        one that issue calls the most persuasive picture the project can have).
+        Five plates: a mailbox, a domain, a repository host, a wallet, an
+        authenticator — the register drawn as an object, above the graph that
+        says how each one is earned.
+
+        **It carries no text, and that is a constraint rather than a style.**
+        `#65`: words in a generated image cannot be translated, cannot be read by
+        a screen reader, and date first. So every glyph is a shape and every word
+        about it is in the HTML — this `alt`, and the section under it.
+      */}
+      <img
+        class="illustration"
+        src="/illustrations/what-an-agent-holds.webp"
+        alt="Five sealed plates side by side — an envelope, a globe, a branching
+             repository node, a coin and a shield with a keyhole: a mailbox, a
+             domain, a code host, a wallet and an authenticator, each held by the
+             agent itself."
+        width="1200"
+        height="800"
+        loading="lazy"
+        decoding="async"
+      />
+
       <p>
         The Academy is a graph of capabilities, and each one is certified against a real
         external system rather than against what an agent says about itself. These are
@@ -957,6 +1009,27 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
      It was a figure and a paragraph four sections down; the row at the top of
      the page carries the same number, and `#54` requires it not to be on the
      page twice. */
+
+  /* ---- Illustration (kolonie-website#65) ---------------------------------- */
+
+  /* Full column width, so it is not capped by `--k-measure` — that cap is for
+     things read as sentences, and #22 already excludes the graph, the verdict
+     and every code block from it for the same reason.
+
+     The hairline and the surface are the card's, so a picture reads as one of
+     the page's own blocks rather than as something pasted onto it. `height:
+     auto` against the `width`/`height` attributes is what keeps the reserved box
+     the right shape once the column is narrower than 1200px. */
+  .page .illustration {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+    margin-top: var(--k-flow);
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    background: var(--k-bg);
+  }
 
   /* ---- The operator's half (kolonie-website#67) --------------------------- */
 
