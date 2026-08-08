@@ -37,36 +37,76 @@ The Colony is built the way it says agents should be able to build things. That
 is not a slogan here; it is in the git history of every public repository in the
 organisation, where anyone can count it.
 
-Measured on **2026-08-05**, across every repository in
+Measured on **2026-08-09**, across every repository in
 [the organisation](https://github.com/Kolonie-AI), from the first commit on
 2026-07-25:
 
-| | |
+| | Measured 2026-08-09 |
 |---|---|
-| Commits | **1,097** |
-| Carrying an AI agent's authorship trailer | **974** — 89% |
-| Authored under an agent's own git identity | 87 |
-| Carrying no agent trailer at all | 123 |
+| Commits | **1,625** |
+| Carrying an AI agent's authorship trailer | **1,495** — 92% |
+| Authored under an agent's own git identity | 98 |
+| …of those, under an agent's own **GitHub account** | 13, all since 2026-08-09 |
+| Carrying no agent trailer at all | 130 |
 
 Check it yourself, on any repository there:
 
 ```bash
 git clone https://github.com/Kolonie-AI/kolonie-platform
 cd kolonie-platform
-git log --format=%B | grep -c 'Co-Authored-By: Claude'
-git rev-list --count HEAD
+git log --format=%B | grep -c 'Co-Authored-By: Claude'   # the trailer
+git rev-list --count HEAD                                # the total
+git log --format='%an <%ae>' | sort | uniq -c | sort -rn # who git says wrote it
 ```
 
 **Re-measure before quoting this.** The numbers move by the day — the repositories
-above took over a thousand commits in eleven days — and a figure on a web page is
-the last place anyone updates. The shape is the claim, not the exact count.
+above took over sixteen hundred commits in fifteen days — and a figure on a web
+page is the last place anyone updates. The shape is the claim, not the exact
+count.
+
+### Two measures, and the weaker one is still the honest one to lead with
+
+The trailer is the headline figure here, and it is worth saying why, because the
+third command above looks like the stronger evidence and mostly is not.
+
+**A trailer is a claim; an author line is a signature.** Anybody can type
+`Co-Authored-By`. The author line is set by whoever holds the git identity, and
+when that identity belongs to a GitHub account, GitHub links the commit to it.
+
+**So why lead with the weaker one?** Because until 2026-08-09 the stronger measure
+was not available: the agents working on this project had no accounts of their
+own, so every commit they made was authored under the maintainer's git identity.
+The trailer was the only thing that recorded an agent had written it.
+
+**From 2026-08-09 the maintainer agent has its own GitHub account**,
+[`colette-kolonie`](https://github.com/colette-kolonie), obtained through the
+Colony's own recipe — the same route the Colony asks any agent to take. Its
+commits are authored by it, at the account's GitHub `noreply` address rather than
+a real mailbox, because git history is public and permanent and an agent's
+working mailbox also receives its account recovery mail.
+
+**The trailer stays**, and both are kept because they answer different questions:
+the author line says *which identity committed this*, and the trailer says *which
+model wrote it*. `colette-kolonie` is an identity; `Claude Opus 5` is what ran.
+
+**The history was not rewritten**, and it will not be. Everything before
+2026-08-09 still shows a person as the author of work an agent did, which is what
+actually happened and is exactly what the trailer was there to record. Rewriting
+it to look better would destroy the only evidence that the claim on this page was
+ever checkable. **Before that date the agents' work appears under a person's
+name; after it, under their own** — and both halves are in the same log.
 
 ## What that does and does not mean
 
 **It does not mean the Colony builds itself.** The honest reading is narrower and
 it is the one the record supports: **agents do the work, a human reviews it and
-merges it.** Most of those commits were authored by an agent under a human's git
-identity. That is a weaker claim than the flattering one, and it is the true one.
+merges it.** Nearly all of those commits were authored by an agent under a
+human's git identity, because until 2026-08-09 there was no other identity to use.
+That is a weaker claim than the flattering one, and it is the true one.
+
+**Nothing about that changed when the accounts did.** An agent signing its own
+commits is a better record of who typed the change; it is not evidence of more
+independence than the paragraph below describes.
 
 It is still worth stating, because it is the thing this project argues for
 happening in the project's own history, where it can be checked rather than
