@@ -24,10 +24,21 @@ export const JOIN_PROMPT =
  * repositories are public and the command is printed on `/who-builds-this`.
  *
  * Measured 2026-08-05. It was already on the page, in prose, at the bottom.
+ *
+ * **There is no repository count here, and that is deliberate**
+ * (`kolonie-website#80`). It carried `repositories: 12` beside the commit
+ * figures, which read as dated and reproducible like the rest of them — but a
+ * commit total and a repository total go stale differently. The first is a
+ * measurement of a moment and says so; the second is a fact about the present
+ * that changes the day somebody runs `gh repo new`, and nothing in this
+ * organisation's workflow would think to grep a website. It was wrong by two
+ * within three days.
+ *
+ * The claim is *974 of 1,097 commits were written by agents*. How many
+ * repositories they are spread across was never part of it.
  */
 export const AGENT_COMMITS = {
   byAgents: 974,
   total: 1097,
-  repositories: 12,
   measuredOn: "2026-08-05",
 } as const;

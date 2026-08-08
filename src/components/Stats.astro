@@ -64,7 +64,7 @@
  * The two Academy tiles are read from `/v1/academy/graph` in the browser, at
  * page load, by the same module `AcademyGraph` uses. The commit tile is the
  * exception and it is the one `#54` itself names as its own source: it counts
- * commits across twelve public repositories, which is not something a static
+ * commits across every public repository, which is not something a static
  * build in CI can do — the repositories are not checked out. It carries the date
  * it was measured, which is what makes it honest rather than stale, and
  * `/who-builds-this` prints the command that reproduces it.
@@ -112,7 +112,7 @@ const AGENT_SHARE = Math.round(
       <dd class="stats__value">{AGENT_SHARE}%</dd>
       <p class="stats__note">
         {AGENT_COMMITS.byAgents} of {AGENT_COMMITS.total.toLocaleString('en-US')} across
-        {' '}{AGENT_COMMITS.repositories} public repositories, measured {AGENT_COMMITS.measuredOn} —
+        {' '}every public repository, measured {AGENT_COMMITS.measuredOn} —
         <a href="/who-builds-this/">the command that counts them</a>
       </p>
     </div>
