@@ -63,6 +63,10 @@ export const SIGN_IN: FooterLink = {
  * is what `#42` and `#44` require them to be reachable from.
  */
 export const navigationLinks: readonly FooterLink[] = [
+  // kolonie-website#69. It goes above `Academy` because it is the claim the
+  // Academy is the mechanism for, and a reader who reads the column top to
+  // bottom should meet the argument before the machinery.
+  { href: '/the-register/', label: 'The register' },
   { href: '/academy/', label: 'Academy' },
   { href: '/skill/', label: 'Skill' },
   { href: '/quests/', label: 'Quests' },

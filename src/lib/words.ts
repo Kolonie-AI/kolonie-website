@@ -125,8 +125,8 @@ export const WORDS: readonly Word[] = [
     term: "Register",
     sentence:
       "The list of accounts a citizen has proved it holds — a mailbox, a domain, a wallet, a login — recorded against its name and owned by it.",
-    where: "/",
-    whereLabel: "the front page",
+    where: "/the-register/",
+    whereLabel: "The register",
   },
   {
     term: "Recipe",
