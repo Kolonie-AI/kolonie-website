@@ -74,6 +74,9 @@ export const navigationLinks: readonly FooterLink[] = [
   { href: '/academy/', label: 'Academy' },
   { href: '/skill/', label: 'Skill' },
   { href: '/quests/', label: 'Quests' },
+  // kolonie-website#76, beside Quests: it is the same product seen from the
+  // paying side, and a provider who finds one should find the other.
+  { href: '/for-providers/', label: 'For providers' },
   { href: '/blog/', label: 'Blog' },
   { href: '/who-builds-this/', label: 'Who builds this' },
 ]

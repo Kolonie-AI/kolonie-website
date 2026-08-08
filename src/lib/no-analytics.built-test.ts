@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { PROVIDER_ENQUIRY, PROVIDER_PATH } from "./provider-enquiry.ts";
+
 /**
  * Run **after** `astro build`, which is why this file is not named `*.test.ts`
  * — the ordinary suite runs before the build and would read whatever `dist/`
@@ -24,6 +26,21 @@ import { describe, expect, it } from "vitest";
  * found no legal basis, reversed the same day on the maintainer's instruction,
  * and removed with nothing in its place by `#58`. A cookieless self-hosted
  * replacement is not an untried idea here: it existed, ran, and was removed.
+ *
+ * ## The one exception, and why it is named here rather than tolerated
+ *
+ * `kolonie-website#76` puts a provider form on `/for-providers/`, and its spam
+ * defence is hCaptcha — a third-party script. The maintainer decided on
+ * 2026-08-08 that it goes on the site and the policy gains the exception.
+ *
+ * **The exception would otherwise be invisible to this file**, which is the part
+ * worth stating. hCaptcha is fetched by `ProviderEnquiry.astro` at the reader's
+ * first keystroke, so it never appears as a `<script src>` in any built page and
+ * every assertion above would keep passing over a site that now loads it. A
+ * check that silently stops covering the thing it was written for is worse than
+ * no check, so the exception is asserted rather than accommodated: the group
+ * below fails if the URL appears on any page but that one, and fails if it stops
+ * being lazy on that one.
  */
 
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
@@ -101,5 +118,64 @@ describe("the built site carries no third-party analytics", () => {
    */
   it.each(["llms.txt", "robots.txt"])("has no script in /%s", (name) => {
     expect(readFileSync(join(dist, name), "utf8")).not.toContain("<script");
+  });
+
+  /**
+   * The one exception (`kolonie-website#76`), held to the two properties that
+   * make it small: it is on one page, and it is lazy.
+   *
+   * A reader who only reads `/for-providers/` loads nothing from anybody, which
+   * is the state every other page is in and is what lets `governance/privacy.md`
+   * state the exception precisely rather than approximately.
+   */
+  describe("the provider form's captcha (kolonie-website#76)", () => {
+    const host = new URL(PROVIDER_ENQUIRY.script).host;
+
+    it.each(pages.map((page) => page.slice(dist.length)))(
+      "is not a loaded script tag on %s, even on the page that uses it",
+      (page) => {
+        const sources = scriptSources(readFileSync(join(dist, page), "utf8"));
+
+        expect(sources.filter((src) => src.includes(host))).toEqual([]);
+      },
+    );
+
+    it("appears on the provider page, since that is where the form is", () => {
+      const provider = readFileSync(join(dist, PROVIDER_PATH, "index.html"), "utf8");
+
+      expect(provider).toContain(PROVIDER_ENQUIRY.script);
+      // Fetched on `input`, not on load. This is the whole of the exception:
+      // reading the page costs the reader nothing.
+      expect(provider).toContain("addEventListener('input'");
+    });
+
+    /**
+     * **`/privacy/` is excluded, and this file already knew why.** The comment
+     * on `scriptSources` above records the same lesson from `#58`: an earlier
+     * version searched the whole document for vendor names and failed on the
+     * privacy page, which has to name what the site loads in order to be honest
+     * about it. A policy naming a vendor is the opposite of a tracking problem.
+     *
+     * That mistake was made again here on 2026-08-08 and caught by the check
+     * itself, which is the argument for the check.
+     */
+    it.each(
+      pages
+        .map((page) => page.slice(dist.length))
+        .filter((page) => !page.startsWith(PROVIDER_PATH))
+        .filter((page) => !page.startsWith("/privacy")),
+    )("does not mention it on %s", (page) => {
+      expect(readFileSync(join(dist, page), "utf8")).not.toContain(host);
+    });
+
+    it("is named on /privacy/, because a policy that hides it is worse", () => {
+      const privacy = readFileSync(join(dist, "privacy", "index.html"), "utf8");
+
+      expect(privacy).toContain(host);
+      // And the two properties that keep the exception small are stated there,
+      // not only asserted here.
+      expect(privacy).toMatch(/first keystroke/i);
+      expect(privacy).toContain("for-providers");
+    });
   });
 });

@@ -1,0 +1,276 @@
+---
+/**
+ * The form a provider writes in through (kolonie-website#76).
+ *
+ * It posts `product`, `url`, `contact` and `wants` to
+ * `POST https://api.kolonie.ai/v1/atlas/enquiries`, which `kolonie-platform#544`
+ * built and which now answers a preflight and carries
+ * `access-control-allow-origin` on every path out.
+ *
+ * ## The captcha, and the claim it costs
+ *
+ * The route's spam defence is hCaptcha and it is the whole of it — a public form
+ * without one is a mailbox full of casino links within a week. That means a
+ * third-party script on `kolonie.ai`, and `governance/privacy.md` said the site
+ * *"loads no analytics and no third-party script"* without qualification. That
+ * sentence has been defended three times in a week (`kolonie-website#58`,
+ * `kolonie-docs#182`, `#187`), so it is not a claim to amend quietly. The
+ * maintainer decided on 2026-08-08: the form goes here, lazily, and the policy
+ * gains the exception.
+ *
+ * **Lazy is what keeps the exception small.** The script is fetched on the
+ * reader's first keystroke in the form and not before, so **a reader who only
+ * reads this page loads nothing from anybody** — which is the state every other
+ * page on the site is in, and which the privacy page can now say precisely
+ * rather than approximately.
+ *
+ * The sitekey is read at runtime from `/v1/academy/captcha-config`, which is
+ * public and already `access-control-allow-origin: *`. Baking it into the build
+ * would be a second copy of a value that lives in the VPS environment, and it
+ * would go stale silently on the day it is rotated.
+ *
+ * ## No JavaScript
+ *
+ * The form needs it — the captcha does. So the `<noscript>` is not an apology:
+ * it gives the reader the two other ways to reach a person that this project
+ * already has, and both of them work.
+ */
+import { PROVIDER_ENQUIRY } from '../lib/provider-enquiry.ts'
+---
+
+<form class="enquiry" id="provider-enquiry" novalidate>
+  <div class="enquiry__field">
+    <label for="enq-product">What is your product?</label>
+    <input id="enq-product" name="product" type="text" required
+           placeholder="A mailbox provider, a CI service, a payments API…" />
+  </div>
+
+  <div class="enquiry__field">
+    <label for="enq-url">Where does it live?</label>
+    <input id="enq-url" name="url" type="text" required placeholder="https://" />
+  </div>
+
+  <div class="enquiry__field">
+    <label for="enq-contact">How do we reach you?</label>
+    <input id="enq-contact" name="contact" type="text" required
+           placeholder="An email address, or a GitHub handle" />
+  </div>
+
+  <div class="enquiry__field">
+    <label for="enq-wants">What would you want agents to do with it?</label>
+    <textarea id="enq-wants" name="wants" rows="4" required
+              placeholder="Sign up unaided? Use a particular flow? Tell you where they got stuck?"></textarea>
+    <p class="enquiry__hint">
+      This is the one a form usually leaves out, and it is the interesting answer.
+    </p>
+  </div>
+
+  <div class="enquiry__captcha" id="enq-captcha" hidden></div>
+
+  <button type="submit" class="btn btn--primary">Send it</button>
+
+  <p class="enquiry__status" id="enq-status" role="status" aria-live="polite"></p>
+</form>
+
+<noscript>
+  <p class="enquiry__noscript">
+    <strong>This form needs JavaScript</strong>, because the check that keeps it
+    from filling up with advertisements does. Both of the other ways to reach us
+    work without it: open an issue on
+    <a href="https://github.com/Kolonie-AI/kolonie-docs/issues">kolonie-docs</a>,
+    or read <a href="/who-builds-this/">who builds this</a> for why there is no
+    email address on the site.
+  </p>
+</noscript>
+
+<script is:inline define:vars={{ PROVIDER_ENQUIRY }}>
+  // Inline and dependency-free. The one third-party script this page ever loads
+  // is hCaptcha, and it is fetched on the reader's first keystroke rather than
+  // on page load — see the component's own comment for why that distinction is
+  // the whole of the privacy exception this page was given.
+  ;(() => {
+    const form = document.getElementById('provider-enquiry')
+    const status = document.getElementById('enq-status')
+    const slot = document.getElementById('enq-captcha')
+    if (!form || !status || !slot) return
+
+    let loading = null
+    let widget = null
+
+    const say = (message, state) => {
+      status.textContent = message
+      status.dataset.state = state
+    }
+
+    /** Fetch hCaptcha once, on the first sign the reader is actually filling this in. */
+    const loadCaptcha = () => {
+      if (loading) return loading
+      loading = fetch(`${PROVIDER_ENQUIRY.api}${PROVIDER_ENQUIRY.configPath}`)
+        .then((response) => response.json())
+        .then(
+          ({ sitekey }) =>
+            new Promise((resolve, reject) => {
+              window.hcaptchaOnLoad = () => {
+                slot.hidden = false
+                widget = window.hcaptcha.render(slot, { sitekey, theme: 'dark' })
+                resolve()
+              }
+              const tag = document.createElement('script')
+              tag.src = PROVIDER_ENQUIRY.script
+              tag.async = true
+              tag.defer = true
+              tag.onerror = () => reject(new Error('hcaptcha'))
+              document.head.appendChild(tag)
+            }),
+        )
+        .catch(() => {
+          loading = null
+          throw new Error('hcaptcha')
+        })
+      return loading
+    }
+
+    form.addEventListener('input', loadCaptcha, { once: true })
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      const data = new FormData(form)
+      const body = {
+        product: String(data.get('product') ?? '').trim(),
+        url: String(data.get('url') ?? '').trim(),
+        contact: String(data.get('contact') ?? '').trim(),
+        wants: String(data.get('wants') ?? '').trim(),
+      }
+
+      if (Object.values(body).some((value) => value === '')) {
+        say('Every field is needed — the last one most of all.', 'error')
+        return
+      }
+
+      say('Sending…', 'sending')
+
+      try {
+        await loadCaptcha()
+      } catch {
+        say(
+          'The check that proves you are a person did not load. That is our end, not yours — nothing was lost, and it is worth trying again in a minute.',
+          'error',
+        )
+        return
+      }
+
+      const token = widget === null ? '' : window.hcaptcha.getResponse(widget)
+      if (token === '') {
+        say('Complete the “prove you are human” check above, then send it again.', 'error')
+        return
+      }
+
+      try {
+        const response = await fetch(`${PROVIDER_ENQUIRY.api}${PROVIDER_ENQUIRY.path}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ ...body, captchaToken: token }),
+        })
+        const answer = await response.json().catch(() => ({}))
+
+        if (response.ok) {
+          // The confirmation is the Colony's own sentence, not one written here.
+          // kolonie-platform holds one copy of it and this shows that copy, so
+          // "interest is not a listing" cannot be softened on the way to a reader.
+          say(answer.message ?? 'Thank you — this reached the Colony.', 'sent')
+          form.querySelectorAll('input, textarea, button').forEach((field) => {
+            field.disabled = true
+          })
+          return
+        }
+
+        if (widget !== null) window.hcaptcha.reset(widget)
+        say(answer.message ?? 'That did not go through. Nothing was stored.', 'error')
+      } catch {
+        if (widget !== null) window.hcaptcha.reset(widget)
+        say('That did not reach the Colony. Nothing was stored — try again in a minute.', 'error')
+      }
+    })
+  })()
+</script>
+
+<style>
+  /* Tokens only — no colour value is written outside theme.css, and
+     src/styles/theme.test.ts fails the build if one appears here. */
+  .enquiry {
+    display: grid;
+    gap: 1.25rem;
+    margin: 2rem 0;
+    max-width: 40rem;
+  }
+
+  .enquiry__field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .enquiry label {
+    font-family: var(--k-font-mono);
+    font-size: var(--sl-text-sm);
+    color: var(--k-accent-strong);
+  }
+
+  .enquiry input,
+  .enquiry textarea {
+    font: inherit;
+    color: var(--sl-color-white);
+    background: var(--k-bg);
+    border: 1px solid var(--k-hairline-strong);
+    border-radius: 3px;
+    padding: 0.6rem 0.7rem;
+    width: 100%;
+  }
+
+  .enquiry input:focus-visible,
+  .enquiry textarea:focus-visible {
+    outline: 2px solid var(--k-accent);
+    outline-offset: 1px;
+  }
+
+  .enquiry input::placeholder,
+  .enquiry textarea::placeholder {
+    color: var(--sl-color-gray-3);
+  }
+
+  .enquiry__hint {
+    margin: 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+
+  .enquiry button {
+    justify-self: start;
+  }
+
+  .enquiry button:disabled {
+    opacity: 0.5;
+  }
+
+  .enquiry__status:empty {
+    display: none;
+  }
+
+  .enquiry__status {
+    margin: 0;
+    font-size: var(--sl-text-sm);
+  }
+
+  .enquiry__status[data-state='sent'] {
+    color: var(--k-accent-strong);
+  }
+
+  .enquiry__status[data-state='error'] {
+    color: var(--sl-color-red-high, var(--k-accent-strong));
+  }
+
+  .enquiry__noscript {
+    border-left: 2px solid var(--k-hairline-strong);
+    padding-left: 1rem;
+    color: var(--sl-color-gray-2);
+  }
+</style>
