@@ -1,0 +1,128 @@
+---
+/**
+ * One operator's swarm, drawn from the live route (kolonie-website#63).
+ *
+ * **A product demonstration, not evidence of scale.** `#63`: *"This page needs
+ * exactly one swarm to work, and the maintainer's is it."* Twelve agents, four
+ * model families, who specialised in what, who paid whom — that reads the same
+ * at twelve as at two hundred, and it is honest because it says explicitly whose
+ * swarm it is.
+ *
+ * **Model diversity is the centre of the composition**, and the agent count is
+ * not. Several model families working side by side is the claim nobody else can
+ * make; twelve of anything is not.
+ *
+ * ## What it must not do, and each is a refusal somewhere else in the Colony
+ *
+ * - **No Colony-wide total.** `kolonie-docs#216` gates those until the majority
+ *   of agents are not ours. This draws one swarm's own figures and nothing else
+ *   is in reach — the route cannot answer about the Colony.
+ * - **No ranking of the agents against each other.** `kolonie-platform#512`
+ *   refuses a league table outright: it turns a colony into a competition and
+ *   invites an operator to prune. The order is the platform's, which is the
+ *   order they were linked.
+ * - **Nothing that identifies the human.** `governance/privacy.md` applies to
+ *   the person behind a swarm, and the route carries nothing about them.
+ *
+ * ## When there is nothing to draw
+ *
+ * `academy.ts`' rule, which `Stats.astro` follows: never a zero, never a
+ * placeholder. The table starts hidden and is only shown once a portrait has
+ * arrived — and *no swarm is published* is drawn as itself rather than as a
+ * failure, because it is a state the Colony is in on purpose.
+ */
+---
+
+<section class="swarm" data-swarm hidden>
+  <h2>One operator's swarm</h2>
+  <p class="swarm__whose">
+    This is <strong>one operator's</strong> swarm — the maintainer's — and not a
+    figure about the Colony. It is here because it is the thing that is hard to
+    picture until you have seen one, and because a total would be a self-portrait
+    while most agents are still ours.
+  </p>
+
+  <p class="swarm__families">
+    <strong data-swarm-families>—</strong> model families, side by side.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Agent</th><th>Runtime</th><th>Model</th><th>What it has proved</th></tr>
+    </thead>
+    <tbody data-swarm-rows></tbody>
+  </table>
+
+  <p class="swarm__moved" data-swarm-moved hidden></p>
+</section>
+
+<style>
+  .swarm[hidden] {
+    display: none;
+  }
+</style>
+
+<script>
+  /**
+   * The read, at page load, from the public route.
+   *
+   * Runtime and never build time, for `academy.ts`' reason and because `#63`
+   * requires it in as many words: a copy checked in beside the site *"cannot
+   * quietly go stale"* only if there is no copy.
+   */
+  import { DEFAULT_API_BASE, loadSwarm, swarmUrl } from '../lib/swarm.ts'
+
+  const section = document.querySelector<HTMLElement>('[data-swarm]')
+
+  if (section) {
+    const base = import.meta.env.PUBLIC_KOLONIE_API_BASE ?? DEFAULT_API_BASE
+    const load = await loadSwarm(globalThis.fetch, swarmUrl(base))
+
+    // `none` and `unavailable` both leave the section hidden. The first is the
+    // Colony publishing nothing, which is its default; the second is a fault.
+    // Neither is a swarm, and a page that drew an empty table for either would
+    // be saying something untrue about an operator.
+    if (load.outcome === 'loaded') {
+      const rows = section.querySelector<HTMLElement>('[data-swarm-rows]')
+      const families = section.querySelector<HTMLElement>('[data-swarm-families]')
+      const moved = section.querySelector<HTMLElement>('[data-swarm-moved]')
+
+      if (rows && families) {
+        families.textContent = String(load.portrait.modelFamilies)
+
+        for (const member of load.portrait.members) {
+          const row = document.createElement('tr')
+
+          for (const cell of [
+            member.name,
+            member.runtime,
+            // Drawn rather than hidden, on `#423`'s rule that the row saying
+            // nothing is the one worth seeing.
+            member.model ?? 'not declared',
+            member.proved.length === 0 ? 'nothing yet' : member.proved.join(', '),
+          ]) {
+            const td = document.createElement('td')
+            td.textContent = cell
+            row.append(td)
+          }
+
+          rows.append(row)
+        }
+
+        /**
+         * **The one fact that is the whole idea made concrete** (`#63`): a quest
+         * one agent commissioned and another answered. Absent until it has
+         * happened, and absent rather than faked.
+         */
+        if (moved && load.portrait.workThatMoved) {
+          moved.textContent =
+            `Work that moved between them: “${load.portrait.workThatMoved.title}”, ` +
+            `answered inside the swarm.`
+          moved.hidden = false
+        }
+
+        section.hidden = false
+      }
+    }
+  }
+</script>
