@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -22,12 +22,31 @@ import { describe, expect, it } from "vitest";
  */
 const CONFIG = readFileSync(join(process.cwd(), "nginx.conf"), "utf8");
 
-/** Every address that moved, and where it moved to. */
+/** Every file under a directory, recursively. */
+function* walk(directory: string): Generator<string> {
+  for (const entry of readdirSync(directory)) {
+    const path = join(directory, entry);
+    if (statSync(path).isDirectory()) yield* walk(path);
+    else yield path;
+  }
+}
+
+/**
+ * Every address that moved, and where it moved to.
+ *
+ * `/run-a-colony` is `kolonie-website#89`'s: the page was named after the
+ * confusion that issue removed — *colony* is the whole and *swarm* is one
+ * operator's — and it is in the footer of every page, in the sitemap, and
+ * linked from `/one-swarm/`. Whatever links to it from outside is the half
+ * nobody can check, which is why it redirects rather than moving quietly.
+ */
 const MOVED: readonly (readonly [string, string])[] = [
   ["/sponsors", "/quests/"],
   ["/sponsors/", "/quests/"],
   ["/sponsors/ideas", "/quests/ideas/"],
   ["/sponsors/ideas/", "/quests/ideas/"],
+  ["/run-a-colony", "/run-a-swarm/"],
+  ["/run-a-colony/", "/run-a-swarm/"],
 ];
 
 /**
@@ -45,7 +64,7 @@ function exactLocation(path: string): string | undefined {
   return match?.[1];
 }
 
-describe("the addresses that moved to /quests", () => {
+describe("the addresses that moved", () => {
   it.each(MOVED)("%s redirects permanently to %s", (from, to) => {
     const block = exactLocation(from);
     expect(block, `no exact-match location for ${from}`).toBeDefined();
@@ -73,16 +92,22 @@ describe("the addresses that moved to /quests", () => {
   });
 
   /**
-   * The redirect must not capture more than the four addresses above.
+   * The redirects must not capture more than the addresses above.
    *
    * A prefix `location /sponsors` would swallow anything starting with those
-   * characters. Nothing does today, but the rule that keeps it true is the `=`,
-   * and a rule nobody asserts is a rule the next edit drops.
+   * characters, and `location /run-a-colony` the same. Nothing does today, but
+   * the rule that keeps it true is the `=`, and a rule nobody asserts is a rule
+   * the next edit drops.
    */
-  it("claims the four moved addresses and nothing beyond them", () => {
-    const prefixRules = CONFIG.match(/location\s+\/sponsors/g) ?? [];
-    expect(prefixRules).toHaveLength(0);
-  });
+  it.each(["/sponsors", "/run-a-colony"])(
+    "claims %s exactly, and nothing beyond it",
+    (prefix) => {
+      const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const prefixRules =
+        CONFIG.match(new RegExp(`location\\s+${escaped}`, "g")) ?? [];
+      expect(prefixRules).toHaveLength(0);
+    },
+  );
 
   /**
    * Nothing still points at the old address from inside the site.
@@ -120,5 +145,40 @@ describe("the addresses that moved to /quests", () => {
     expect(linksTo(footer, "/sponsors/")).toBe(false);
     expect(linksTo(nav, "/for-sponsors/")).toBe(true);
     expect(linksTo(sponsorPage, "/quests/") || linksTo(footer, "/quests/")).toBe(true);
+  });
+
+  /**
+   * The same, for `kolonie-website#89`'s rename — and this one is checked
+   * across the whole of `src/`, not two named files.
+   *
+   * `/sponsors` moved out of one nav entry. `/run-a-colony/` was the footer's,
+   * the sitemap's, and a link inside `/one-swarm/`, and the failure mode of a
+   * rename is precisely the copy nobody remembered — so the check is a sweep
+   * rather than a list, and it is the list that would have gone stale.
+   */
+  it("leaves no internal link on the old swarm address", () => {
+    const offenders = [...walk(join(process.cwd(), "src"))]
+      .filter((file) => /\.(astro|ts|mdx)$/.test(file))
+      // The redirect itself has to name the address it retires, and so does
+      // the prose explaining why. A link is what must not survive.
+      .filter((file) => !file.endsWith("redirects.test.ts"))
+      .filter((file) => {
+        const source = readFileSync(file, "utf8");
+        return /href[:=]\s*['"`]\/run-a-colony\/?['"`]|\]\(\/run-a-colony\/?\)/.test(
+          source,
+        );
+      });
+
+    expect(offenders, `still linking /run-a-colony/: ${offenders}`).toEqual([]);
+  });
+
+  /**
+   * And the page it moved to exists. A redirect to a `404` is the same failure
+   * as no redirect, one hop later.
+   */
+  it("points the old address at a page that is there", () => {
+    expect(
+      existsSync(join(process.cwd(), "src/content/docs/run-a-swarm.mdx")),
+    ).toBe(true);
   });
 });

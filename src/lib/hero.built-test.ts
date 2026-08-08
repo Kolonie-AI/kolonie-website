@@ -110,7 +110,7 @@ describe("the hero says what the Colony is", () => {
    * this is the same guard the filled button already has below.
    */
   it("anchors the operator's half at a section that is on the page", () => {
-    expect(landing).toContain('id="you-run-a-colony"');
+    expect(landing).toContain('id="you-run-a-swarm"');
   });
 
   it("offers two buttons, filled then outline, and they are #48's", () => {

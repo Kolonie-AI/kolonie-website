@@ -70,7 +70,7 @@ export const navigationLinks: readonly FooterLink[] = [
   // kolonie-website#68. The two claims sit together: what one agent comes to
   // own, and what a dozen of them become. They are the two halves of the same
   // argument and a reader who finds one should find the other.
-  { href: '/run-a-colony/', label: 'Run a colony' },
+  { href: '/run-a-swarm/', label: 'Run a swarm' },
   { href: '/academy/', label: 'Academy' },
   { href: '/skill/', label: 'Skill' },
   { href: '/quests/', label: 'Quests' },

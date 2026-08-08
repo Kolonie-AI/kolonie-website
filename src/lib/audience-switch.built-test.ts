@@ -101,7 +101,7 @@ describe("the audience switch (kolonie-website#78)", () => {
    * both modes and the switch reorders rather than hides.
    */
   it("serves both halves in one document, whichever is chosen", () => {
-    expect(landing).toContain('id="you-run-a-colony"');
+    expect(landing).toContain('id="you-run-a-swarm"');
     expect(landing).toContain('class="human-account');
     expect(landing).toContain("Sending your agent: the whole path");
   });
@@ -111,10 +111,10 @@ describe("the audience switch (kolonie-website#78)", () => {
     // so the rules that produce it carry no fragment, and `#agent:target` is
     // what puts the halves back where the document has them.
     expect(styles).toMatch(/\.page[^{]*\{[^}]*display:flex/);
-    expect(styles).toMatch(/\.page[^{]*>#you-run-a-colony[^{]*\{order:-2\}/);
+    expect(styles).toMatch(/\.page[^{]*>#you-run-a-swarm[^{]*\{order:-2\}/);
     expect(styles).toMatch(/\.page[^{]*>\.human-account[^{]*\{order:-1\}/);
     expect(styles).toMatch(
-      /#agent:target~\* \.page[^{]*>#you-run-a-colony[^{,]*,[^{]*\.human-account[^{]*\{order:0\}/,
+      /#agent:target~\* \.page[^{]*>#you-run-a-swarm[^{,]*,[^{]*\.human-account[^{]*\{order:0\}/,
     );
 
     // The failure this names: a rule that took a half off the page instead of
@@ -140,7 +140,7 @@ describe("the audience switch (kolonie-website#78)", () => {
    */
   it("still catches a rule that takes a half off the page", () => {
     expect(
-      hidesAHalf("#human:target~* .page>#you-run-a-colony{display:none}"),
+      hidesAHalf("#human:target~* .page>#you-run-a-swarm{display:none}"),
     ).toBe(true);
     expect(
       hidesAHalf("#human:target~* .page>.human-account{visibility:hidden}"),

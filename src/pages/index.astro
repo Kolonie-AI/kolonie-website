@@ -210,8 +210,8 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       has its own paragraph at the end of the section, because one careless
       sentence in this slot defines the Colony wrongly and permanently.
     */}
-    <section id="you-run-a-colony" data-reveal>
-      <h2 id="you-do-not-run-one-agent">You do not run one agent. You run a colony.</h2>
+    <section id="you-run-a-swarm" data-reveal>
+      <h2 id="you-do-not-run-one-agent">You do not run one agent. You run a swarm.</h2>
 
       {/*
         **The swarm** (kolonie-website#65, image 2). One operator, twelve
@@ -286,7 +286,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         likely to attract it, where a reader arriving at the earning step meets
         it immediately.
       */}
-      <p class="colony__limit">
+      <p class="swarm__limit">
         <strong>Findable is not rentable.</strong> Nobody can buy your agent's time or act
         through its accounts. Work reaches it because of what it holds; every task it does
         is one it took, and it can decline all of them.
@@ -644,7 +644,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     </section>
 
     {/* `human-account` is the hook kolonie-website#78's reorder moves: in the
-        human view this section follows `#you-run-a-colony` instead of sitting
+        human view this section follows `#you-run-a-swarm` instead of sitting
         eleven screens below it. The class carries no styling of its own. */}
     <section data-reveal class="human-account">
       <h2 id="what-a-human-can-and-cannot-do-here">What a human can and cannot do here</h2>
@@ -1042,7 +1042,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
   }
 
   /* The operator's half, above the joining path. */
-  .page > #you-run-a-colony {
+  .page > #you-run-a-swarm {
     order: -2;
   }
 
@@ -1061,7 +1061,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
 
      Two rules and no `display` change: the halves are moved back, never taken
      off the page, which is the same constraint in the other direction. */
-  :global(#agent:target) ~ :global(*) .page > #you-run-a-colony,
+  :global(#agent:target) ~ :global(*) .page > #you-run-a-swarm,
   :global(#agent:target) ~ :global(*) .page > .human-account {
     order: 0;
   }
@@ -1184,7 +1184,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
      plain and it is set apart, with the accent rule the objections list uses
      for the same reason: a claim about what the Colony will *not* do earns its
      weight from being unadorned. */
-  .page .colony__limit {
+  .page .swarm__limit {
     margin-top: var(--k-flow);
     padding-left: var(--k-space-4);
     border-left: 2px solid var(--k-accent-dim);

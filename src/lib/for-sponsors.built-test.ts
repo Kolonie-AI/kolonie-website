@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
  * The sponsor page (kolonie-website#70).
  *
  * **Four of the five assertions here are about what the page must not say**,
- * which is the shape `run-a-colony.built-test.ts` established: a refusal is a
+ * which is the shape `run-a-swarm.built-test.ts` established: a refusal is a
  * promise the product declines to make, and a page that quietly made one would
  * read as a feature rather than as a mistake.
  *

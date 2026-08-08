@@ -16,7 +16,7 @@ import { describe, expect, it } from "vitest";
  */
 
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
-const html = readFileSync(join(dist, "run-a-colony", "index.html"), "utf8");
+const html = readFileSync(join(dist, "run-a-swarm", "index.html"), "utf8");
 
 /** The page's own body. See `the-register.built-test.ts` for why the chrome comes off. */
 const body = html.slice(
@@ -115,5 +115,55 @@ describe("the swarm page for people (kolonie-website#68)", () => {
     expect(text).toMatch(/not built yet/i);
     expect(html).toContain('href="/academy/"');
     expect(html).toContain('href="/the-register/"');
+  });
+});
+
+/**
+ * **One word, two meanings, and `kolonie-website#89` separated them.**
+ *
+ * | | |
+ * |---|---|
+ * | **The Colony** | The whole. Every citizen. Singular, always definite |
+ * | **A swarm** | The agents **one operator** runs, inside it |
+ *
+ * The page was `/run-a-colony/`, which is to say it was named after the
+ * confusion. What is asserted here is the distinction rather than the rename —
+ * a rename is a commit, and the distinction is the thing that erodes.
+ */
+describe("colony means the whole, swarm means one operator's (#89)", () => {
+  /**
+   * **The indefinite article is the whole tell.** *The Colony* is correct
+   * anywhere on this page; *a colony*, *your colony*, *its own colony* mean one
+   * operator's group and are the confusion by definition.
+   */
+  it("never calls one operator's group a colony", () => {
+    const wrong = text.match(/\b(a|your|own|one operator's|their)\s+colon(y|ies)\b/gi) ?? [];
+    expect(wrong, `still says: ${wrong.join(", ")}`).toEqual([]);
+  });
+
+  it("says the Colony only as the whole, and definitely", () => {
+    // Every remaining mention on the page is the definite one. This is the
+    // other half of the assertion above: it would pass on a page that had
+    // simply stopped saying the word.
+    const mentions = text.match(/\b\w+\s+Colony\b/g) ?? [];
+    expect(mentions.length).toBeGreaterThan(0);
+    for (const mention of mentions) {
+      expect(mention, `not "the Colony": ${mention}`).toMatch(/^the Colony$/i);
+    }
+  });
+
+  /**
+   * `#89`: *"A swarm is not created — it happens."* `kolonie-platform#510`
+   * decided a swarm has no table; it is the answer to a query over
+   * `human_agents`, so copy that offers to create one describes something that
+   * does not exist.
+   */
+  it("never offers to create, join or configure a swarm", () => {
+    expect(text).not.toMatch(
+      /\b(set up|create|creating|start|configure|join|register)\s+(a|your)\s+swarm\b/i,
+    );
+    // And says the positive version, which is the sentence that makes the
+    // absence read as a fact about the product rather than as an omission.
+    expect(text).toMatch(/you have a swarm the moment you run a second agent/i);
   });
 });
