@@ -107,9 +107,15 @@ describe("the audience switch (kolonie-website#78)", () => {
   });
 
   it("moves the halves with order, and hides nothing", () => {
-    expect(styles).toMatch(/#human:target~\* \.page[^{]*\{[^}]*display:flex/);
-    expect(styles).toMatch(/#human:target~\* \.page[^{]*>#you-run-a-colony[^{]*\{order:-2\}/);
-    expect(styles).toMatch(/#human:target~\* \.page[^{]*>\.human-account[^{]*\{order:-1\}/);
+    // Unqualified since `kolonie-website#86`: the ordered view is the default,
+    // so the rules that produce it carry no fragment, and `#agent:target` is
+    // what puts the halves back where the document has them.
+    expect(styles).toMatch(/\.page[^{]*\{[^}]*display:flex/);
+    expect(styles).toMatch(/\.page[^{]*>#you-run-a-colony[^{]*\{order:-2\}/);
+    expect(styles).toMatch(/\.page[^{]*>\.human-account[^{]*\{order:-1\}/);
+    expect(styles).toMatch(
+      /#agent:target~\* \.page[^{]*>#you-run-a-colony[^{,]*,[^{]*\.human-account[^{]*\{order:0\}/,
+    );
 
     // The failure this names: a rule that took a half off the page instead of
     // moving it would satisfy every other assertion here.
@@ -186,13 +192,81 @@ describe("the audience switch (kolonie-website#78)", () => {
   });
 
   /**
-   * The default serves the unknown reader, which is most of them, and `#78`
-   * recommends the agent's half *"because that reader is the one who can act
-   * immediately"*. No fragment is that view — so the recommendation is what a
-   * reader who chooses nothing gets.
+   * **The rhythm between sections has to be order-aware, or the reorder leaves
+   * a hole** (kolonie-website#86).
+   *
+   * It was `.page section + section { margin-top }`, and an adjacent sibling is
+   * a *document* relationship: the visually-first section carried a margin it
+   * should not have, and whatever landed under the moved pair butted against it
+   * with no gap. True of the `#human` view before `#86` and invisible, because
+   * that view was nobody's default.
+   *
+   * `gap` is measured between flex items in paint order, which is the
+   * relationship that was meant. Asserted rather than left to the eye because
+   * the failure is a spacing bug in one view of one page.
    */
-  it("defaults to the agent's half without anybody choosing", () => {
-    expect(styles).toMatch(/\.audience[^{]*\[data-home\] \.audience__pick--agent[^{]*\{[^}]*accent/);
+  it("spaces the sections in the order they are painted", () => {
+    expect(styles).toMatch(/\.page[^{]*\{[^}]*gap:var\(--k-flow-section\)/);
+    expect(styles).not.toMatch(/\.page[^{]*section\+section/);
+  });
+
+  /**
+   * **The default serves the unknown reader, and which reader that is turned
+   * round on `kolonie-website#86`.**
+   *
+   * `#78` recommended the agent's half *"because that reader is the one who can
+   * act immediately"*. `#86` kept the fact and reversed the conclusion: acting
+   * immediately is why the agent does not need the default. *"An agent that
+   * finds this page will manage… The bottleneck is people."*
+   *
+   * So the lit pick with no fragment is the human's, and the agent's is lit
+   * only under `#agent:target` — which is the assertion below, in both
+   * directions, because a rule lighting neither would pass a check for one.
+   */
+  it("defaults to the human's half without anybody choosing", () => {
+    expect(styles).toMatch(
+      /\.audience[^{]*\[data-home\] \.audience__pick--human[^{]*\{[^}]*accent/,
+    );
+    expect(styles).toMatch(
+      /#agent:target~\*[^{]*\.audience__pick--agent[^{]*\{[^}]*accent/,
+    );
+
+    // And the reverse is not also true: nothing lights the agent's pick before
+    // the reader asks for it. This is the assertion that would have caught the
+    // flip being made in one file and not the other.
+    const unqualified = (styles.match(/[^}]*\{[^}]*\}/g) ?? []).filter(
+      (rule) =>
+        rule.includes(".audience__pick--agent") && !rule.includes(":target"),
+    );
+    expect(unqualified.join("\n")).not.toMatch(/accent-dim/);
+  });
+
+  /**
+   * **No detection, and `#86` names it as a requirement rather than an
+   * implication.** *"No detection, no guessing from a user agent. A default is
+   * a default."*
+   *
+   * The site ships no server-side rendering per request and no script that
+   * reads one, so this is a guard against the idea arriving later rather than
+   * against something present — which is exactly when it would be added.
+   */
+  it("guesses nothing about who is reading", () => {
+    const scripts = [...landing.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
+      .map((match) => match[1] ?? "")
+      .join("\n");
+
+    // The three properties a page reaches for when it wants to guess. Not
+    // `navigator.` as a whole: `Prompt.astro`'s copy button is
+    // `navigator.clipboard`, which is an action the reader asked for and not a
+    // guess about them.
+    expect(scripts).not.toMatch(
+      /navigator\.userAgent|navigator\.language|navigator\.platform/,
+    );
+
+    // And the existing guard's other half, stated here for the reason `#86`
+    // gives rather than the reason `#78` gave: no script decides the audience
+    // at all, however it worked it out.
+    expect(scripts).not.toMatch(/#human|#agent|audience__pick/);
   });
 
   /**

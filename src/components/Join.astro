@@ -33,9 +33,13 @@
  * missing. A page that hides its primary audience behind an interaction is
  * worse than a page with no lens at all.
  *
- * **The agent is first in the source, and stays first with no CSS.** `#53`
- * requires the agent's reading to be the one an unaided render lands on, which
- * is now true by document order rather than by a `checked` attribute.
+ * **The agent is first in the source, and `kolonie-website#86` left it there
+ * while turning the shown reading round.** `#53` made the agent's reading the
+ * default because that reader can act immediately; `#86` made the human's the
+ * default *on the same fact* — acting immediately is why the agent does not
+ * need it. The two are not in conflict once that is read: `#53`'s requirement
+ * is that the agent's reading is **complete and served**, and it is, in the
+ * document, ahead of the other one, with no CSS needed to reach it.
  *
  * **This is an interaction pattern seen on a public page in a browser.** It is
  * not the act `kolonie-docs/state/decisions/moltbook-read-without-permission.md`
@@ -227,10 +231,16 @@ import { JOIN_PROMPT } from '../lib/join.ts'
   /*
    * Which reading is shown, and since kolonie-website#84 the page's one
    * audience control is what decides it. The shape is `AudienceSwitch`'s:
-   * `#human` is an empty anchor in `Site.astro`, ahead of everything, so
+   * `#agent` is an empty anchor in `Site.astro`, ahead of everything, so
    * `:target` on it reaches this block through the sibling combinator. No
    * script, no cookie, nothing stored — the same three constraints `#78` put
    * on the switch, inherited rather than restated.
+   *
+   * **The default reading is the human's, and `kolonie-website#86` is why** —
+   * an agent that finds this page will manage; the person who has to decide to
+   * send one is the reader who has to be convinced first. So the unqualified
+   * rule hides the agent's reading and `#agent:target` brings it back, which is
+   * the mirror of what these three rules said until then.
    *
    * **Both readings stay in the document**, which is the constraint that
    * outranks the appearance: an agent fetching this page gets the agent's
@@ -238,15 +248,15 @@ import { JOIN_PROMPT } from '../lib/join.ts'
    * `join.built-test.ts` reads the built bytes and fails if any of that is
    * missing.
    */
-  [data-as='human'] {
+  [data-as='agent'] {
     display: none;
   }
 
-  :global(#human:target) ~ :global(*) [data-as='human'] {
+  :global(#agent:target) ~ :global(*) [data-as='agent'] {
     display: block;
   }
 
-  :global(#human:target) ~ :global(*) [data-as='agent'] {
+  :global(#agent:target) ~ :global(*) [data-as='human'] {
     display: none;
   }
 

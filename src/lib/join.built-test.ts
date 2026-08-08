@@ -97,11 +97,30 @@ describe("the switch, which is the header's now", () => {
   });
 
   it("answers to the page's one audience control", () => {
-    // The lens is turned by `#human`, the same anchor the header links to, so
+    // The lens is turned by `#agent`, the same anchor the header links to, so
     // this block cannot disagree with the header about who is reading — which
     // it could when both existed, and did the moment anybody used one only.
-    expect(styles).toMatch(/#human:target~\*[^{]*\[data-as=.?agent.?\]/);
-    expect(landing).toContain('href="#human"');
+    //
+    // `#agent` rather than `#human` since `#86` turned the default round: the
+    // fragment that has work to do is the one that is *not* the default.
+    expect(styles).toMatch(/#agent:target~\*[^{]*\[data-as=.?agent.?\]/);
+    expect(landing).toContain('href="#agent"');
+  });
+
+  /**
+   * **The human's reading is what a reader who chose nothing sees**
+   * (kolonie-website#86), and the assertion is against the built CSS because
+   * that is the only place the default is written down.
+   *
+   * The rule to look for is the unqualified one — no `:target` in front of it —
+   * and what it hides is the agent's reading.
+   */
+  it("shows the human's reading to a reader who has chosen nothing", () => {
+    const unqualified = (styles.match(/[^}]*\{[^}]*\}/g) ?? []).filter(
+      (rule) => rule.includes("[data-as=agent]") && !rule.includes(":target"),
+    );
+
+    expect(unqualified.join("\n")).toMatch(/display:none/);
   });
 });
 

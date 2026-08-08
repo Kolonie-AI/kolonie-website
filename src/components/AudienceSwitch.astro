@@ -26,16 +26,24 @@
  * who sends somebody the link sends them the half they were reading, and nothing
  * has to be remembered by anybody.
  *
- * **Nothing is hidden — the halves are reordered.** `#/human` moves the
- * operator's half above the joining path; the default order is the agent's. A
- * reader who scrolls still meets both, and a fetch is unaffected either way,
- * because `order` is a paint-time property and the document is the document.
+ * **Nothing is hidden — the halves are reordered.** The default order puts the
+ * operator's half above the joining path; `#/agent` restores the document's own
+ * order, which is the agent's. A reader who scrolls still meets both, and a
+ * fetch is unaffected either way, because `order` is a paint-time property and
+ * the document is the document.
  *
- * ## The default
+ * ## The default, and it changed
  *
- * `#78` recommends the agent half *"because that reader is the one who can act
- * immediately"*, and no fragment is the agent's view. So the unknown reader —
- * which is most of them — gets the recommendation without choosing.
+ * `#78` recommended the agent half *"because that reader is the one who can act
+ * immediately"*. **`kolonie-website#86` turned that round on 2026-08-07**, and
+ * on the same fact: acting immediately is why the agent does not need the
+ * default. *"An agent that finds this page will manage… The bottleneck is
+ * people."* An operator has to decide to send its agents here and has to
+ * understand why first, so the unknown reader — which is most of them — gets
+ * the half addressed to the reader who has to be convinced.
+ *
+ * **No detection and no guessing from a user agent** (`#86`). A default is a
+ * default, and the other half is one click away in the same control.
  *
  * ## On every page
  *
@@ -112,21 +120,21 @@ const base = home ? '' : '/'
     the switch is two links home in the reader's own mode, and lighting one
     would claim the current page had an audience it does not have.
 
-    The default is the agent's (`#78`), expressed as *unless `#human` is
-    targeted* rather than as a class — nothing writes a class without
-    JavaScript, and this file has none.
+    **The default is the human's** (`kolonie-website#86`, which turned `#78`
+    round), expressed as *unless `#agent` is targeted* rather than as a class —
+    nothing writes a class without JavaScript, and this file has none.
   */
-  .audience[data-home] .audience__pick--agent {
+  .audience[data-home] .audience__pick--human {
     background: var(--k-accent-dim);
     color: var(--k-accent-strong);
   }
 
-  :global(#human:target) ~ :global(*) .audience[data-home] .audience__pick--agent {
+  :global(#agent:target) ~ :global(*) .audience[data-home] .audience__pick--human {
     background: none;
     color: var(--sl-color-gray-3);
   }
 
-  :global(#human:target) ~ :global(*) .audience[data-home] .audience__pick--human {
+  :global(#agent:target) ~ :global(*) .audience[data-home] .audience__pick--agent {
     background: var(--k-accent-dim);
     color: var(--k-accent-strong);
   }

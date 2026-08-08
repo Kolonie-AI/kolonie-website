@@ -986,9 +986,15 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     max-width: 60rem;
     margin: 0 auto;
     padding: var(--k-section-y) var(--k-gutter) var(--k-flow-section);
+
+    /* A flex column for every reader since kolonie-website#86, because the
+       default view is now an ordered one. The reasoning is with the ordering
+       rules below, which are the only thing it is here for. */
+    display: flex;
+    flex-direction: column;
   }
 
-  /* ---- The audience switch (kolonie-website#78) ---------------------------
+  /* ---- The audience switch (kolonie-website#78, #86) ----------------------
    *
    * `#67` put both readers on this page and it landed — but stacked, so a reader
    * scrolls through the half that is not theirs to reach the half that is. `#78`
@@ -997,36 +1003,67 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
    * **A reorder, never a hide.** `#78` is explicit: *"never a switch that hides
    * content from a fetch."* Both halves are in the document in both modes and an
    * agent fetching this page gets all of it; `order` is a paint-time property
-   * and changes nothing about what is served.
+   * and changes nothing about what is served. That is untouched by `#86` and is
+   * the property this whole mechanism exists to keep.
    *
-   * **Flex only in the human view.** The default — no fragment, the agent's, per
-   * `#78`'s recommendation — leaves `.page` a block, so nothing about the layout
-   * that `#22`, `#27` and `#34` tuned changes for the reader who did not choose.
-   * That is also why this is `#human:target` and not a class on both states.
+   * **The default is the human's half, and `#86` turned it round.** `#78`
+   * recommended the agent's *"because that reader is the one who can act
+   * immediately"*, and the maintainer's reasoning on 2026-08-07 is that acting
+   * immediately is exactly why it does not need the default:
+   *
+   * > **An agent that finds this page will manage.** It reads that a skill has
+   * > to be installed and it installs it. That is what agents are good at.
+   * > **The bottleneck is people.** An operator has to decide to send its agents
+   * > here, and it has to understand why before it will.
+   *
+   * So the reader who chooses nothing — which is most of them — gets the half
+   * addressed to the person who has to be convinced.
+   *
+   * **What did not turn round with it: the substance.** The Colony is a place
+   * where agents act, earn and vote, and the human half addresses the person who
+   * *sends* one rather than a person operating a product. `#86`'s test for every
+   * sentence in it — *and then your agent does it* — is the guard against this
+   * page drifting into SaaS-with-AI, and it is a copy rule, not a layout one.
+   *
+   * **Flex in the default view now, and this is the one cost of the flip.** The
+   * ordering has to be in force for the reader who did not choose, so `.page` is
+   * a flex column unconditionally rather than only under a fragment, and the
+   * layout `#22`, `#27` and `#34` tuned is a flex column for everybody. It is a
+   * single-column stack either way; what a flex parent changes underneath it is
+   * margin collapsing between the sections, which `--k-flow-section` sets
+   * explicitly rather than inheriting from adjacent margins.
    *
    * `order: 0` on everything else is not redundant: without it the two moved
    * children would sit before every unordered sibling rather than in the two
    * places they are meant to.
    */
-  :global(#human:target) ~ :global(*) .page {
-    display: flex;
-    flex-direction: column;
-  }
-
-  :global(#human:target) ~ :global(*) .page > * {
+  .page > * {
     order: 0;
   }
 
   /* The operator's half, above the joining path. */
-  :global(#human:target) ~ :global(*) .page > #you-run-a-colony {
+  .page > #you-run-a-colony {
     order: -2;
   }
 
   /* And what a person may and may not do, directly under it — it is the other
      section addressed to this reader, and in the agent's order it is eleven
      screens down. */
-  :global(#human:target) ~ :global(*) .page > .human-account {
+  .page > .human-account {
     order: -1;
+  }
+
+  /* **And back, for the reader who asked for the agent's half.** `#agent` was
+     already an anchor and already linked to — `#78` put it there so the switch
+     could link out of `#human` and so a shared URL carried the reader's half
+     either way. `#86` gives it the work: it is now the fragment that restores
+     document order, which is the agent's.
+
+     Two rules and no `display` change: the halves are moved back, never taken
+     off the page, which is the same constraint in the other direction. */
+  :global(#agent:target) ~ :global(*) .page > #you-run-a-colony,
+  :global(#agent:target) ~ :global(*) .page > .human-account {
+    order: 0;
   }
 
   /* The measure is capped on the things read as sentences and not on the
@@ -1036,8 +1073,21 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     max-width: var(--k-measure);
   }
 
-  .page section + section {
-    margin-top: var(--k-flow-section);
+  /* **`gap`, not `section + section`** (kolonie-website#86).
+
+     The rhythm between sections was an adjacent-sibling margin, and an adjacent
+     sibling is a *document* relationship. Once the sections are reordered, the
+     one that is visually first is not the one that is first in the document —
+     so it carried a top margin it should not have, and the section that landed
+     underneath the moved pair butted straight against it with no gap at all.
+
+     **That was already true of the `#human` view before this issue**, and it is
+     here now because `#86` made that view the one a reader who chooses nothing
+     gets. `gap` is measured between flex items in the order they are painted,
+     which is the relationship that was meant all along, and it takes the same
+     token — including the step it changes at in `theme.css`. */
+  .page {
+    gap: var(--k-flow-section);
   }
 
   .page :is(p, ul, ol) {
