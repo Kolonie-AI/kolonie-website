@@ -216,3 +216,22 @@ refuses nothing, and an absent label is correctly read as declaring nothing.
 - Publishing claims about the legal entity, the treasury, or the coin
 - Making this repository public — it opens together with the others at MVP, not
   before
+
+## 6. The check command
+
+```bash
+npm run check
+```
+
+§3 already requires it before every commit. This section exists so that it can
+be found without reading §3 — and because it is **machine-read**.
+
+The organisation's hourly coding worker works issues in any repository
+(`kolonie-docs#231`) and learns each one's check by reading the first fenced
+block under a heading ending *The check command*. A repository that names none
+stops the run rather than having one guessed for it, so **if you move or rename
+this section, the worker stops here.**
+
+A heading rather than a table held in the worker, because a table would be a
+second record of a fact this repository already states, and the second record
+goes stale without anybody editing it.
