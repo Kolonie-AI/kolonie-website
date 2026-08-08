@@ -322,6 +322,30 @@
   --k-settle: 320ms;
   --k-ease: cubic-bezier(0.2, 0, 0.2, 1);
 
+  /**
+   * **The third, and it is a different kind of thing** (kolonie-website#83).
+   *
+   * `motion.test.ts` says a third duration is allowed and that `theme.css` is
+   * where the argument happens rather than a component. This is the argument.
+   *
+   * `--k-quick` and `--k-settle` are both **responses**: something happened —
+   * a pointer arrived, a section scrolled into view — and the duration is how
+   * long the page takes to answer. A reader watches the whole of one. That is
+   * why two are enough, and why a scale of them would be a thing to consult.
+   *
+   * This is **ambience**, which is the opposite: nothing caused it, nobody
+   * watches it end, and its only job is that a still page should not read as a
+   * dead one. `#83` asked for the reference's slow field behind the hero. The
+   * number is chosen so that no part of it is ever the fastest thing on screen
+   * — at 90 seconds a point crosses its own spacing at about a millimetre a
+   * second, which is under the threshold at which peripheral vision reports
+   * movement rather than presence.
+   *
+   * **It is not a scale and must not become one.** A fourth duration is a
+   * fourth argument, here, in this comment's shape.
+   */
+  --k-drift: 90s;
+
   /* The shorthand a control reaches for. Colour and border only — what a
      transition may touch is deliberately narrow, because animating a size or a
      position is what turns a hover into a layout shift. */

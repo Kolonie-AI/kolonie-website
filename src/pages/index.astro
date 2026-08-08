@@ -83,6 +83,48 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       competing with the two that matter.
     */}
     <section class="hero">
+      {/*
+        **One ambient element, behind the hero, top left**
+        (kolonie-website#83).
+
+        `agentmail.to` carries a slow moving field behind its hero. It explains
+        nothing and does not need to — it makes a static page feel alive, and
+        the maintainer asked for the same on 2026-08-07. This page was entirely
+        still.
+
+        **The motif is the Colony's own and nobody else can use it**: points
+        that drift. Two fields of them at different spacings and different
+        speeds, so the nearer one passes the further one and the whole reads as
+        depth rather than as a texture sliding.
+
+        **What `#83` also suggested and this does not do: connect.** Points that
+        occasionally join and disperse needs each point's position known at each
+        frame, which is a canvas loop — the one implementation `#83` rules out
+        by name, and rightly: a landing page that spins a GPU is a landing page
+        that drains a laptop. Two tiled gradients on a `transform` are composited
+        and cost nothing.
+
+        **Every constraint in `#83` is a property of this element and each is
+        tested in `motion.test.ts` or `hero.built-test.ts`:**
+
+        - **CSS, no video and no canvas.** Two `radial-gradient` tiles.
+        - **`prefers-reduced-motion: reduce` stops it dead**, via `theme.css`'s
+          blanket rule. The keyframe's end state is one whole tile of travel,
+          which is pixel-identical to its start — so *stopped* is a resting
+          field rather than a frame frozen mid-drift.
+        - **No layout shift, no pointer interception.** Absolutely positioned,
+          `aria-hidden`, `pointer-events: none`.
+        - **No effect on first paint.** No file is fetched; the paint that would
+          be delayed is its own.
+        - **Behind, not near.** Under the argument in the stacking order, at an
+          opacity where the headline never competes with it.
+
+        **The Open Graph image does not contain it**, and that is by
+        construction rather than by care: `scripts/build-assets.mjs` screenshots
+        its own document, not this page.
+      */}
+      <div class="hero__field" aria-hidden="true"></div>
+
       <div class="hero__argument">
       {/*
         **The badge, where the ASCII was** (kolonie-website#82).
@@ -1358,10 +1400,94 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
      rather than `--k-bp-sm`, because the panel holds a shell command and half
      of a 40rem screen is not enough for one. */
   .hero {
+    /* The field is positioned against this, and clipped by it. */
+    position: relative;
     display: grid;
     gap: var(--k-space-6);
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
+  }
+
+  /* ---- The ambient field (kolonie-website#83) ----------------------------
+   *
+   * Top left, behind everything, and larger than the corner it sits in so the
+   * drift never reveals an edge. The mask is what gives it no border: it fades
+   * to nothing well before the box does, so there is no rectangle to see.
+   */
+  .hero__field {
+    position: absolute;
+    z-index: 0;
+    inset-block: -3rem auto;
+    inset-inline: -4rem auto;
+    width: min(44rem, 95%);
+    height: 28rem;
+    overflow: hidden;
+    pointer-events: none;
+    /* `currentColor`, not a colour literal — a mask reads the alpha channel and
+       nothing else, so the hue is irrelevant and writing one here would be a
+       colour value outside `theme.css` for no reason. `theme.test.ts` is right
+       to fail on it. */
+    mask-image: radial-gradient(ellipse at 28% 32%, currentColor 0%, transparent 68%);
+  }
+
+  /* Both layers are one tile of points, drawn oversize and translated by
+     exactly one tile — which is why the loop has no seam and why the resting
+     state under `prefers-reduced-motion` is indistinguishable from the start.
+
+     `translate3d` rather than `background-position`: a transform is composited,
+     so the drift never asks for a repaint of anything under it. */
+  .hero__field::before,
+  .hero__field::after {
+    content: '';
+    position: absolute;
+    inset: -12rem;
+    background-image: radial-gradient(
+      circle at center,
+      var(--k-accent) 1px,
+      transparent 2.2px
+    );
+  }
+
+  .hero__field::before {
+    background-size: 2.75rem 2.75rem;
+    opacity: 0.26;
+    animation: hero-drift-near var(--k-drift) linear infinite;
+  }
+
+  /* Further away: wider spacing, fainter, slower, and travelling the other way,
+     so the two never lock into one apparent motion. */
+  .hero__field::after {
+    background-size: 4.75rem 4.75rem;
+    opacity: 0.14;
+    animation: hero-drift-far calc(var(--k-drift) * 1.6) linear infinite;
+  }
+
+  @keyframes hero-drift-near {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+
+    to {
+      transform: translate3d(2.75rem, -2.75rem, 0);
+    }
+  }
+
+  @keyframes hero-drift-far {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+
+    to {
+      transform: translate3d(-4.75rem, 4.75rem, 0);
+    }
+  }
+
+  /* Above the field. Without this the two columns share its stacking context
+     and the points sit over the headline. */
+  .hero__argument,
+  .hero__panel {
+    position: relative;
+    z-index: 1;
   }
 
   @media (min-width: 60rem) {
@@ -1376,6 +1502,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
   .hero__panel {
     min-width: 0;
   }
+
 
   /* Beneath the panel since `#81` — which is where the reference puts its
      equivalent, and where it is read as a reassurance about the thing just

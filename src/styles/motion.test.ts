@@ -26,19 +26,51 @@ const sources = readdirSync(src, { recursive: true, encoding: 'utf8' })
   .filter((file) => !file.endsWith('.test.ts') && file !== 'styles/theme.css')
 
 describe('the motion tokens', () => {
-  it.each(['--k-quick', '--k-settle', '--k-ease', '--k-transition'])(
+  it.each(['--k-quick', '--k-settle', '--k-drift', '--k-ease', '--k-transition'])(
     'theme.css defines %s',
     (token) => {
       expect(theme).toContain(`${token}:`)
     },
   )
 
-  it('is two durations and one curve, and not a scale', () => {
-    // A motion scale is a thing to consult; two values are a thing to remember.
-    // If a third is ever needed, theme.css is where the argument happens — the
-    // same rule the colour tokens have.
-    const durations = theme.match(/^\s*--k-(?:quick|settle|[a-z-]*duration[a-z-]*):/gm) ?? []
-    expect(durations).toHaveLength(2)
+  /**
+   * **Three durations, and the third had to argue for itself**
+   * (kolonie-website#83).
+   *
+   * This asserted two and said *"if a third is ever needed, theme.css is where
+   * the argument happens"*. `--k-drift` is that third and the argument is in
+   * `theme.css` beside it: `--k-quick` and `--k-settle` are **responses** —
+   * something happened and the duration is how long the page takes to answer —
+   * and a reader watches the whole of one. Ambience is the opposite: nothing
+   * caused it and nobody watches it end.
+   *
+   * **The count is still the guard.** A scale is a thing to consult; three
+   * values with three arguments are a thing to remember. A fourth is a fourth
+   * argument, in that comment's shape, and this number goes up with it.
+   *
+   * **The pattern names them rather than matching a shape**, which it did not
+   * before: `--k-drift` contains neither *quick*, *settle* nor *duration*, so
+   * the old regex would have counted two and reported a passing test about a
+   * file that had three. A guard that cannot see the thing it guards against is
+   * worse than none.
+   */
+  it('is three durations and one curve, and not a scale', () => {
+    const durations = theme.match(/^\s*--k-[a-z-]+:\s*[\d.]+m?s\s*;/gm) ?? []
+    expect(durations.map((line) => line.trim())).toHaveLength(3)
+  })
+
+  /**
+   * The ambient one is slow enough to read as presence rather than as movement.
+   * `#83`: *"Slow, low contrast"* — and the failure it guards is somebody
+   * reaching for this token for a hover, where 90 seconds is a broken control.
+   */
+  it('keeps the ambient duration in a different order of magnitude', () => {
+    const seconds = (token: string): number => {
+      const value = theme.match(new RegExp(`${token}:\\s*([\\d.]+)(m?s)`))
+      return Number(value![1]) * (value![2] === 'ms' ? 0.001 : 1)
+    }
+
+    expect(seconds('--k-drift')).toBeGreaterThan(seconds('--k-settle') * 50)
   })
 })
 
@@ -136,14 +168,42 @@ describe('what must not move', () => {
   })
 
   /**
-   * No carousel. Both references have one, both are showing testimonials `#22`
-   * refused, and there is nothing here to rotate.
+   * **No carousel.** Both references have one, both are showing testimonials
+   * `#22` refused, and there is nothing here to rotate.
+   *
+   * **`infinite` was the proxy for that, and `kolonie-website#83` needed it
+   * narrowed rather than dropped.** The maintainer asked on 2026-08-07 for the
+   * reference's slow field behind the hero, which is a loop that by definition
+   * never ends — so a blanket ban on `infinite` would have refused the thing
+   * that was decided, and deleting the guard would have let a carousel back in
+   * under the same edit.
+   *
+   * So the rule is now the one that was meant: **nothing that carries content
+   * rotates.** One decorative loop is allowed, it is named, and it has to be
+   * on the ambient field's own layers and drawn on the ambient token — which
+   * is what makes it recognisable as ambience rather than as something a reader
+   * is expected to wait through.
    */
-  it.each(sources)('%s has no carousel and no infinite loop', (file) => {
+  it.each(sources)('%s has no carousel', (file) => {
+    expect(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'))
+      .not.toMatch(/\bcarousel\b/i)
+  })
+
+  it.each(sources)('%s loops nothing but the ambient field', (file) => {
     const body = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
 
-    expect(body).not.toMatch(/animation:[^;]*\binfinite\b/)
-    expect(body).not.toMatch(/\bcarousel\b/i)
+    for (const [declaration] of body.matchAll(/animation:[^;]*\binfinite\b[^;]*/g)) {
+      // The selector this sits under, which is the whole of what is allowed.
+      const selector = body
+        .slice(0, body.indexOf(declaration))
+        .match(/([^{}]*)\{[^{}]*$/)?.[1]
+        ?.trim()
+
+      expect(selector, `an infinite loop outside the ambient field: ${declaration}`)
+        .toMatch(/\.hero__field::(before|after)$/)
+      expect(declaration, 'an infinite loop not drawn on the ambient token')
+        .toContain('--k-drift')
+    }
   })
 })
 
@@ -172,5 +232,123 @@ describe('the scroll reveal fails open', () => {
 
     expect(head).toContain('revealReady')
     expect(head).toContain('is:inline')
+  })
+})
+
+/**
+ * **The one ambient element** (kolonie-website#83).
+ *
+ * `agentmail.to` carries a slow field behind its hero; this page was entirely
+ * still, and the maintainer asked for the same effect on 2026-08-07.
+ *
+ * `#83` says its constraints *are the whole issue*, and every one of them is
+ * invisible to a reviewer looking at the page: a canvas loop looks identical
+ * and drains a battery, a field that ignores `prefers-reduced-motion` looks
+ * identical to everybody who has not set it, and one that intercepts a click
+ * looks identical until somebody tries to select the headline.
+ */
+describe('the ambient field behind the hero (kolonie-website#83)', () => {
+  const page = read('../pages/index.astro')
+  const field = page.slice(page.indexOf('.hero__field {'), page.indexOf('@keyframes hero-drift-far'))
+
+  it('is one element, and it is the only ambient thing on the page', () => {
+    expect(page.match(/class="hero__field"/g)).toHaveLength(1)
+  })
+
+  /**
+   * `#83`: *"CSS or SVG, never a video and never a canvas loop that runs
+   * forever. A landing page that spins a GPU is a landing page that drains a
+   * laptop."*
+   */
+  it('is CSS, not a canvas and not a video', () => {
+    expect(page).not.toMatch(/<canvas|<video|requestAnimationFrame/)
+    expect(field).toContain('radial-gradient')
+  })
+
+  /**
+   * `#83`: *"It must not shift layout or intercept a click. Decorative,
+   * `aria-hidden`, pointer-events off."*
+   */
+  it('is decorative, out of flow, and takes no pointer', () => {
+    expect(page).toContain('<div class="hero__field" aria-hidden="true">')
+    expect(field).toMatch(/position:\s*absolute/)
+    expect(field).toMatch(/pointer-events:\s*none/)
+  })
+
+  /**
+   * `#83`: *"It must not delay the first paint. If it costs anything before the
+   * headline is readable, it is the wrong implementation."*
+   *
+   * So: no file to fetch. A `url(…)` here would be a request the headline waits
+   * behind, which is the one thing this element may not do.
+   */
+  it('fetches nothing', () => {
+    expect(field).not.toMatch(/url\(/)
+  })
+
+  /**
+   * `#83`: *"Behind, not near. Low enough contrast that the headline never
+   * competes with it."*
+   */
+  it('sits behind the argument, faintly', () => {
+    expect(field).toMatch(/z-index:\s*0/)
+
+    const opacities = [...page.matchAll(/\.hero__field::(?:before|after)\s*\{[^}]*opacity:\s*([\d.]+)/g)]
+      .map((match) => Number(match[1]))
+
+    expect(opacities).toHaveLength(2)
+    for (const opacity of opacities) expect(opacity).toBeLessThan(0.3)
+  })
+
+  /**
+   * **`#83`: *"`prefers-reduced-motion` stops it dead. Not slows it — stops
+   * it."***
+   *
+   * `theme.css`'s blanket rule is what does it, and it stops an animation by
+   * collapsing it onto its **last** keyframe. That makes the end state the
+   * whole of whether *stopped* means *resting* or *frozen mid-drift* — and both
+   * layers travel exactly one tile, so the last frame is pixel-identical to the
+   * first. Verified in Chromium with the preference emulated on 2026-08-08:
+   * `animation-duration` reads `1e-05s`, `animation-iteration-count` reads `1`,
+   * and the field renders as an unmoving constellation rather than disappearing.
+   *
+   * Asserted as the equality between the travel and the tile, because that is
+   * the property, and a later edit tuning one of the two numbers is exactly how
+   * it would break.
+   */
+  it.each([
+    ['near', 'before'],
+    ['far', 'after'],
+  ])('%s layer travels exactly one tile, so stopping it looks like resting', (name, pseudo) => {
+    const layer = page.match(
+      new RegExp(`\\.hero__field::${pseudo}\\s*\\{[^}]*background-size:\\s*([\\d.]+)rem`),
+    )
+    const keyframe = page.match(
+      new RegExp(`@keyframes hero-drift-${name}[^@]*?to\\s*\\{[^}]*translate3d\\(\\s*(-?[\\d.]+)rem,\\s*(-?[\\d.]+)rem`, 's'),
+    )
+
+    expect(layer, `no background-size for the ${name} layer`).not.toBeNull()
+    expect(keyframe, `no end keyframe for the ${name} layer`).not.toBeNull()
+
+    const tile = Number(layer![1])
+    expect(Math.abs(Number(keyframe![1]))).toBe(tile)
+    expect(Math.abs(Number(keyframe![2]))).toBe(tile)
+  })
+
+  /**
+   * `#83`: *"It is invisible in a screenshot taken for the Open Graph image, or
+   * explicitly accounted for there."*
+   *
+   * It is invisible, by construction rather than by care: the generator
+   * screenshots its own document off the filesystem and never loads this page.
+   */
+  it('cannot reach the Open Graph image', () => {
+    const generator = readFileSync(
+      new URL('../../scripts/build-assets.mjs', import.meta.url),
+      'utf8',
+    )
+
+    expect(generator).toContain("goto('file://' + source)")
+    expect(generator).not.toMatch(/goto\(\s*['"`]https?:\/\//)
   })
 })
