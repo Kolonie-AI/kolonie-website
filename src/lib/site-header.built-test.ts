@@ -160,8 +160,43 @@ describe.each(pages)("%s", (file) => {
 });
 
 describe("the header's items come from one list", () => {
-  it("is three in the middle, with no dropdown", () => {
-    expect(NAV_LINKS).toHaveLength(3);
+  /**
+   * **Four since `#85`, and the ceiling is what this test is for** rather than
+   * the exact count. `#50` refused dropdowns — the reference needs them for four
+   * product areas and this site has a handful of pages — so the guard is that
+   * the row stays short enough not to need one, and `#85` named four items.
+   */
+  it("is four in the middle, with no dropdown", () => {
+    expect(NAV_LINKS).toHaveLength(4);
+  });
+
+  /**
+   * **No item is a word this project invented** (`#85`), which is the whole of
+   * that issue and the thing a later edit is most likely to undo by reaching for
+   * the shortest available label.
+   */
+  it("uses no Colony vocabulary in the middle", () => {
+    const invented = ["academy", "quest", "skill", "rung", "citizen", "colony", "swarm"];
+
+    for (const link of NAV_LINKS) {
+      for (const word of invented) {
+        expect(link.label.toLowerCase()).not.toContain(word);
+      }
+    }
+  });
+
+  /**
+   * And every one of them points at a page this site actually builds (`#85`):
+   * *"Shipping a menu with dead links is worse than shipping the three words it
+   * replaces."* Read off `dist` rather than off a list, so a menu item that
+   * outlives its page fails here.
+   */
+  it("points every item at a page that exists", () => {
+    const built = new Set(pages.map((file) => `/${file.replace(/index\.html$/, "")}`));
+
+    for (const link of NAV_LINKS) {
+      expect(built).toContain(link.href);
+    }
   });
 
   it("sends Sign in to the console and the icon to the organisation", () => {

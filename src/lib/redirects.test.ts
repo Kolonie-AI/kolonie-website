@@ -123,6 +123,12 @@ describe("the addresses that moved", () => {
    * the sponsor page instead, which is the crossing between layers in the
    * direction a reader travels (`#66`). So what is asserted is that it is still
    * linked *somewhere* a reader can get to, rather than from one named file.
+   *
+   * **`/for-sponsors/` left the header too, in `#85`**, which replaced every
+   * item with the question a reader arrives with. It is asserted the same way
+   * the line above already asserts `/quests/`: reachable from the navigation or
+   * from the footer, and not from one named file. Pinning it to the header was
+   * what made this test fail on a change that lost nothing.
    */
   it("leaves no internal link on the old address", () => {
     const nav = readFileSync(
@@ -143,7 +149,7 @@ describe("the addresses that moved", () => {
 
     expect(linksTo(nav, "/sponsors/")).toBe(false);
     expect(linksTo(footer, "/sponsors/")).toBe(false);
-    expect(linksTo(nav, "/for-sponsors/")).toBe(true);
+    expect(linksTo(nav, "/for-sponsors/") || linksTo(footer, "/for-sponsors/")).toBe(true);
     expect(linksTo(sponsorPage, "/quests/") || linksTo(footer, "/quests/")).toBe(true);
   });
 

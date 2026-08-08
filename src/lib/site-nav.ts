@@ -18,58 +18,49 @@ import { SEND, SIGN_IN, type FooterLink } from './site-footer.ts'
 export type NavLink = FooterLink
 
 /**
- * The three in the middle.
+ * The four in the middle, and none of them is a word this project invented
+ * (kolonie-website#85).
  *
- * **`#50` decided `Academy`, `Sponsors` and `Docs`, and this is `Skill` in the
- * third slot. Confirmed by the maintainer on 2026-08-06** — it is a settled
- * answer rather than an implementer's substitution, and it is written here so
- * the next reader of `#50` does not correct it back.
+ * **They were `Academy`, `Sponsors` and `Skill`.** All three are internal
+ * vocabulary and one is worse than internal — *Skill* here meant the installable
+ * package rather than a capability, which is confusing to somebody who has read
+ * the documentation. `#85`: *"They are answers. A menu is for questions."*
  *
- * The issue also gives the right-hand group a `Docs` outline button, which would
- * have put the same word twice in one 400px strip. The two halves of that
- * decision contradict each other, and it is resolved in favour of the button:
- * the outline/filled pair is the device `#50` argues for at length, and a nav
- * item is not. `Docs` also leaves this site — it points at `kolonie-docs` — and
- * a link out of the site is a button at the edge rather than an item in the
- * middle.
+ * So each item is now the question a reader arrives with:
  *
- * `/skill/` takes the slot rather than something invented, which `#50` refuses:
- * it is a page that exists today, it is a page a stranger arrives on, and it is
- * the install path — the second question every reader of this site has (`#36`).
- * The three together are the three readers `#9` identified: what an agent can
- * prove, who pays, and how to start.
+ * | Item | Answers |
+ * |---|---|
+ * | **How it works** | What happens if I do this |
+ * | **For operators** | I have several agents, what do I get |
+ * | **For providers** | I have a product I want agents to try |
+ * | **Pricing** | What does this cost me |
  *
- * **The one argument against it, recorded rather than left for somebody to
- * find.** `AGENTS.md` names `/skill` as the one page written to be read by a
- * machine, and this header is human chrome. It was weighed and the slot kept:
- * the page is already linked to humans from the landing page and the footer, and
- * the alternative — `Who builds this` — answers a question that does not belong
- * in the same triple. Nothing here is a dropdown; the reference needs them for
- * four product areas and this site has five pages.
+ * **Every item points at a page that exists**, which `#85` makes a condition
+ * rather than a preference: *"Shipping a menu with dead links is worse than
+ * shipping the three words it replaces."* `#68` wrote the operator page, `#76`
+ * the provider page and `#88` the pricing page; all three closed before this
+ * landed, which is what let it ship at four items rather than growing into them.
+ *
+ * ## Where the retired words went
+ *
+ * `#85` requires them to stay reachable, and they are:
+ *
+ * - **Academy** is `How it works`. The label changed and the destination did
+ *   not — that page's whole argument is that every rung leaves the agent's own
+ *   installation different afterwards, which is *what happens if I do this*
+ *   written out. It is also still in the footer under its own name, for the
+ *   reader who knows the word.
+ * - **Skill** is in the footer, on the landing page, and is the primary action
+ *   in the hero. It was never findable *because* of the header slot.
+ * - **Sponsors** moves to the footer. It is the one that lost a slot rather
+ *   than a label, and `redirects.test.ts` asserts it is still linked from
+ *   somewhere a reader can reach.
  */
 export const NAV_LINKS: readonly NavLink[] = [
-  { href: '/academy/', label: 'Academy' },
-  /**
-   * **`Sponsors` and not `Quests`, which restores `#50`'s own word**
-   * (kolonie-website#70).
-   *
-   * The slot pointed at `/quests/` because that was the only sponsor-facing
-   * page there was. `#71` made it documentation and `#70` wrote the page a
-   * sponsor actually arrives on, so the header now points at the one read by
-   * somebody who has not decided — which is what a header is for, and what the
-   * layer rule in `src/lib/layers.ts` says out loud.
-   *
-   * `/quests/` is not orphaned: the sponsor page ends by linking to it, which
-   * is the crossing between layers in the direction a reader actually travels.
-   *
-   * **`/for-sponsors/` and not `/sponsors/`, which is not free to take back.**
-   * `#55` retired that address and `nginx.conf` answers it with a `301` to
-   * `/quests/` — a redirect `governance/terms.md` cross-references and
-   * `redirects.test.ts` asserts. Reviving the URL would break both to save one
-   * word. `/for-providers/` already sets the pattern.
-   */
-  { href: '/for-sponsors/', label: 'Sponsors' },
-  { href: '/skill/', label: 'Skill' },
+  { href: '/academy/', label: 'How it works' },
+  { href: '/run-a-swarm/', label: 'For operators' },
+  { href: '/for-providers/', label: 'For providers' },
+  { href: '/pricing/', label: 'Pricing' },
 ]
 
 /** The organisation, behind the icon at the right-hand end. */
