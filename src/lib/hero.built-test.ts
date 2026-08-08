@@ -81,12 +81,27 @@ describe("the hero says what the Colony is", () => {
    * A hero that names only one of them fails, which is the state `#67` opened
    * about, and so does one that names both and links neither.
    */
-  it("names both readers and points each at its half, before anybody scrolls", () => {
+  it("names both readers and lets each pick its half, before anybody scrolls", () => {
     const hero = landing.slice(0, landing.indexOf('class="join"'));
 
-    expect(hero).toContain("Arriving on your own?");
-    expect(hero).toContain("Already running several agents?");
-    expect(hero).toContain('href="#you-run-a-colony"');
+    // `#84` is the third revision of this assertion and it moves the
+    // requirement rather than dropping it. `#67`'s two links were the third
+    // asking of one question inside one screen — the header switch asks it,
+    // the sentence asked it, and the join block asked it again below. What
+    // `#52` required is *say which half is theirs before anybody scrolls*, and
+    // a control above the headline says it in the form a reader looks for.
+    //
+    // So both readers are still named above the fold, and both halves are
+    // still reachable from up here. A hero that names one of them fails, and
+    // so does one that names both and offers no way to choose.
+    expect(hero).toContain("Read this as an </span>Agent");
+    expect(hero).toMatch(/Read this as a human — [^<]*<\/span>Human/);
+    expect(hero).toContain('href="#human"');
+    expect(hero).toContain('href="#agent"');
+
+    // The paragraph itself is gone, and stays gone.
+    expect(hero).not.toContain("Arriving on your own?");
+    expect(hero).not.toContain("This half is yours.");
   });
 
   /**

@@ -35,6 +35,23 @@ const styles = readdirSync(join(dist, "_astro"))
   .map((file) => readFileSync(join(dist, "_astro", file), "utf8"))
   .join("\n");
 
+/**
+ * **Does any `#human:target` rule take a half of the page off it**, as opposed
+ * to moving it or turning the join block's lens (kolonie-website#78, #84).
+ *
+ * A function rather than an inline loop so that the test below can be run
+ * against a stylesheet that *does* contain the failure — see the rejection case
+ * beneath the assertion that uses it.
+ *
+ * The halves are `.page`'s own children, which is what makes the selector test
+ * `\.page\s*>` rather than a list of the two class names: a third half added
+ * tomorrow is covered without anybody remembering to add it here.
+ */
+const hidesAHalf = (css: string): boolean =>
+  (css.match(/#human:target[^{]*\{[^}]*\}/g) ?? [])
+    .filter((rule) => /\.page\s*>/.test(rule))
+    .some((rule) => /display:\s*none|visibility:\s*hidden/.test(rule));
+
 describe("the audience switch (kolonie-website#78)", () => {
   it.each(pages.map((page) => page.slice(dist.length)))(
     "is in the header on %s, so a visitor can choose anywhere",
@@ -45,7 +62,37 @@ describe("the audience switch (kolonie-website#78)", () => {
 
   it("offers both readers, in words rather than only in a highlight", () => {
     expect(landing).toMatch(/Read this as an <\/span>Agent/);
-    expect(landing).toMatch(/Read this as a <\/span>Human/);
+    expect(landing).toMatch(/Read this as a human — [^<]*<\/span>Human/);
+  });
+
+  /**
+   * **The one clause `kolonie-website#84` let survive the hero's sentence**,
+   * and it is asserted because it is invisible: it lives in the `sr-only` span
+   * on the human pick, so nobody reviewing the page in a browser can tell
+   * whether it is still there.
+   *
+   * `#84`: *"If anything survives from the sentence, it is one clause —*
+   * already running several agents? *as the label on the human half of the
+   * switch. Not a paragraph."*
+   */
+  it("names the operator on the human half, in the spoken label", () => {
+    expect(landing).toContain("already running several agents?");
+  });
+
+  /**
+   * **The duplication `#84` removed, asserted as an absence** — the two other
+   * places the same question was asked inside the first screen. Both would
+   * come back as an ordinary-looking edit, and both looked reasonable in
+   * isolation, which is why the count is here rather than in a reviewer's head.
+   */
+  it("asks the question once on the page, not three times", () => {
+    expect(landing).not.toContain("Arriving on your own?");
+    expect(landing).not.toContain("This half is yours.");
+    expect(landing).not.toContain("I'm an agent");
+    expect(landing).not.toContain("I&#39;m an agent");
+
+    // One control, and it is the header's: two picks, once per page.
+    expect(landing.match(/class="audience__pick/g)).toHaveLength(2);
   });
 
   /**
@@ -66,12 +113,37 @@ describe("the audience switch (kolonie-website#78)", () => {
 
     // The failure this names: a rule that took a half off the page instead of
     // moving it would satisfy every other assertion here.
-    const targeted = styles.match(/#human:target[^{]*\{[^}]*\}/g) ?? [];
-    for (const rule of targeted) {
-      expect(rule, `#human:target hides something: ${rule}`).not.toMatch(
-        /display:none|visibility:hidden/,
-      );
-    }
+    //
+    // **Scoped to the halves rather than to every `#human:target` rule**
+    // (kolonie-website#84). The switch became the page's only audience control
+    // when the join block's radios were removed, so it now also turns that
+    // block's lens — and a lens over one artefact *does* show one of two
+    // readings of it, which is what a lens is and what `#53` built. The
+    // property that must not break is narrower and always was: **a half of the
+    // page is never taken off it.** The halves are `.page`'s own children, and
+    // `hidesAHalf` below is the whole of the distinction.
+    expect(hidesAHalf(styles)).toBe(false);
+  });
+
+  /**
+   * **The rejection case for the rule above**, and it exists because that rule
+   * became a filter rather than a sweep. A filter that matches nothing passes
+   * every assertion made about what it found, silently and for ever — so what
+   * is checked here is that the filter still *catches* the failure it names,
+   * against a stylesheet written to contain it.
+   */
+  it("still catches a rule that takes a half off the page", () => {
+    expect(
+      hidesAHalf("#human:target~* .page>#you-run-a-colony{display:none}"),
+    ).toBe(true);
+    expect(
+      hidesAHalf("#human:target~* .page>.human-account{visibility:hidden}"),
+    ).toBe(true);
+
+    // And does not fire on the lens, which is the case it was narrowed for.
+    expect(hidesAHalf("#human:target~* [data-as=agent]{display:none}")).toBe(
+      false,
+    );
   });
 
   /**

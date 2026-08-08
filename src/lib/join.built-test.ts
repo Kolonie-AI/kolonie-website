@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -22,6 +22,12 @@ import { SKILL_REPOSITORIES } from "./skills.ts";
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 const landing = readFileSync(join(dist, "index.html"), "utf8");
 
+/** Which reading is shown is a CSS question since `#84`, so the built CSS is read. */
+const styles = readdirSync(join(dist, "_astro"))
+  .filter((file) => file.endsWith(".css"))
+  .map((file) => readFileSync(join(dist, "_astro", file), "utf8"))
+  .join("\n");
+
 /** The block itself, so nothing here can be satisfied by the rest of the page. */
 const block = landing.slice(
   landing.indexOf('<section class="join'),
@@ -44,50 +50,58 @@ it("found the join block at all", () => {
   expect(block.length).toBeGreaterThan(1000);
 });
 
-describe("the switch", () => {
-  it("is two states and no more", () => {
-    expect(block.match(/class="join__state/g)).toHaveLength(2);
-    expect(text(block)).toContain("I'm an agent");
-    expect(text(block)).toContain("I'm a human");
+/**
+ * **This block has no switch of its own** (kolonie-website#84).
+ *
+ * It had one, and these assertions used to describe it: a radio pair labelled
+ * `I'm an agent` / `I'm a human`, with a script that read `?as=human`. `#84`
+ * removed it as the third asking of one question inside one screen, and the
+ * header switch keeps the control.
+ *
+ * **What is asserted here is the removal, not the absence of a feature.** The
+ * lens `#53` built is untouched and is checked below exactly as before — one
+ * artefact, two readings, the command not moving. All that changed is which
+ * control turns it, so the failure worth guarding against is a second control
+ * quietly coming back beside the first.
+ */
+describe("the switch, which is the header's now", () => {
+  it("draws no control of its own", () => {
+    expect(block).not.toContain("join__state");
+    expect(block).not.toContain('name="join-as"');
+    expect(text(block)).not.toContain("I'm an agent");
+    expect(text(block)).not.toContain("I'm a human");
   });
 
-  it("is a radio group, so it needs no script", () => {
-    expect(block).toContain('type="radio"');
-    expect(block).toContain('name="join-as"');
-  });
-
-  it("opens on the agent, and the agent is first", () => {
-    // `#53`: the default state is the agent's. Both halves — which one carries
-    // `checked`, and which one comes first in the document, since a control
-    // whose visual order disagrees with its DOM order is one a keyboard reader
-    // meets in the wrong sequence.
-    expect(block).toMatch(/value="agent"[^>]*\schecked/);
-    expect(block.indexOf('value="agent"')).toBeLessThan(
-      block.indexOf('value="human"'),
+  it("carries no radios but the install panel's own", () => {
+    // The runtime tabs are radios too and they stay. Counting them is what
+    // makes this assertion say *the audience radios are gone* rather than
+    // *there are no radios*, which was never true and would fail on `#36`.
+    expect(block.match(/type="radio"/g)).toHaveLength(
+      block.match(/name="join-runtime"/g)?.length ?? 0,
     );
   });
 
-  it("is linkable, which is the one thing the script adds", () => {
-    // `?as=human` is read at load. The state it selects is the one that is not
-    // the default, so nothing about the no-script rendering depends on it.
-    //
-    // Read out of the inline module scripts rather than a bundle: Astro inlines
-    // a component script this small, so a test looking only at `<script src>`
-    // would look in the wrong place and pass or fail for the wrong reason.
+  it("needs no script at all", () => {
+    // `?as=human` was the one thing the script bought — a link that opens the
+    // other reading — and the fragment does it without a script, which is why
+    // the script went rather than being rewritten.
     const scripts = [
       ...landing.matchAll(/<script type="module">([\s\S]*?)<\/script>/g),
-    ].map((m) => m[1]);
+    ].map((m) => m[1] ?? "");
 
-    const switching = scripts.filter((source) =>
-      source.includes("join__radio"),
-    );
+    for (const source of scripts) {
+      expect(source, "a script still drives the join block").not.toMatch(
+        /join__radio|join-as|\bas=human\b/,
+      );
+    }
+  });
 
-    expect(switching, "no script reads the switch").toHaveLength(1);
-    expect(switching[0]).toContain("URLSearchParams");
-    // Not `pushState`: flipping a lens is not a navigation, and filling a
-    // reader's back button with it is how a page becomes a trap.
-    expect(switching[0]).toContain("replaceState");
-    expect(switching[0]).not.toContain("pushState");
+  it("answers to the page's one audience control", () => {
+    // The lens is turned by `#human`, the same anchor the header links to, so
+    // this block cannot disagree with the header about who is reading — which
+    // it could when both existed, and did the moment anybody used one only.
+    expect(styles).toMatch(/#human:target~\*[^{]*\[data-as=.?agent.?\]/);
+    expect(landing).toContain('href="#human"');
   });
 });
 

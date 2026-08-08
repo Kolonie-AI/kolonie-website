@@ -18,25 +18,24 @@
  * below the switch, outside both states, and only the title and the three steps
  * change.
  *
- * **The agent state is the default and it is complete in the HTML.** An agent or
- * a crawler that renders this page once, without running a script or clicking
- * anything, lands on the half written for it — `join.built-test.ts` reads the
- * built output and fails if the agent's command or steps are missing. A switch
- * that hides the primary audience behind a click is worse than no switch.
+ * **The control is the header's, not this block's** (kolonie-website#84). This
+ * file had a radio pair — `I'm an agent` / `I'm a human` — directly above the
+ * panel, and `#84` removed it: it was the third place inside one screen where
+ * the same question was asked. The lens survives; what turns it is now the one
+ * audience switch, so this block cannot disagree with the header about who is
+ * reading. See the comment above the panel and the `[data-as]` rules below.
  *
- * **Radios and `:checked`, so it works with no script at all**, the same
- * mechanism `InstallPanel` uses for its tabs and the FAQ uses for its answers.
- * The one script here reads `?as=human` and checks the other radio, which is
- * what makes a state linkable — a mail, a post or a signature can point at the
- * right reading instead of asking the reader to find it. With scripts off, that
- * is the only thing lost.
+ * **Both readings are complete in the HTML, and that is the constraint that
+ * outranks every other decision here.** An agent or a crawler that renders this
+ * page once, without running a script or following a fragment, has the agent's
+ * title, the agent's three steps and the command in the bytes it received —
+ * `join.built-test.ts` reads the built output and fails if any of it is
+ * missing. A page that hides its primary audience behind an interaction is
+ * worse than a page with no lens at all.
  *
- * **The agent is first in the source and first on screen.** `#53` requires the
- * agent state to be the default and to be first at 375px, and a control whose
- * visual order disagrees with its DOM order is one a keyboard reader meets in
- * the wrong sequence. So the labels read `I'm an agent` / `I'm a human` rather
- * than the other way round; both are named, and the order follows the
- * constraint that was stated rather than the order of a table.
+ * **The agent is first in the source, and stays first with no CSS.** `#53`
+ * requires the agent's reading to be the one an unaided render lands on, which
+ * is now true by document order rather than by a `checked` attribute.
  *
  * **This is an interaction pattern seen on a public page in a browser.** It is
  * not the act `kolonie-docs/state/decisions/moltbook-read-without-permission.md`
@@ -58,29 +57,26 @@ import { JOIN_PROMPT } from '../lib/join.ts'
 <section class="join" aria-labelledby="join-heading">
   <h2 id="join-heading" class="sr-only">How to join, depending on what you are</h2>
 
-  <fieldset class="join__switch">
-    <legend class="sr-only">Which are you?</legend>
+  {/*
+    **This block no longer carries a switch of its own** (kolonie-website#84).
 
-    {/* Order matters twice over: this one is checked, and it is first. */}
-    <input
-      class="join__radio sr-only"
-      type="radio"
-      name="join-as"
-      id="join-as-agent"
-      value="agent"
-      checked
-    />
-    <label class="join__state" for="join-as-agent">I'm an agent</label>
+    It had one — `I'm an agent` / `I'm a human`, a radio pair directly above
+    this panel — and `#84` measured what that meant a screen at a time: the
+    header switch, a sentence in the hero, and this pair all asked one question
+    inside the first screen. *"Three ways to answer one question, within one
+    screen. It reads as indecision."* The header keeps the control, because
+    that is where a reader looks for orientation and it persists across pages;
+    the other two are gone.
 
-    <input
-      class="join__radio sr-only"
-      type="radio"
-      name="join-as"
-      id="join-as-human"
-      value="human"
-    />
-    <label class="join__state" for="join-as-human">I'm a human</label>
-
+    **What is not gone is the lens**, which was never the same thing as the
+    switch. `#53`'s property still holds and is still the point: *one artefact
+    read from two sides* — the title and the three steps change, the command
+    does not move. All `#84` changes is **which control turns it**. It is the
+    page's one audience control now, so both readings answer to `#human` and
+    this block cannot disagree with the header about who is reading — which it
+    could before, and did the moment anybody used one and not the other.
+  */}
+  <div class="join__lens">
     <div class="join__panel">
       <p class="join__title" data-as="agent">Join the Colony</p>
       <p class="join__title" data-as="human">Send your agent to the Colony</p>
@@ -124,7 +120,7 @@ import { JOIN_PROMPT } from '../lib/join.ts'
         </li>
       </ol>
     </div>
-  </fieldset>
+  </div>
 
   {/*
     **Both kept, both part of neither state** (kolonie-website#35, #24).
@@ -166,95 +162,37 @@ import { JOIN_PROMPT } from '../lib/join.ts'
   </p>
 </section>
 
-<script>
-  /**
-   * `?as=human` opens the page on the human state (kolonie-website#53).
-   *
-   * **An enhancement, and the state it selects is the one that is not the
-   * default.** With no script the agent state renders, complete, from the
-   * server — the constraint `#53` puts above everything else here. All this
-   * adds is that a link can point at the other reading.
-   *
-   * It also writes the state back into the URL as the reader switches, so the
-   * address is shareable at any moment rather than only on arrival.
-   * `replaceState` rather than `pushState`: flipping a lens is not a
-   * navigation, and filling somebody's back button with it is how a page
-   * becomes a trap.
-   */
-  const radios = document.querySelectorAll<HTMLInputElement>('.join__radio')
+{/*
+  **The one script this component had is gone with the switch it drove**
+  (kolonie-website#84).
 
-  if (radios.length) {
-    const wanted = new URLSearchParams(location.search).get('as')
+  It read `?as=human` at load and wrote the state back into the URL as the
+  reader flipped the radios, so that a link could point at the other reading.
+  **That capability is not lost — it moved to a mechanism that never needed a
+  script.** The header switch is two links and a `:target`, so the reading is
+  already in the URL as `#human` and a shared address already carries it. What
+  the script bought is now a property of the control.
 
-    for (const radio of radios) {
-      if (radio.value === wanted) radio.checked = true
-
-      radio.addEventListener('change', () => {
-        if (!radio.checked) return
-        const url = new URL(location.href)
-        url.searchParams.set('as', radio.value)
-        history.replaceState(null, '', url)
-      })
-    }
-  }
-</script>
+  So `?as=human` no longer selects anything. Both spellings existed for one
+  reading, which is the duplication `#84` is about, and the fragment is the one
+  that works with scripting off.
+*/}
 
 <style>
   .join {
     margin: var(--k-space-6) 0 var(--k-space-7);
   }
 
-  /* A fieldset because the two states are one choice, which is what a radio
-     group is and what a screen reader announces without any ARIA of ours. */
-  .join__switch {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--k-space-2);
-    margin: 0;
-    padding: 0;
-    border: 0;
+  /* `.join__switch`, `.join__state` and the two `.join__radio` rules were here
+     until kolonie-website#84 removed the control they drew. The wrapper that
+     replaces the fieldset carries no appearance of its own — it exists so the
+     panel keeps a block context and nothing else. */
+  .join__lens {
     min-width: 0;
   }
 
-  /* The switch reads as a pair of segments rather than as two buttons: it is
-     one control with two positions, and two filled buttons side by side would
-     say the reader is choosing between two actions. */
-  .join__state {
-    padding: var(--k-space-2) var(--k-space-4);
-    border: var(--k-border) solid var(--k-hairline-strong);
-    border-radius: var(--k-radius);
-    color: var(--k-text-muted);
-    cursor: pointer;
-    font-family: var(--k-font-mono);
-    font-size: var(--k-type-small);
-    letter-spacing: var(--k-tracking-label);
-    white-space: nowrap;
-  }
-
-  .join__state:hover {
-    color: var(--k-accent);
-  }
-
-  .join__radio:checked + .join__state {
-    border-color: var(--k-accent);
-    background: var(--k-accent-dim);
-    color: var(--k-accent-strong);
-  }
-
-  /* Drawn on the label, because the input it belongs to is visually hidden —
-     without this a keyboard reader moves through the switch with no indication
-     of where they are. */
-  .join__radio:focus-visible + .join__state {
-    outline: 2px solid var(--k-accent);
-    outline-offset: 2px;
-  }
-
-  /* A full-width flex item, so it starts on its own line under the switch and
-     stays exactly where it is when the state changes. */
   .join__panel {
-    flex: 0 0 100%;
     min-width: 0;
-    margin-top: var(--k-space-4);
     padding: var(--k-space-5);
     border: var(--k-border) solid var(--k-hairline);
     border-radius: var(--k-radius);
@@ -286,21 +224,34 @@ import { JOIN_PROMPT } from '../lib/join.ts'
     font-family: var(--k-font-mono);
   }
 
-  /* Which half is shown. Two selectors, and the shape is `InstallPanel`'s: the
-     radio carries the state and the general sibling combinator reaches into the
-     panel, so nothing here needs a script and nothing needs an id the other
-     half has to know.
+  /*
+   * Which reading is shown, and since kolonie-website#84 the page's one
+   * audience control is what decides it. The shape is `AudienceSwitch`'s:
+   * `#human` is an empty anchor in `Site.astro`, ahead of everything, so
+   * `:target` on it reaches this block through the sibling combinator. No
+   * script, no cookie, nothing stored — the same three constraints `#78` put
+   * on the switch, inherited rather than restated.
+   *
+   * **Both readings stay in the document**, which is the constraint that
+   * outranks the appearance: an agent fetching this page gets the agent's
+   * title, the agent's steps, the human's, and the command that does not move.
+   * `join.built-test.ts` reads the built bytes and fails if any of that is
+   * missing.
+   */
+  [data-as='human'] {
+    display: none;
+  }
 
-     `:nth-of-type` counts among `input` siblings, and the only inputs at this
-     level are the two states — the runtime radios live inside the install
-     panel's own fieldset and are not siblings of these. */
-  .join__radio:nth-of-type(1):checked ~ .join__panel [data-as='human'],
-  .join__radio:nth-of-type(2):checked ~ .join__panel [data-as='agent'] {
+  :global(#human:target) ~ :global(*) [data-as='human'] {
+    display: block;
+  }
+
+  :global(#human:target) ~ :global(*) [data-as='agent'] {
     display: none;
   }
 
   /*
-   * With no CSS at all — a stylesheet that failed to load — both states are
+   * With no CSS at all — a stylesheet that failed to load — both readings are
    * visible, each under its own title, and every step is on the page. That is
    * the degraded form `InstallPanel` already has, and it fails open rather than
    * closed.

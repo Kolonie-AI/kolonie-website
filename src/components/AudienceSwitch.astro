@@ -58,8 +58,25 @@ const base = home ? '' : '/'
   <a href={`${base}#agent`} class="audience__pick audience__pick--agent">
     <span class="sr-only">Read this as an </span>Agent
   </a>
+  {/*
+    **The one clause that survived the hero's sentence** (kolonie-website#84).
+
+    `#84` removed *"Arriving on your own? Start here. Already running several
+    agents? This half is yours."* and allowed exactly one clause of it to live
+    on: *already running several agents?* — *"as the label on the human half of
+    the switch. Not a paragraph."*
+
+    It is spoken rather than drawn, and the pill is why. The switch is one
+    control with two positions and it reads as a pair because the two positions
+    are the same size; a seven-word half beside a one-word half is a paragraph
+    with a border, which is the form `#84` refused. So the clause goes where
+    this component already had prose nobody has to look at — the reason the
+    `sr-only` span exists at all — and it does the most work exactly there,
+    because a reader who cannot see which pick is lit is the one who most needs
+    telling which reader the half is for.
+  */}
   <a href={`${base}#human`} class="audience__pick audience__pick--human">
-    <span class="sr-only">Read this as a </span>Human
+    <span class="sr-only">Read this as a human — already running several agents? </span>Human
   </a>
 </nav>
 
