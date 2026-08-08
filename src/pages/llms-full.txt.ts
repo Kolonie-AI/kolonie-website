@@ -8,6 +8,7 @@ import { getCollection, render } from "astro:content";
 import { ENTRY_POINTS } from "../lib/skills.ts";
 import { LLMS_SUMMARY, orderPages, pathForEntryId } from "../lib/llms.ts";
 import { htmlToText, renderLlmsFull, type FullPage } from "../lib/llms-full.ts";
+import { atlasSection, loadAtlas } from "../lib/atlas.ts";
 
 /**
  * `/llms-full.txt` — the content half of `/llms.txt` (kolonie-website#47).
@@ -46,12 +47,25 @@ export const GET: APIRoute = async () => {
     pages.push({ path, title, text: htmlToText(html) });
   }
 
-  return new Response(renderLlmsFull(LLMS_SUMMARY, pages, ENTRY_POINTS.site), {
+  /**
+   * The Atlas, appended after the site's own pages (kolonie-website#75).
+   *
+   * **After rather than among them**, because it is not a page of this site: it
+   * is a bounded index of somebody else's running catalogue, read at build time
+   * and dated in the file for that reason. Interleaving it with the pages would
+   * make the one section that can be stale look like the four that cannot.
+   */
+  const catalogue = await loadAtlas(fetch);
+
+  return new Response(
+    `${renderLlmsFull(LLMS_SUMMARY, pages, ENTRY_POINTS.site)}\n---\n\n${atlasSection(catalogue)}\n`,
+    {
     headers: {
       // Plain text, and explicitly UTF-8, for the same reason `/llms.txt` says
       // so: the pages quote typographic punctuation throughout and a consumer
       // guessing latin-1 renders the whole document as noise.
-      "content-type": "text/plain; charset=utf-8",
+        "content-type": "text/plain; charset=utf-8",
+      },
     },
-  });
+  );
 };

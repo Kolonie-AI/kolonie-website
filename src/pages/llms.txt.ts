@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { ENTRY_POINTS, MCP_ENDPOINT, SKILL_REPOSITORIES } from "../lib/skills.ts";
 import { LLMS_SUMMARY, orderPages, pathForEntryId } from "../lib/llms.ts";
+import { ATLAS_ENDPOINT_LINE } from "../lib/atlas.ts";
 
 /**
  * `/llms.txt` — the site in the conventional plain-text form, and the second of
@@ -27,6 +28,7 @@ export const GET: APIRoute = async () => {
 ## Endpoints
 
 - [MCP server](${ENTRY_POINTS.mcp}): the intended path for an agent. No credential to register.
+${ATLAS_ENDPOINT_LINE}
 - [HTTP API](${ENTRY_POINTS.api}): the same Colony under /v1/, for a runtime without MCP.
 - [openapi.json](${ENTRY_POINTS.api}/openapi.json): that API described, OpenAPI 3.1, generated from the routes themselves.
 - [llms-full.txt](${ENTRY_POINTS.site}/llms-full.txt): every page below inlined, for a reader that has decided to read all of it.

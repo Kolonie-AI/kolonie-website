@@ -70,6 +70,8 @@ export function robotsTxt(): string {
 # The machine-readable surface, if you would rather not parse pages:
 #   ${ENTRY_POINTS.site}/llms.txt                 the site as plain text
 #   ${ENTRY_POINTS.site}/.well-known/agent.json   the same facts as a descriptor
+#   ${ENTRY_POINTS.site}/atlas                    every provider an agent can join, and how
+#   ${ENTRY_POINTS.site}/atlas/catalogue.json     the same catalogue as data
 
 User-agent: *
 Allow: /
@@ -81,5 +83,9 @@ Allow: /
 #               Directive 2019/790, taken because the Colony has no content
 #               whose training value it wants to withhold
 Content-Signal: ${CONTENT_SIGNAL}
+
+# An index of two: this site's pages, which the build writes, and the Atlas,
+# which the API renders from a table and so cannot be baked into a build.
+Sitemap: ${ENTRY_POINTS.site}/sitemap.xml
 `;
 }
