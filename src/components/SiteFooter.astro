@@ -30,6 +30,10 @@
  */
 
 import StatusChip from './StatusChip.astro'
+import { inlineMark } from '../lib/mark.ts'
+// The stylesheet as text, so the mark's baked-in colours come back as the
+// tokens they were generated from. Same read as `SiteHeader.astro`'s.
+import themeCss from '../styles/theme.css?raw'
 import { SITE_DESCRIPTION } from '../lib/head.ts'
 import { docsCheckout } from '../lib/kolonie-docs.ts'
 import { readEntity } from '../lib/entity.ts'
@@ -57,9 +61,43 @@ const ENTITY = readEntity(docsCheckout())
  * otherwise refuses.
  */
 const YEAR = new Date().getFullYear()
+
+/**
+ * The crest, for the anchor behind this footer (kolonie-website#82).
+ *
+ * The same read the header does, through the same function, so there is one
+ * copy of the mark on this site and both places that draw it are drawing the
+ * generated file rather than a duplicate of it.
+ */
+const MARK = inlineMark(themeCss)
 ---
 
 <footer class="site-footer">
+  {/*
+    **The crest, enormous and low-contrast behind the footer**
+    (kolonie-website#82).
+
+    `#82` measured that the mark *"exists at `public/mark.svg` and `favicon.svg`
+    and appears once, small, in the header"*, and pointed at what the reference
+    does with its own: a wordmark set very large and very quiet behind the
+    footer, which anchors the page without competing with anything on it.
+
+    **It is the same mark, from the same file, through the same function.**
+    `inlineMark` puts the two baked-in colours back as the tokens they were
+    generated from, so this cannot be a copy that goes stale after a palette
+    change — which is `brand/README.md` §4's first prohibition, and the one a
+    watermark is most likely to break.
+
+    **It is not a second lockup.** §4: *"Never lock the mark up with the
+    wordmark in a new arrangement."* This is a background, set on the opposite
+    side of the footer from the wordmark in the first column and at a size
+    nothing could read as a pairing. The one lockup is still the header's.
+
+    Decorative all the way down: `inlineMark` returns it `aria-hidden`, it is
+    behind everything, and it takes no pointer events.
+  */}
+  <div class="site-footer__anchor" set:html={MARK} />
+
   <div class="site-footer__columns">
     <div class="site-footer__about">
       <a href="/" class="site-footer__mark">Kolonie AI</a>
@@ -105,11 +143,49 @@ const YEAR = new Date().getFullYear()
 <style>
   /* Not one colour value in this file — every one is a token (AGENTS.md). */
   .site-footer {
+    /* The anchor is positioned against this, and clipped by it: a crest that
+       overflowed would scroll the page sideways at exactly the widths
+       `kolonie-website#81` just finished bounding. */
+    position: relative;
+    overflow: hidden;
     margin-top: var(--k-flow-section);
     padding: var(--k-space-6) var(--k-gutter) var(--k-space-5);
     border-top: var(--k-border) solid var(--k-hairline);
     color: var(--k-text-muted);
     font-size: var(--k-type-small);
+  }
+
+  /* **Behind, not near** — the crest sits under the columns at a contrast the
+     eye reads as texture rather than as an image (kolonie-website#82).
+
+     Sized in `em` off the footer's own type so it scales with the footer rather
+     than with the window, and pinned to the trailing edge, away from the
+     wordmark in the first column. Pulled below its own baseline so it reads as
+     something the page is standing on rather than a picture that happens to be
+     there. */
+  .site-footer__anchor {
+    position: absolute;
+    z-index: 0;
+    inset-block: auto -9em;
+    inset-inline: auto -5em;
+    width: 32em;
+    max-width: 55%;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  .site-footer__anchor :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Above the anchor. Without this the columns share its stacking context and
+     an `opacity` on a later sibling is enough to reverse the two. */
+  .site-footer__columns,
+  .site-footer__bottom {
+    position: relative;
+    z-index: 1;
   }
 
   /* Stacked on a phone and a row once there is width, without a breakpoint:

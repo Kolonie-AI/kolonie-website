@@ -115,3 +115,73 @@ describe("the description is quoted rather than written again", () => {
     expect(LLMS_SUMMARY).toContain(SITE_DESCRIPTION);
   });
 });
+
+/**
+ * **The crest, enormous and quiet behind the footer** (kolonie-website#82).
+ *
+ * `#82` measured that the mark *"exists at `public/mark.svg` and `favicon.svg`
+ * and appears once, small, in the header"*, and asked for what the reference
+ * does with its own: set very large and very low-contrast behind the footer,
+ * anchoring the page without competing with anything on it.
+ *
+ * **Every assertion here is about something invisible on purpose.** A watermark
+ * at 5% is exactly the element a later edit brightens, hardens into a copy of
+ * the SVG, or lets swallow a click — and none of those would look wrong to
+ * anybody reviewing the page, because the thing is meant not to be noticed.
+ */
+describe("the crest anchors the footer (kolonie-website#82)", () => {
+  const styles = readdirSync(join(dist, "_astro"))
+    .filter((file) => file.endsWith(".css"))
+    .map((file) => readFileSync(join(dist, "_astro", file), "utf8"))
+    .join("\n")
+    .replaceAll(/:where\(\.astro-[a-z0-9]+\)/g, "");
+
+  const rule = styles.match(/\.site-footer__anchor\{([^}]*)\}/)?.[1];
+
+  it.each(pages)("is on %s, so it anchors every page", (file) => {
+    expect(html(file)).toContain('class="site-footer__anchor');
+  });
+
+  it("is the generated mark, drawn in tokens", () => {
+    // Not a copy and not a recolour — `brand/README.md` §4's first prohibition,
+    // and a watermark is the likeliest place to break it. `inlineMark` puts the
+    // baked-in values back as `var(--k-…)`, so a hex in this element means
+    // somebody pasted the file instead of reading it.
+    const anchor = html(pages[0]!).slice(
+      html(pages[0]!).indexOf('class="site-footer__anchor'),
+    );
+    const svg = anchor.slice(0, anchor.indexOf("</div>"));
+
+    expect(svg).toContain("<svg");
+    expect(svg).toMatch(/stroke="var\(--k-accent\)"/);
+    expect(svg).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+  });
+
+  it("is decorative, and takes no click", () => {
+    // `inlineMark` strips the label and adds `aria-hidden`, so a screen reader
+    // never meets it. `pointer-events` is the other half: an absolutely
+    // positioned element over the footer's own links would swallow them.
+    const anchor = html(pages[0]!).slice(
+      html(pages[0]!).indexOf('class="site-footer__anchor'),
+    );
+    expect(anchor.slice(0, 400)).toContain('aria-hidden="true"');
+    expect(rule, "no rule for .site-footer__anchor").toBeDefined();
+    expect(rule).toContain("pointer-events:none");
+  });
+
+  it("stays behind, at a contrast that reads as texture", () => {
+    // `#82`: *"low-contrast … which anchors the page without competing with
+    // anything."* The number is the whole of that requirement, so it is here
+    // rather than in somebody's eye.
+    const opacity = Number(rule?.match(/opacity:\s*([\d.]+)/)?.[1] ?? Number.NaN);
+    expect(opacity).toBeGreaterThan(0);
+    expect(opacity).toBeLessThanOrEqual(0.12);
+  });
+
+  it("cannot scroll the page sideways", () => {
+    // It is deliberately larger than its corner of the footer and hangs off two
+    // edges. The clip is what makes that safe, and it is on the footer.
+    expect(styles).toMatch(/\.site-footer\{[^}]*overflow:hidden/);
+    expect(styles).toMatch(/\.site-footer\{[^}]*position:relative/);
+  });
+});

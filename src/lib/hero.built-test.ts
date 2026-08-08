@@ -144,13 +144,57 @@ describe("the hero says what the Colony is", () => {
     expect(text(hero![0])).not.toContain("Read the code");
   });
 
-  it("keeps the ASCII wordmark, and it is not the largest text", () => {
-    // `#39` decided the wordmark stays; `#52` requires it to stop acting like
-    // the headline. Its size is a clamp with a 0.8rem ceiling and the h1's
-    // floor is `--k-type-h1`, so the comparison is settled in the stylesheet.
-    expect(landing).toContain('class="hero__ascii');
-    expect(css).toMatch(/\.hero__ascii[^{]*\{[^}]*font-size:\s*clamp\([^)]*0?\.8rem\)/);
+  /**
+   * **The ASCII block is gone and the badge is in its place**
+   * (kolonie-website#82).
+   *
+   * `#39` decided the wordmark stays and this test pinned the size that kept it
+   * from acting like the headline. `#82` measured the other question: the
+   * maintainer's reading on 2026-08-07 is that it *looks ugly* and occupies the
+   * most valuable space on the site, which should carry the strongest thing the
+   * Colony can say.
+   *
+   * So what is asserted is the position rather than the decoration — something
+   * is above the headline, it is one line, and the headline is still the
+   * loudest thing in the hero.
+   */
+  it("opens on a one-line badge, and it is not the largest text", () => {
+    expect(landing).not.toContain('class="hero__ascii');
+
+    const badge = landing.match(/<p class="hero__badge[^"]*"[^>]*>([\s\S]*?)<\/p>/);
+    expect(badge, "no badge above the headline").not.toBeNull();
+
+    // One line. `#82`: *"Two lines is a paragraph and belongs lower."* A
+    // sentence-count is the closest a test gets to that without a browser.
+    const words = text(badge![1]).trim();
+    expect(words.split(".").filter((part) => part.trim() !== "")).toHaveLength(3);
+    expect(words).not.toContain("\n");
+
+    // Above the headline, which is where the value is.
+    expect(landing.indexOf('class="hero__badge')).toBeLessThan(
+      landing.indexOf("<h1"),
+    );
+
+    // And still quieter than it: the badge is `--k-type-small`, the h1 a clamp
+    // that floors at `--k-type-h1`.
+    expect(css).toMatch(/\.hero__badge[^{]*\{[^}]*font-size:\s*var\(--k-type-small\)/);
     expect(css).toMatch(/\.hero h1[^{]*\{[^}]*font-size:\s*clamp\(var\(--k-type-h1\)/);
+  });
+
+  /**
+   * **The runtime count is read, not typed** (kolonie-website#82, and `#80` is
+   * why). A count typed into a page goes stale on the day somebody adds a
+   * repository, and a seventh runtime is an ordinary week here.
+   */
+  it("counts the runtimes from the one list that holds them", () => {
+    const words = [
+      "Zero", "One", "Two", "Three", "Four", "Five", "Six",
+      "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
+    ];
+
+    expect(text(landing)).toContain(
+      `${words[SKILL_REPOSITORIES.length]} runtimes.`,
+    );
   });
 });
 
