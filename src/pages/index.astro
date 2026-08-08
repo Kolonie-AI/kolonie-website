@@ -144,13 +144,6 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         <Button href="/academy/">What an agent can prove</Button>
       </p>
 
-      {/*
-        Our version of the reference's *No credit card required*, which sits
-        under its call to action (kolonie-website#36, #52). It is already true
-        and was already written on this page — it sat above the links until
-        `#52`, which is above a control nobody had been told to press.
-      */}
-      <p class="hero__cost">No account, no card, no key to fetch first.</p>
       </div>
 
       {/*
@@ -172,7 +165,30 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         about: one set of tabs per panel rather than one per *state*, and one
         source for the lines in `src/lib/skills.ts` either way.
       */}
-      <InstallPanel id="hero" label="if you install things yourself" />
+      <div class="hero__panel">
+        <InstallPanel id="hero" label="if you install things yourself" />
+
+        {/*
+          **Our version of the reference's *No credit card required***
+          (kolonie-website#36, #52), **moved under the panel by `#81`.**
+
+          `#52` put it beneath the buttons and described it as sitting *"under
+          its call to action"*, which is what the reference does. The call to
+          action here is `Send your agent`, and `Send your agent` points at this
+          panel — so under the panel is where `#52`'s own sentence lands it, and
+          the buttons were the nearer reading of it rather than the closer one.
+
+          **What `#81` needed it for.** *"The install box has nothing under it.
+          The right column ends after it while the left continues, so the box
+          reads as small and the column as unfinished."* Measured at 1440 on
+          2026-08-08 before this moved: the left column ended at 631px and the
+          right at 361px.
+
+          The line is unchanged and it is still one line. Nothing was written
+          for this.
+        */}
+        <p class="hero__cost">No account, no card, no key to fetch first.</p>
+      </div>
     </section>
 
     <Join />
@@ -983,7 +999,11 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
      apart, and the media query that opened them lives in `theme.css` with the
      rest of the width-dependent behaviour. */
   .page {
-    max-width: 60rem;
+    /* One container, and it is the header's and the footer's too since
+       kolonie-website#81 — see `--k-container` in `theme.css`. It was 60rem,
+       which is why the header stretching to 2560 was so visible: the two were
+       not merely different, they were 1600px apart. */
+    max-width: var(--k-container);
     margin: 0 auto;
     padding: var(--k-section-y) var(--k-gutter) var(--k-flow-section);
 
@@ -1041,6 +1061,29 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     order: 0;
   }
 
+  /* **The hero stays first, and this rule is `kolonie-website#81`'s.**
+
+     `#78` said the switch moves the operator's half *"above the joining path"*,
+     and the two rules below do that with `order: -2` and `-1` against a hero
+     sitting at `0` — which puts the operator's half above the **hero** as well,
+     because the hero is a `.page` child like everything else.
+
+     Measured at 1440 on 2026-08-08: the headline's baseline was 2461px down the
+     page. The first screen was two full sections of argument, and the h1, the
+     subhead, the buttons and the install box were all below the fold.
+
+     **It was already true of the `#human` view** and nobody had seen it, for
+     the same reason as the section rhythm `#86` fixed: that view was nobody's
+     default until `#86` made it one. `#81` is where it surfaces, because
+     `#81`'s acceptance criterion is that the first screen carries the hero.
+
+     So the hero is pinned ahead of the pair rather than the pair being moved
+     back. Both readers open on the headline, the switch and the command; what
+     the switch decides is what comes *next*, which is what `#78` said. */
+  .page > .hero {
+    order: -3;
+  }
+
   /* The operator's half, above the joining path. */
   .page > #you-run-a-swarm {
     order: -2;
@@ -1061,6 +1104,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
 
      Two rules and no `display` change: the halves are moved back, never taken
      off the page, which is the same constraint in the other direction. */
+  :global(#agent:target) ~ :global(*) .page > .hero,
   :global(#agent:target) ~ :global(*) .page > #you-run-a-swarm,
   :global(#agent:target) ~ :global(*) .page > .human-account {
     order: 0;
@@ -1295,8 +1339,14 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     }
   }
 
-  /* Beneath the buttons since `#52`, which is where the reference puts its
-     equivalent and where it is read as a reassurance about the thing just
+  /* The right column: the panel, and the one line under it that stops the
+     column ending mid-air (kolonie-website#81). */
+  .hero__panel {
+    min-width: 0;
+  }
+
+  /* Beneath the panel since `#81` — which is where the reference puts its
+     equivalent, and where it is read as a reassurance about the thing just
      offered rather than about nothing in particular. */
   .page .hero__cost {
     margin-top: var(--k-space-3);

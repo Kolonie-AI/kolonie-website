@@ -80,6 +80,23 @@ const isCurrent = (href: string) =>
 
 <header class:list={['site-header', { 'site-header--bare': bare }]}>
   {/*
+    **The row, and the reason it is a wrapper rather than a `max-width` on the
+    header itself** (kolonie-website#81).
+
+    Measured on 2026-08-07 at a 2560px viewport: this header ran the full 2560
+    and the page's content sat in 960, so the two no longer lined up. `#81`:
+    *"Backgrounds and borders may go full-bleed; content may not."*
+
+    Those are two different elements. `.site-header` keeps the background and
+    the rule under it, both of which have to reach the window edge or the header
+    stops reading as a bar. This row carries the container, and it is the same
+    `--k-container` the page and the footer use.
+
+    It is also what `.site-header__panel` is positioned against, so the menu
+    drops inside the container rather than against the window.
+  */}
+  <div class="site-header__row">
+  {/*
     The mark and the wordmark are one link, not two beside each other: they are
     one identity and a reader clicking either means the same thing. The SVG is
     injected rather than written, so the geometry has one source — see
@@ -162,20 +179,31 @@ const isCurrent = (href: string) =>
       `src/lib/chrome.ts`; the override that applies it is the caller's, and
       this is only the place it lands. */}
   <slot name="search" />
+  </div>
 </header>
 
 <style>
   /* Not one colour value in this file — every one is a token (AGENTS.md). */
+  /* Full-bleed, and only the two properties that have to be: a background and
+     a rule that stop before the window edge do not read as a bar at all. */
   .site-header {
-    /* The panel below is positioned against this, so opening the menu drops it
-       over the page rather than pushing the page down. */
+    border-bottom: var(--k-border) solid var(--k-hairline);
+    background: var(--k-surface);
+  }
+
+  /* And the content, which does not go full-bleed (kolonie-website#81). One
+     container, shared with `.page` and the footer's columns.
+
+     The panel is positioned against this rather than against `.site-header`,
+     so the menu opens inside the container instead of against the window. */
+  .site-header__row {
     position: relative;
     display: flex;
     align-items: center;
     gap: var(--k-space-4);
+    max-width: var(--k-container);
+    margin: 0 auto;
     padding: var(--k-space-3) var(--k-gutter);
-    border-bottom: var(--k-border) solid var(--k-hairline);
-    background: var(--k-surface);
   }
 
   .site-header__mark {
@@ -336,7 +364,7 @@ const isCurrent = (href: string) =>
      the menu on a phone and then turned the device sideways does not arrive at
      a panel hanging under a header that had room for it all along. */
   @media (min-width: 40rem) {
-    .site-header {
+    .site-header__row {
       padding-block: var(--k-space-4);
     }
 
@@ -389,10 +417,17 @@ const isCurrent = (href: string) =>
      one of those rules is inside the media query, so anything earlier would be
      overridden at exactly the width where the header is widest. */
   .site-header--bare {
-    height: 100%;
-    padding: 0;
     border-bottom: 0;
     background: transparent;
+  }
+
+  /* Split from the rule above since kolonie-website#81 put the padding on the
+     row: the bar's two full-bleed properties are the header's and the box the
+     content sits in is the row's, so undoing the bar has to reach both. */
+  .site-header--bare .site-header__row {
+    height: 100%;
+    max-width: none;
+    padding: 0;
   }
 
   /* The panel is positioned against this header, which without the bar sits

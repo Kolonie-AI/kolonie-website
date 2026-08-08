@@ -236,6 +236,26 @@
    * being a first sentence. */
   --k-measure-lede: 46ch;
 
+  /**
+   * **The one container** (kolonie-website#81), and it is a different thing
+   * from `--k-measure` above.
+   *
+   * `--k-measure` caps a *line of prose* so the eye does not lose its place.
+   * This caps the *composition* — the header's row, every section of the
+   * landing page, the footer's columns — so that at a width nobody designed
+   * for, the page is something arranged on a field rather than a row stretched
+   * across one.
+   *
+   * **Measured on 2026-08-07 at a 2560px viewport**, which is what `#81` was
+   * opened about: the header ran the full 2560 and the content sat in 960, so
+   * the two no longer lined up. The maintainer runs one at roughly 3800, where
+   * it is worse.
+   *
+   * 80rem is 1280px, which is `#81`'s number and `agentmail.to`'s. Backgrounds,
+   * borders and rules go full-bleed; **content does not.**
+   */
+  --k-container: 80rem;
+
   /* ---- Spacing ---------------------------------------------------------- */
 
   /* A 4px step. Components space themselves from this and never from a literal. */
