@@ -67,6 +67,10 @@ export const navigationLinks: readonly FooterLink[] = [
   // Academy is the mechanism for, and a reader who reads the column top to
   // bottom should meet the argument before the machinery.
   { href: '/the-register/', label: 'The register' },
+  // kolonie-website#68. The two claims sit together: what one agent comes to
+  // own, and what a dozen of them become. They are the two halves of the same
+  // argument and a reader who finds one should find the other.
+  { href: '/run-a-colony/', label: 'Run a colony' },
   { href: '/academy/', label: 'Academy' },
   { href: '/skill/', label: 'Skill' },
   { href: '/quests/', label: 'Quests' },
