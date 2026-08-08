@@ -1,0 +1,123 @@
+---
+/**
+ * The three tier cards, from `src/lib/tiers.ts` (kolonie-website#88).
+ *
+ * The structure is the one `#88` read off `agentmail.to/pricing` on 2026-08-07:
+ * three cards side by side, each with a name, **a one-line audience**, a price,
+ * four to six checkmarked lines and one button. The audience line is the part
+ * that issue calls the easiest to leave out, so it is rendered before the price
+ * rather than after — a reader deciding whether a card is *for them* should not
+ * have to read a figure first.
+ *
+ * **`auto-fit` and no breakpoint**, which is the rule `theme.css` states for
+ * card grids: three columns where there is room, one where there is not, and no
+ * width for anybody to get wrong.
+ */
+import Button from './Button.astro'
+import { TIERS } from '../lib/tiers.ts'
+---
+
+<div class="tiers">
+  {
+    TIERS.map((tier) => (
+      <section class="tier" data-emphasis={tier.emphasis === true ? 'true' : undefined}>
+        <h3 class="tier-name">{tier.name}</h3>
+        <p class="tier-audience">{tier.audience}</p>
+        <p class="tier-price">{tier.price}</p>
+        <ul class="tier-features">
+          {tier.features.map((feature) => (
+            <li>{feature}</li>
+          ))}
+        </ul>
+        {tier.action === undefined ? null : (
+          <p class="tier-action">
+            <Button href={tier.action.href}>{tier.action.label}</Button>
+          </p>
+        )}
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  /* `minmax(0, 1fr)` rather than `1fr`, for the reason `SkillTable` gives: a
+     grid item's automatic minimum is its content, and a long feature line would
+     otherwise widen the whole row past the prose column. */
+  .tiers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--k-space-4);
+    margin: var(--k-space-5) 0;
+    align-items: start;
+  }
+
+  .tier {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--k-space-3);
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    padding: var(--k-space-4);
+    background: var(--k-surface);
+  }
+
+  /* The one card the eye lands on. A border rather than a badge or a scale:
+     nothing on this site changes size on load, and a card that is physically
+     larger than its neighbours makes the row harder to compare rather than
+     easier. */
+  .tier[data-emphasis='true'] {
+    border-color: var(--k-accent);
+    background: var(--k-surface-raised);
+  }
+
+  .tier-name {
+    margin: 0;
+    font-size: var(--sl-text-xl);
+  }
+
+  .tier-audience {
+    margin: 0;
+    color: var(--k-text-muted);
+    font-size: var(--sl-text-sm);
+  }
+
+  .tier-price {
+    margin: 0;
+    font-size: var(--sl-text-lg);
+    font-weight: 600;
+    color: var(--k-text-strong);
+  }
+
+  /* Checkmarks as a `::before` rather than in the text, so the mark is never
+     read out as a word by a screen reader and never survives a copy-paste of
+     the list. */
+  .tier-features {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--k-space-2);
+    font-size: var(--sl-text-sm);
+  }
+
+  .tier-features li {
+    display: grid;
+    grid-template-columns: 1.25em 1fr;
+    align-items: start;
+  }
+
+  .tier-features li::before {
+    content: '';
+    color: var(--k-accent);
+    /* Decorative: the list marker says nothing the list does not. */
+    speak: never;
+  }
+
+  /* Pinned to the bottom so three cards of unequal length still line their
+     buttons up, which is what makes the row scannable. */
+  .tier-action {
+    margin: auto 0 0;
+    padding-top: var(--k-space-3);
+  }
+</style>

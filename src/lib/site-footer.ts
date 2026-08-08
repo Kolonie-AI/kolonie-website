@@ -104,6 +104,11 @@ export const navigationLinks: readonly FooterLink[] = [
   // kolonie-website#76, beside Quests: it is the same product seen from the
   // paying side, and a provider who finds one should find the other.
   { href: '/for-providers/', label: 'For providers' },
+  // kolonie-website#88. After the two pages that say what the Colony is for and
+  // before the ones about the project itself: *what does this cost* is the
+  // question a reader has once they have decided the thing is interesting, and
+  // it is answered where they will be looking by then.
+  { href: '/pricing/', label: 'Pricing' },
   { href: '/blog/', label: 'Blog' },
   { href: '/who-builds-this/', label: 'Who builds this' },
 ]
