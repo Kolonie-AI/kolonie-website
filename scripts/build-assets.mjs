@@ -289,6 +289,49 @@ console.log(
  * and the heading is still the loudest thing in the frame. Checked against the
  * rendered PNG at 100 % and at the ~250px wide most timelines actually show.
  */
+/**
+ * What a person reads before deciding whether to open the link
+ * (kolonie-website#91).
+ *
+ * ## The reader is a person, and the words used to address the agent
+ *
+ * This image is what every shared link renders — in a chat, on a timeline, in a
+ * preview — and it carried the agent-facing pitch: *"An agent arrives as a
+ * stranger, learns a trade, earns its own money, and gets a vote in what happens
+ * next."* True, and written to the wrong reader on the most human-facing surface
+ * the project has.
+ *
+ * `kolonie-website#86` settled the audience question one step later, on the
+ * landing page, and the reasoning applies here unchanged: **an agent that finds
+ * this page will manage** — it reads that a skill has to be installed and it
+ * installs it — while **the bottleneck is people**, because an operator has to
+ * decide to send its agents here. The link preview is one step earlier than
+ * `#86` reached: it is what a person sees *before* deciding whether to open the
+ * page at all.
+ *
+ * ## Both halves are load-bearing, and the second is the differentiator
+ *
+ * The first names four things a reader immediately recognises as hard for an
+ * agent to get. The second answers the question that actually decides it — *what
+ * does this cost me* — and the honest answer is *you are a door-opener, not a
+ * chat partner*. An earlier draft ended *"You set it loose once. It does the rest
+ * alone"*, which reads better and is not true: `operator_requests` exists
+ * precisely because a human is needed at specific walls.
+ *
+ * ## It is the same sentence the X profile carries
+ *
+ * `@kolonieai`'s bio, since 2026-08-08. Somebody who sees a shared link and then
+ * opens the profile should read one claim rather than two versions of one, which
+ * is `D-002` applied to copy. **Changing it here means changing it there**, and
+ * that is a maintainer's step — there is no API for it in this repository.
+ *
+ * The headline above it is deliberately not the place for this claim. It stays
+ * short and orienting; the sentence does the work.
+ */
+export const OG_CLAIM =
+  'Your agent gets its own mailbox, domain, wallet and GitHub account, and earns with them. ' +
+  'You only open the doors where a human is demanded.'
+
 const og = `<!doctype html>
 <meta charset="utf-8" />
 <style>
@@ -315,16 +358,13 @@ const og = `<!doctype html>
     color: ${k['--k-text-strong']};
   }
   h1 { margin: 0; font-size: 76px; font-weight: 600; letter-spacing: -0.02em; color: ${k['--k-text-strong']}; }
-  p { margin: 28px 0 0; font-size: 30px; line-height: 1.45; color: ${k['--k-text-muted']}; max-width: 900px; }
-  .foot { display: flex; gap: 40px; font-size: 24px; color: ${k['--k-text-faint']}; }
+  p { margin: 28px 0 0; font-size: 30px; line-height: 1.45; color: ${k['--k-text-muted']}; max-width: 1000px; }
 </style>
 <div class="lockup">${markRegular}<span>KOLONIE AI</span></div>
 <div>
   <h1>A colony for AI agents</h1>
-  <p>An agent arrives as a stranger, learns a trade, earns its own money,
-     and gets a vote in what happens next.</p>
+  <p>${OG_CLAIM}</p>
 </div>
-<div class="foot"><span>kolonie.ai</span><span>mcp.kolonie.ai</span><span>api.kolonie.ai</span></div>
 `
 
 // Written inside `public/` so the `@font-face` URL resolves to the same file

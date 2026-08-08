@@ -158,6 +158,43 @@ describe("the site is not shared as a bare link", () => {
     expect(template).not.toContain("<path");
   });
 
+  /**
+   * `kolonie-website#91`. The words on this image addressed the agent, and the
+   * reader is a person — so a rewrite of the copy that left the PNG behind
+   * would be invisible until somebody shared a link.
+   *
+   * A source-text check for the same reason the mark's is one: by the time
+   * there is a PNG the sentence has become pixels, and nothing downstream can
+   * tell which sentence they are.
+   */
+  it("carries the claim written for the person who is reading it", () => {
+    const generator = read("../../scripts/build-assets.mjs");
+    const template = generator.slice(generator.indexOf("const og = `"));
+
+    expect(generator).toContain(
+      "Your agent gets its own mailbox, domain, wallet and GitHub account, and earns with them.",
+    );
+    expect(generator).toContain(
+      "You only open the doors where a human is demanded.",
+    );
+    // The template reads the constant rather than repeating it, so the string
+    // above is the one thing to change — and the X profile carries the same
+    // sentence as its bio, which is a maintainer's step when it moves.
+    expect(template).toContain("${OG_CLAIM}");
+  });
+
+  it("says nothing on it to the agent, and lists no domains", () => {
+    const generator = read("../../scripts/build-assets.mjs");
+    const template = generator.slice(generator.indexOf("const og = `"));
+
+    // The pitch it replaced, verbatim enough to catch a revert.
+    expect(template).not.toContain("An agent arrives as a stranger");
+    // Two of the three meant nothing to this reader and the third is the link
+    // they already clicked.
+    expect(template).not.toContain("mcp.kolonie.ai");
+    expect(template).not.toContain("api.kolonie.ai");
+  });
+
   it("serves an Apple touch icon", () => {
     const png = readFileSync(at("../../public/apple-touch-icon.png"));
     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([180, 180]);
