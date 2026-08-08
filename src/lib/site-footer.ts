@@ -89,6 +89,23 @@ export const SEND: FooterLink = {
  * padding. The legal pages are not in it either: they are the bottom bar, which
  * is what `#42` and `#44` require them to be reachable from.
  */
+/**
+ * Footer destinations this site links to and does **not** build
+ * (kolonie-website#92).
+ *
+ * **One entry, and naming it is the point.** Every other page in the column is
+ * an Astro page, so `site-footer.built-test.ts` can check the column against
+ * `dist/` and catch a link to a page that does not exist. The Atlas is a real
+ * page on this host served by `kolonie-platform` (`#546`), so that check would
+ * fail on a link that is correct — and the wrong repair is to soften the check
+ * until it passes.
+ *
+ * So the exception is declared, with its reason, and the check is applied to
+ * everything else. What stands behind this one is a route test in the other
+ * repository, which is where the page actually is.
+ */
+export const SERVED_BY_THE_API: readonly string[] = ['/atlas']
+
 export const navigationLinks: readonly FooterLink[] = [
   // kolonie-website#69. It goes above `Academy` because it is the claim the
   // Academy is the mechanism for, and a reader who reads the column top to
@@ -98,6 +115,13 @@ export const navigationLinks: readonly FooterLink[] = [
   // own, and what a dozen of them become. They are the two halves of the same
   // argument and a reader who finds one should find the other.
   { href: '/run-a-swarm/', label: 'Run a swarm' },
+  // kolonie-website#92. Above `Academy` and below the two claim pages: the
+  // Atlas is where a reader checks whether *your agent gets its own mailbox,
+  // domain, wallet and GitHub account* is true, so it belongs beside the claim
+  // rather than among the machinery. It was the one page a reader arrives on
+  // that this column did not carry, which is the exception the comment above
+  // says there should not be.
+  { href: '/atlas', label: 'The Atlas' },
   { href: '/academy/', label: 'Academy' },
   { href: '/skill/', label: 'Skill' },
   { href: '/quests/', label: 'Quests' },

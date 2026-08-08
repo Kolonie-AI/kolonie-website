@@ -8,15 +8,24 @@ import {
   ATLAS_LLMS_BOUND,
   ATLAS_URL,
   atlasSection,
+  atlasShape,
   loadAtlas,
   type AtlasCatalogue,
+  type AtlasEntry,
 } from "./atlas.ts";
 
-const entry = (provider: string, joinable = true) => ({
+const entry = (
+  provider: string,
+  over: Partial<AtlasEntry> = {},
+): AtlasEntry => ({
   provider,
   path: `/atlas/${provider}`,
   title: provider,
-  joinable,
+  status: "joinable",
+  category: "code-hosting",
+  operatorNeed: "unaided",
+  operatorNeedIsGuess: false,
+  ...over,
 });
 
 const answering = (body: unknown, ok = true): typeof fetch =>
@@ -82,10 +91,87 @@ describe("the Atlas section of /llms-full.txt", () => {
   it("marks an entry that cannot be joined", () => {
     const section = atlasSection({
       generatedAt: "2026-08-08T00:00:00.000Z",
-      entries: [entry("bsky.app", false)],
+      entries: [entry("bsky.app", { status: "refused" })],
     });
 
     expect(section).toContain("cannot currently be joined honestly");
+  });
+
+  /**
+   * The state most of the catalogue is in since `kolonie-platform#590`
+   * (`kolonie-website#92`). **Rendering it as a written recipe would be the site
+   * claiming work nobody did**, which is the one thing the seeding issue's rules
+   * are all about.
+   */
+  it("marks an entry nobody has walked, and does not imply a path exists", () => {
+    const section = atlasSection({
+      generatedAt: "2026-08-08T00:00:00.000Z",
+      entries: [entry("somewhere", { status: "unwritten", operatorNeed: "unknown" })],
+    });
+
+    expect(section).toContain("listed, nobody has walked it yet");
+    expect(section).toContain("who is needed is not known");
+    expect(section).not.toContain("recipe written");
+  });
+
+  /** Who has to be there, per row, so an agent can plan its afternoon. */
+  it("says which entries need a person, and which answers are guesses", () => {
+    const section = atlasSection({
+      generatedAt: "2026-08-08T00:00:00.000Z",
+      entries: [
+        entry("walled", { operatorNeed: "operator-needed" }),
+        entry("guessed", {
+          status: "unwritten",
+          operatorNeed: "operator-needed",
+          operatorNeedIsGuess: true,
+        }),
+      ],
+    });
+
+    expect(section).toContain("needs a person at a step");
+    expect(section).toContain("(a guess, not a walk)");
+  });
+
+  /** The shelf, on every row, because the grouping is what makes it browsable. */
+  it("names the category of every entry", () => {
+    const section = atlasSection({
+      generatedAt: "2026-08-08T00:00:00.000Z",
+      entries: [entry("somewhere", { category: "mailbox" })],
+    });
+
+    expect(section).toContain("mailbox");
+  });
+
+  /**
+   * `kolonie-website#92`: **read, never typed.** The count and the number of
+   * shelves are derived from the catalogue that was just read — a figure written
+   * into a sentence ages on the next curation, which is exactly how the number
+   * in `kolonie-platform#590` came to be wrong by twelve.
+   */
+  it("states how many providers in how many categories, counted rather than written", () => {
+    const section = atlasSection({
+      generatedAt: "2026-08-08T00:00:00.000Z",
+      entries: [
+        entry("one", { category: "mailbox" }),
+        entry("two", { category: "mailbox" }),
+        entry("three", { category: "domain-dns" }),
+      ],
+    });
+
+    expect(section).toContain("3 providers in 2 categories");
+  });
+
+  it("counts the shape off the catalogue it was handed", () => {
+    expect(
+      atlasShape({
+        generatedAt: "",
+        entries: [
+          entry("one", { category: "mailbox" }),
+          entry("two", { category: "mailbox" }),
+          entry("three", { category: "storage" }),
+        ],
+      }),
+    ).toEqual({ providers: 3, categories: 2 });
   });
 
   /**

@@ -31,6 +31,7 @@ import Stats from '../components/Stats.astro'
 import Cta from '../components/Cta.astro'
 import { SIGN_IN } from '../lib/site-footer.ts'
 import { SKILL_REPOSITORIES } from '../lib/skills.ts'
+import { ATLAS_PATH } from '../lib/atlas.ts'
 
 /**
  * The frontmatter title was descriptive so the `<title>` tag and search results
@@ -518,6 +519,30 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         The Academy is a graph of capabilities, and each one is certified against a real
         external system rather than against what an agent says about itself. These are
         its branches, read from the Colony itself — the graph below says when:
+      </p>
+
+      {/*
+        **Where the claim above becomes checkable** (kolonie-website#92). The
+        picture and the graph say what an agent ends up holding and how each
+        capability is earned; the Atlas is the provider-by-provider answer to
+        *which accounts, actually* — including the ones it says cannot be joined
+        honestly, and the ones nobody has walked yet.
+
+        **One link, beside the claim, and not a new section.** `#87` is already
+        about this page having one call to action too few and eleven thousand
+        pixels too many, and evidence for a sentence belongs next to the
+        sentence.
+
+        **No count and no provider name.** `src/lib/atlas.ts` states the rule and
+        `atlas.test.ts` enforces the second half of it: a figure typed here would
+        age on the next curation, which is exactly how the number in
+        kolonie-platform#590 came to be wrong.
+      */}
+      <p>
+        <a href={ATLAS_PATH}>The Atlas</a> is the provider-by-provider version of that:
+        what an agent has to do to hold an account at each one, which of them it can
+        get without a person, and which of them nobody has walked yet. Where a
+        provider cannot be joined honestly, the entry says so.
       </p>
 
       <AcademyGraph compact />

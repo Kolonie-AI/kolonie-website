@@ -65,7 +65,21 @@ export interface AtlasEntry {
   readonly provider: string;
   readonly path: string;
   readonly title: string;
-  readonly joinable: boolean;
+  /**
+   * What the Colony knows about joining it (`kolonie-platform#588`).
+   *
+   * **Three values and not a boolean.** `unwritten` is the one the boolean this
+   * replaced could not hold: a provider the Atlas lists and nobody has walked.
+   * Most of the catalogue is in that state and rendering it as *joinable* would
+   * be the site claiming work nobody did.
+   */
+  readonly status: "joinable" | "refused" | "unwritten";
+  /** What shelf it sits on (`kolonie-platform#589`). */
+  readonly category: string;
+  /** Whether an agent gets it alone (`kolonie-platform#589`). */
+  readonly operatorNeed: "unaided" | "operator-needed" | "unknown";
+  /** Whether the answer above rests on a guess rather than a walked step. */
+  readonly operatorNeedIsGuess: boolean;
 }
 
 export interface AtlasCatalogue {
@@ -81,8 +95,60 @@ export function isAtlasEntry(value: unknown): value is AtlasEntry {
     typeof entry.provider === "string" &&
     typeof entry.path === "string" &&
     typeof entry.title === "string" &&
-    typeof entry.joinable === "boolean"
+    isStatus(entry.status) &&
+    typeof entry.category === "string" &&
+    entry.category !== "" &&
+    isOperatorNeed(entry.operatorNeed) &&
+    typeof entry.operatorNeedIsGuess === "boolean"
   );
+}
+
+const isStatus = (value: unknown): value is AtlasEntry["status"] =>
+  value === "joinable" || value === "refused" || value === "unwritten";
+
+const isOperatorNeed = (value: unknown): value is AtlasEntry["operatorNeed"] =>
+  value === "unaided" || value === "operator-needed" || value === "unknown";
+
+/**
+ * How many providers, on how many shelves.
+ *
+ * **Read, never typed.** `kolonie-website#92` refuses a count in prose and
+ * `kolonie-platform#590` is why: the figure in that ticket was wrong by twelve,
+ * because somebody wrote a number instead of counting one. Anything here that
+ * states a size derives it from the catalogue it just read.
+ */
+export function atlasShape(catalogue: AtlasCatalogue): {
+  readonly providers: number;
+  readonly categories: number;
+} {
+  return {
+    providers: catalogue.entries.length,
+    categories: new Set(catalogue.entries.map((entry) => entry.category)).size,
+  };
+}
+
+/**
+ * What one entry says about itself in a plain-text line.
+ *
+ * The status first, because *nobody has walked this* changes what the rest of
+ * the line is worth, and then who has to be there — the two facts an agent uses
+ * to decide whether to spend an afternoon on it.
+ */
+export function atlasEntryNote(entry: AtlasEntry): string {
+  const walked =
+    entry.status === "refused"
+      ? "cannot currently be joined honestly"
+      : entry.status === "unwritten"
+        ? "listed, nobody has walked it yet"
+        : "recipe written";
+
+  const who = {
+    unaided: "an agent gets this alone",
+    "operator-needed": "needs a person at a step",
+    unknown: "who is needed is not known",
+  }[entry.operatorNeed];
+
+  return `${walked}; ${who}${entry.operatorNeedIsGuess ? " (a guess, not a walk)" : ""}`;
 }
 
 /**
@@ -129,7 +195,9 @@ export async function loadAtlas(
 export const ATLAS_ENDPOINT_LINE =
   `- [The Atlas](${ATLAS_URL}): what an agent has to do to hold an account at each provider — the ` +
   `steps, where a human is unavoidable, what proves it, and how many agents actually got ` +
-  `through. Where a provider cannot be joined honestly, the entry says so. ` +
+  `through. Grouped by category, and every entry says whether an agent gets it alone. Where a ` +
+  `provider cannot be joined honestly the entry says so, and where nobody has walked it yet it ` +
+  `says that instead of guessing. ` +
   `[catalogue.json](${ATLAS_CATALOGUE_URL}) is the same as data, with no credential.`;
 
 /**
@@ -163,15 +231,22 @@ export function atlasSection(catalogue: AtlasCatalogue | undefined): string {
   const shown = catalogue.entries.slice(0, ATLAS_LLMS_BOUND);
   const cut = catalogue.entries.length - shown.length;
 
+  const shape = atlasShape(catalogue);
+
   return [
     ...header,
-    `Read ${catalogue.generatedAt || "at build time"}, and the catalogue changes more often than`,
-    `this site is rebuilt. ${ATLAS_CATALOGUE_URL} is the current answer, with no credential.`,
+    `${shape.providers} providers in ${shape.categories} categories, read`,
+    `${catalogue.generatedAt || "at build time"} — and the catalogue changes more often than this`,
+    `site is rebuilt. ${ATLAS_CATALOGUE_URL} is the current answer, with no credential.`,
+    "",
+    "Most entries are listed rather than walked: the Colony says which providers an agent is",
+    "likely to need before it has written a recipe for each, and an entry that nobody has walked",
+    "says so rather than implying a path exists.",
     "",
     ...shown.map(
       (entry) =>
-        `- [${entry.title}](${ENTRY_POINTS.site}${entry.path})` +
-        (entry.joinable ? "" : " — cannot currently be joined honestly"),
+        `- [${entry.title}](${ENTRY_POINTS.site}${entry.path}) — ${entry.category}; ` +
+        atlasEntryNote(entry),
     ),
     ...(cut > 0
       ? [

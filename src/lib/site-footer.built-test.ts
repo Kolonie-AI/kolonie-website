@@ -5,7 +5,12 @@ import { describe, expect, it } from "vitest";
 import { SITE_DESCRIPTION } from "./head.ts";
 import { LLMS_SUMMARY } from "./llms.ts";
 import { LEGAL_PAGES } from "./legal-pages.ts";
-import { legalLinks, navigationLinks, socialLinks } from "./site-footer.ts";
+import {
+  legalLinks,
+  navigationLinks,
+  SERVED_BY_THE_API,
+  socialLinks,
+} from "./site-footer.ts";
 
 /**
  * **The footer is on every page, and every link in it goes somewhere**
@@ -98,13 +103,34 @@ describe("every footer link resolves", () => {
     (link) => link.href.startsWith("/"),
   );
 
+  /**
+   * The links this site does not build, named rather than filtered out silently
+   * (kolonie-website#92).
+   *
+   * **A page served by `kolonie-platform` on this host is not a broken link, and
+   * the check that would call it one is right about everything else.** So the
+   * exception is a list with a reason attached, and it is asserted to be small —
+   * a filter that quietly grew would be this guard being turned off one entry at
+   * a time.
+   */
+  const built = internal.filter((link) => !SERVED_BY_THE_API.includes(link.href));
+
   it("checks a meaningful number of them", () => {
-    expect(internal.length).toBeGreaterThanOrEqual(
-      navigationLinks.length + LEGAL_PAGES.length,
+    expect(built.length).toBeGreaterThanOrEqual(
+      navigationLinks.length + LEGAL_PAGES.length - SERVED_BY_THE_API.length,
     );
   });
 
-  it.each(internal)("$href was built", (link) => {
+  it("excuses only what the API serves, and not much of it", () => {
+    expect(SERVED_BY_THE_API.length).toBeLessThanOrEqual(2);
+    // Every excused link is one the column actually carries, so an entry that
+    // stops being linked cannot go on quietly excusing itself.
+    for (const href of SERVED_BY_THE_API) {
+      expect(internal.map((link) => link.href)).toContain(href);
+    }
+  });
+
+  it.each(built)("$href was built", (link) => {
     // Checked against `dist/`, not asserted. A trailing slash is this site's
     // convention and Astro writes `<path>/index.html` for it.
     expect(existsSync(join(dist, link.href.slice(1), "index.html"))).toBe(true);
