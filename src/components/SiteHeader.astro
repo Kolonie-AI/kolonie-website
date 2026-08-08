@@ -32,7 +32,7 @@
 
 import Button from './Button.astro'
 import { inlineMark } from '../lib/mark.ts'
-import { DOCS, GITHUB, NAV_LINKS, SIGN_IN } from '../lib/site-nav.ts'
+import { DOCS, GITHUB, NAV_LINKS, SEND, SIGN_IN } from '../lib/site-nav.ts'
 import AudienceSwitch from './AudienceSwitch.astro'
 // The stylesheet as text, so the mark's two baked-in colours can be put back
 // as the tokens they came from. `?raw` because this component is bundled —
@@ -171,8 +171,25 @@ const isCurrent = (href: string) =>
     </div>
   </details>
 
-  <Button class="site-header__sign-in" href={SIGN_IN.href} variant="primary">
-    {SIGN_IN.label}
+  {/*
+    **The filled button describes what a new visitor does** (kolonie-website#87).
+
+    It said `Sign in` from `#40` until then, which is a label for somebody who
+    already belongs — on every page, as the one persistent action the site has.
+    `#87`: *"The primary action should describe what a **new** visitor is about
+    to do."*
+
+    `Sign in` is beside it now rather than gone: a returning visitor is looking
+    for those two words and finds them, and a new one is no longer offered them
+    as the thing to press. The same pair, in the same order, as the hero's.
+
+    It stays outside the folding panel for `#50`'s reason, unchanged — the
+    primary action has to be in the bar at every width.
+  */}
+  <a class="site-header__returning" href={SIGN_IN.href}>{SIGN_IN.label}</a>
+
+  <Button class="site-header__sign-in" href={SEND.href} variant="primary">
+    {SEND.label}
   </Button>
 
   {/* Starlight's search, on documentation pages and nowhere else. The rule is
@@ -251,6 +268,26 @@ const isCurrent = (href: string) =>
      in the same place on a phone and on a desktop. */
   .site-header__sign-in {
     white-space: nowrap;
+  }
+
+  /* Quiet, beside the filled button rather than inside it (kolonie-website#87).
+     Text and not an outline button: two bordered controls side by side read as
+     two alternatives of the same weight, which is the thing `#87` is undoing.
+
+     Hidden below `--k-bp-sm`, where the bar holds the wordmark, the burger and
+     the one action and nothing else fits — the console is reachable from the
+     footer of every page, which is where `#40` put it as well. */
+  .site-header__returning {
+    display: none;
+    color: var(--k-text-muted);
+    font-size: var(--k-type-small);
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .site-header__returning:hover,
+  .site-header__returning:focus-visible {
+    color: var(--k-accent);
   }
 
   .site-header__menu summary {
@@ -375,6 +412,11 @@ const isCurrent = (href: string) =>
 
     .site-header__menu summary {
       display: none;
+    }
+
+    /* There is room for it here, and this is where a returning visitor looks. */
+    .site-header__returning {
+      display: inline;
     }
 
     /* **Both, and neither is redundant.** How a browser hides a closed

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { DOCS, GITHUB, NAV_LINKS, SIGN_IN } from "./site-nav.ts";
+import { DOCS, GITHUB, NAV_LINKS, SEND, SIGN_IN } from "./site-nav.ts";
 
 /**
  * **The header is on every page, and it is the same header** (kolonie-website#50).
@@ -40,6 +40,20 @@ it("found the built pages at all", () => {
 
 describe.each(pages)("%s", (file) => {
   const page = html(file);
+
+  /**
+   * The header's own markup, so an assertion about *the header* cannot be
+   * satisfied — or broken — by the rest of the page.
+   *
+   * It became load-bearing on `kolonie-website#87`: the hero now carries a
+   * quiet *Already have an account? Sign in.* beneath its primary action, which
+   * is a second legitimate `Sign in` on the landing page and would otherwise
+   * fail the count below for the right words and the wrong reason.
+   */
+  const header = page.slice(
+    page.indexOf('<header class="site-header'),
+    page.indexOf("</header>"),
+  );
 
   it("renders the header", () => {
     expect(page).toContain('class="site-header');
@@ -93,15 +107,48 @@ describe.each(pages)("%s", (file) => {
       new RegExp(`class="btn btn--secondary[^"]*"[^>]*href="${DOCS.href}"`),
     );
     expect(page).toMatch(
-      new RegExp(`class="btn btn--primary[^"]*"[^>]*href="${SIGN_IN.href}"`),
+      new RegExp(`class="btn btn--primary[^"]*"[^>]*href="${SEND.href}"`),
+    );
+  });
+
+  /**
+   * **The filled button is not `Sign in` any more** (kolonie-website#87).
+   *
+   * `#40` made it the header's one persistent action and `#87` measured what
+   * that costs: it is *"labelled for people who already joined"*, on every
+   * page, to every stranger who has just read the argument. The primary action
+   * describes what a **new** visitor does, and it is the hero's label rather
+   * than a second one, so the site has one primary action instead of a
+   * vocabulary of them.
+   */
+  it("offers the new visitor's action, not the returning one's", () => {
+    expect(header).toContain(`>${SEND.label}<`);
+    expect(header).not.toMatch(
+      new RegExp(`class="btn[^"]*"[^>]*href="${SIGN_IN.href}"`),
+    );
+  });
+
+  /**
+   * **And `Sign in` is beside it rather than gone.** `#87`'s solution is two
+   * things, and a header that dropped the returning visitor entirely would have
+   * shipped one of them: *"That is the whole solution and it serves both
+   * readers."*
+   */
+  it("still names Sign in, quietly", () => {
+    expect(header).toContain(`href="${SIGN_IN.href}"`);
+    expect(header).toContain(`>${SIGN_IN.label}<`);
+    // Text, not a second bordered control: two buttons side by side read as two
+    // alternatives of the same weight, which is what `#87` is undoing.
+    expect(header).not.toMatch(
+      new RegExp(`class="btn[^"]*"[^>]*>\\s*${SIGN_IN.label}`),
     );
   });
 
   it("names Sign in once, not once per width", () => {
-    // The obvious way to keep a button in the bar at every width is one copy
+    // The obvious way to keep a control in the bar at every width is one copy
     // per breakpoint, each hidden at the other's. CSS hides the extra one from
     // the eye and not from a screen reader, which announces *Sign in, Sign in*.
-    expect(page.match(new RegExp(`>\\s*${SIGN_IN.label}\\s*<`, "g"))).toHaveLength(1);
+    expect(header.match(new RegExp(`>\\s*${SIGN_IN.label}\\s*<`, "g"))).toHaveLength(1);
   });
 
   it("folds into a menu rather than a script", () => {

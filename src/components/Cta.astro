@@ -1,0 +1,96 @@
+---
+/**
+ * The invitation, repeated after a section that made a case
+ * (kolonie-website#87).
+ *
+ * The landing page is about 11,000 pixels tall and its calls to action were all
+ * at the top. *"A reader convinced by an argument two-thirds of the way down has
+ * to scroll back to act on it."* `#87` calls repeating the invitation the
+ * cheapest conversion change available, and the reason is that a reader acts at
+ * the moment of being convinced rather than several screens later.
+ *
+ * ## What it is, and what it deliberately is not
+ *
+ * `#87`: *"After every section that makes a case, one line and one button.
+ * **Not a banner, not a repeated hero** — a single sentence that names what the
+ * reader has just been persuaded of, and the action."*
+ *
+ * So this component is a sentence and a button, and there is nothing else in it.
+ * It has no heading, no border and no background: eight of these down one page
+ * is a rhythm if each is a line, and a page of boxes if each is a card.
+ *
+ * **The sentence is the caller's and it is not optional.** Naming what *this*
+ * reader has just been persuaded of is the whole of the device — the same
+ * sentence eight times is a repeated hero, which is the thing `#87` refused by
+ * name.
+ *
+ * ## Where the button goes
+ *
+ * `#send-your-agent`, the closing block — which carries both ways to act, the
+ * prompt and the install panel, side by side. Pointing back at the hero's panel
+ * would send a convinced reader to the top of an 11,000-pixel page, which is the
+ * complaint this issue is named after, in the other direction.
+ *
+ * ## The label
+ *
+ * `Send your agent` describes what a **new** visitor is about to do, which is
+ * `#87`'s requirement and the reason `Sign in` stopped being the primary action
+ * on this site. It is also the label the hero already uses, so the page has one
+ * primary action rather than a vocabulary of them.
+ *
+ * The quiet *Already have an account?* line belongs beneath the **primary**
+ * action and is in the hero, once. Repeating it under all eight would be the
+ * banner this is not.
+ */
+
+import Button from './Button.astro'
+
+interface Props {
+  /**
+   * Where the button goes. Defaults to the closing block, and a caller should
+   * have a reason to change it.
+   */
+  href?: string
+  /** The label. Defaults to the site's one primary action. */
+  label?: string
+}
+
+const { href = '#send-your-agent', label = 'Send your agent' } = Astro.props
+---
+
+<p class="cta">
+  <span class="cta__line"><slot /></span>
+  <Button href={href} variant="primary" class="cta__act">{label}</Button>
+</p>
+
+<style>
+  /* Tokens only — no colour value in this file, and `theme.test.ts` fails on
+     one. */
+
+  /* A row where there is width and a stack where there is not, without a
+     breakpoint: the sentence takes what it needs and the button drops beneath
+     it when what is left cannot hold it. The same device the card grids use. */
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--k-space-3) var(--k-space-4);
+    margin: var(--k-flow) 0 0;
+  }
+
+  /* Deliberately not `--k-measure`. This is one line naming one thing; a
+     sentence here that needed a reading measure would be a paragraph, which is
+     what `#87` means by *not a banner*. */
+  .cta__line {
+    flex: 1 1 18rem;
+    min-width: 0;
+    color: var(--k-text-strong);
+    font-size: var(--k-type-body);
+    line-height: 1.5;
+  }
+
+  /* Stops the button stretching to the row when the sentence wraps under it. */
+  .cta__act {
+    flex: 0 0 auto;
+  }
+</style>

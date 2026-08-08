@@ -1,4 +1,4 @@
-import { SIGN_IN, type FooterLink } from './site-footer.ts'
+import { SEND, SIGN_IN, type FooterLink } from './site-footer.ts'
 
 /**
  * What the header of every page carries (kolonie-website#50).
@@ -93,4 +93,4 @@ export const DOCS: NavLink = {
   label: 'Docs',
 }
 
-export { SIGN_IN }
+export { SEND, SIGN_IN }

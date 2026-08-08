@@ -74,11 +74,28 @@ describe("the two layers (kolonie-website#66)", () => {
     if (!isDocumentation(routeId)) return;
 
     const file = pages.find((p) => servedPath(p) === path)!;
-    const body = text(readFileSync(file, "utf8")).toLowerCase();
+    const html = readFileSync(file, "utf8");
 
-    // The header is on every page by #50 and carries the site's navigation,
-    // which is not this page's call to action. Only the main content is judged.
-    const main = body.slice(body.indexOf("<main") >= 0 ? body.indexOf("<main") : 0);
+    /**
+     * **The chrome comes off before the text does, and that is a fix**
+     * (kolonie-website#87).
+     *
+     * `#50`'s header and `#51`'s footer are on every page and carry the site's
+     * own navigation, which is not this page's call to action. This intended to
+     * say so and could not: it stripped the tags first and then looked for
+     * `<main` in the result, so the slice never found anything and the whole
+     * page was judged. It passed anyway, because the header's filled button
+     * said `Sign in` — a phrase this list does not contain.
+     *
+     * `#87` made that button `Send your agent`, which turned a guard that was
+     * not working into a guard that was failing, and the fix is the one the
+     * comment already described.
+     */
+    const chromeless = html
+      .replace(/<header\b[\s\S]*?<\/header>/gi, " ")
+      .replace(/<footer\b[\s\S]*?<\/footer>/gi, " ");
+
+    const main = text(chromeless).toLowerCase();
 
     const found = CALL_TO_ACTION_PHRASES.filter((phrase) => main.includes(phrase));
     expect(found, `${path} is documentation and carries: ${found.join(", ")}`).toEqual([]);

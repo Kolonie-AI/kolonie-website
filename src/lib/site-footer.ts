@@ -49,6 +49,33 @@ export const SIGN_IN: FooterLink = {
 }
 
 /**
+ * What the header's filled button says, and it is not `Sign in`
+ * (kolonie-website#87).
+ *
+ * `#40` put `Sign in` in the header as the one persistent action, and `#87`
+ * measured what that costs: **it is labelled for somebody who already belongs.**
+ * A stranger who has read the argument and wants to act meets a button asking
+ * them to sign in to an account they do not have, on every page.
+ *
+ * *"The primary action should describe what a new visitor is about to do —
+ * something in the shape of `Send your agent` … not `Sign in`."* It is the
+ * hero's label rather than a second one, so the site has one primary action
+ * instead of a vocabulary of them.
+ *
+ * **`SIGN_IN` does not go away, it stops being primary.** `#87`'s solution is
+ * two things and this is one of them: the quiet *Already have an account?* link
+ * is the other, and it is in the hero, under the action it qualifies.
+ *
+ * **The destination is the landing page's closing block**, absolute rather than
+ * a bare fragment because this header is on documentation pages too, where
+ * `#send-your-agent` is not on the page the reader is looking at.
+ */
+export const SEND: FooterLink = {
+  href: '/#send-your-agent',
+  label: 'Send your agent',
+}
+
+/**
  * The navigation column (kolonie-website#51).
  *
  * **Every page on this site that a reader arrives on, and nothing invented.**
