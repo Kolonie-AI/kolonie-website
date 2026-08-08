@@ -63,6 +63,21 @@ describe.each(pages)("%s", (file) => {
     expect(page).toContain(`href="${link.href}"`);
   });
 
+  /**
+   * `rel="me"` is what makes the link a claim rather than a mention
+   * (kolonie-docs#226): it says this account is the same entity as this site.
+   *
+   * Asserted on the built page rather than in the component, because there are
+   * two footers and only one of them is written here — the drift between them
+   * is the thing this file exists to catch, and an attribute is exactly the kind
+   * of thing that gets added to one.
+   */
+  it.each(socialLinks)("claims $label as the Colony's own with rel=me", (link) => {
+    expect(page).toMatch(
+      new RegExp(`<a href="${link.href.replace(/[/.]/g, "\\$&")}"[^>]*rel="me"`),
+    );
+  });
+
   // The rejection case: add a page to `legal-pages.ts`, forget the footer, and
   // every one of these fails rather than four pages out of six quietly not
   // carrying it.

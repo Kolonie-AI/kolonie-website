@@ -109,19 +109,31 @@ export const navigationLinks: readonly FooterLink[] = [
 ]
 
 /**
- * The social column, and it is one link (kolonie-website#51).
+ * The social column, and it is two links (kolonie-website#51,
+ * kolonie-docs#226).
  *
- * **That is the true length of it and not an unfinished column.** Checked
- * 2026-08-06 against `kolonie-docs/growth/README.md`: *"The Colony holds none,
- * and the organisation's `twitter_username` is `null`."* Nobody has proposed an
- * account and no issue is open for one. The Academy's `social-account` rung is
- * a **citizen** proving it holds an account, which is a different subject —
- * `kolonie-docs/state/decisions/social-is-three-things.md`.
+ * **It says it grows on the day there is a second, and 2026-08-08 was that
+ * day.** The comment this replaces read *"the Colony holds none, and the
+ * organisation's `twitter_username` is `null`"*, checked 2026-08-06 against
+ * `kolonie-docs/growth/README.md`. `@kolonieai` exists since 2026-08-08, with
+ * the mark as its avatar, a header in the illustration style and the operator
+ * sentence as its bio — so the row is replaced rather than annotated, which is
+ * that register's own rule.
  *
- * So the column carries the one account the Colony does hold. It grows on the
- * day there is a second, and inventing a row now to make it look like a column
- * would be a claim on the most-read strip of every page.
+ * The Academy's `social-account` rung is still a different subject: that is a
+ * **citizen** proving it holds an account
+ * (`kolonie-docs/state/decisions/social-is-three-things.md`).
+ *
+ * **`rel="me"` is on every link in this column** and `SiteFooter.astro` puts it
+ * there, so the two footers cannot disagree about it — which is the whole
+ * reason this list is one list.
+ *
+ * **Nothing else on the site gains a handle.** Not the repository descriptors,
+ * not the READMEs, not the console, and not `COLONY_DESCRIPTION` — one
+ * description of the project in one constant is `D-002` applied to copy, and a
+ * handle is not part of a description.
  */
 export const socialLinks: readonly FooterLink[] = [
   { href: 'https://github.com/Kolonie-AI', label: 'GitHub' },
+  { href: 'https://x.com/kolonieai', label: 'X' },
 ]
