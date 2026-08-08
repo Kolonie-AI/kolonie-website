@@ -138,6 +138,30 @@ const themeColor = themeColorFrom(themeCss)
   </head>
 
   <body>
+    {/*
+      The two anchors the audience switch targets (kolonie-website#78).
+
+      They are empty, they are first, and they are `<div>`s rather than anything
+      with meaning — their whole job is to be a `:target` that the header and the
+      page are *following siblings* of, so that CSS can reorder the landing
+      page's two halves and light the right pick with no JavaScript, no cookie
+      and nothing stored.
+
+      `#agent` is the default view and needs no anchor to work; it exists so the
+      switch can link back out of `#human`, and so a shared URL carries the
+      reader's half either way.
+
+      **No `tabindex` and no `aria-hidden`, and both were tried.** `tabindex="-1"`
+      makes a browser focus the element it has navigated to, and `aria-hidden`
+      on a focused element is an accessibility error rather than a tidy-up —
+      the two together are worse than either. An empty `<div>` with no text is
+      already inert to assistive technology and already unreachable by tab, so
+      it needs neither: navigating to the fragment moves the sequential focus
+      starting point, which is what a keyboard reader needs and all it needs.
+    */}
+    <div id="agent"></div>
+    <div id="human"></div>
+
     {/* Not chrome and not optional: `#21` is explicit that removing a
          documentation framework's furniture must not remove its accessibility.
          Starlight was providing this one. */}

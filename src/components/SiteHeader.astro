@@ -33,6 +33,7 @@
 import Button from './Button.astro'
 import { inlineMark } from '../lib/mark.ts'
 import { DOCS, GITHUB, NAV_LINKS, SIGN_IN } from '../lib/site-nav.ts'
+import AudienceSwitch from './AudienceSwitch.astro'
 // The stylesheet as text, so the mark's two baked-in colours can be put back
 // as the tokens they came from. `?raw` because this component is bundled —
 // `Site.astro` reads the same file the same way, and `theme-tokens.ts` records
@@ -120,6 +121,14 @@ const isCurrent = (href: string) =>
           ))
         }
       </nav>
+
+      {/*
+        The audience switch (kolonie-website#78). Inside the panel, so it folds
+        with everything else below `--k-bp-sm` — `Sign in` is the one thing that
+        stays in the bar at every width, and a second permanent control beside it
+        is what makes a header stop fitting on a phone.
+      */}
+      <AudienceSwitch home={pathname === '/'} />
 
       <div class="site-header__actions">
         {/* A word for a screen reader, an icon for everybody else — the same

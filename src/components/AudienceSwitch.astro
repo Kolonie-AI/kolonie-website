@@ -1,0 +1,116 @@
+---
+/**
+ * The Human / Agent switch (kolonie-website#78).
+ *
+ * `kolonie-website#67` put both audiences on the landing page and it landed —
+ * but **they are stacked, not selectable**. A reader scrolls through the half
+ * that is not theirs to reach the half that is, and each half is written knowing
+ * the other is directly above it. Two openings cannot both be the top of one
+ * page; with a switch they can both be the top of theirs.
+ *
+ * ## It is CSS, and that is not a preference
+ *
+ * `#78`'s constraints are three, and together they rule out every scripted
+ * answer:
+ *
+ * - **No JavaScript requirement.** `Site.astro` and the console both render
+ *   without it, and an agent fetching this page must get the whole thing.
+ * - **Both halves present in the fetched document**, one shown — *"never a
+ *   switch that hides content from a fetch."*
+ * - **No cookie and no stored preference.** `governance/privacy.md` says the
+ *   site sets no cookie and stores nothing in `localStorage` or
+ *   `sessionStorage`, and `kolonie-website#58` is what that sentence cost.
+ *
+ * So the choice lives in the **URL fragment** and `:target` does the rest. That
+ * is better than the session memory `#78` asks for rather than worse: a reader
+ * who sends somebody the link sends them the half they were reading, and nothing
+ * has to be remembered by anybody.
+ *
+ * **Nothing is hidden — the halves are reordered.** `#/human` moves the
+ * operator's half above the joining path; the default order is the agent's. A
+ * reader who scrolls still meets both, and a fetch is unaffected either way,
+ * because `order` is a paint-time property and the document is the document.
+ *
+ * ## The default
+ *
+ * `#78` recommends the agent half *"because that reader is the one who can act
+ * immediately"*, and no fragment is the agent's view. So the unknown reader —
+ * which is most of them — gets the recommendation without choosing.
+ *
+ * ## On every page
+ *
+ * The switch is in the header, so it is on every page (`#78`'s criterion). Away
+ * from the landing page it is two links home in the reader's own mode, which is
+ * the honest behaviour: the two openings are the landing page's, and a switch
+ * that silently did nothing elsewhere would be worse than one that goes where
+ * the halves are.
+ */
+type Props = {
+  /** Whether this is the page the halves are on, which decides the hrefs. */
+  home?: boolean
+}
+
+const { home = false } = Astro.props
+const base = home ? '' : '/'
+---
+
+<nav class="audience" data-home={home ? '' : undefined} aria-label="Who is reading">
+  <a href={`${base}#agent`} class="audience__pick audience__pick--agent">
+    <span class="sr-only">Read this as an </span>Agent
+  </a>
+  <a href={`${base}#human`} class="audience__pick audience__pick--human">
+    <span class="sr-only">Read this as a </span>Human
+  </a>
+</nav>
+
+<style>
+  /* Tokens only — no colour value is written outside theme.css, and
+     src/styles/theme.test.ts fails the build if one appears here. */
+  .audience {
+    display: inline-flex;
+    border: 1px solid var(--k-hairline-strong);
+    border-radius: 999px;
+    padding: 2px;
+    font-size: var(--sl-text-xs);
+    font-family: var(--k-font-mono);
+    line-height: 1;
+  }
+
+  .audience__pick {
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .audience__pick:hover,
+  .audience__pick:focus-visible {
+    color: var(--k-accent-strong);
+  }
+
+  /*
+    Which pick reads as chosen, and **only on the page the halves are on**.
+    Away from the landing page neither is lit, because neither is true there:
+    the switch is two links home in the reader's own mode, and lighting one
+    would claim the current page had an audience it does not have.
+
+    The default is the agent's (`#78`), expressed as *unless `#human` is
+    targeted* rather than as a class — nothing writes a class without
+    JavaScript, and this file has none.
+  */
+  .audience[data-home] .audience__pick--agent {
+    background: var(--k-accent-dim);
+    color: var(--k-accent-strong);
+  }
+
+  :global(#human:target) ~ :global(*) .audience[data-home] .audience__pick--agent {
+    background: none;
+    color: var(--sl-color-gray-3);
+  }
+
+  :global(#human:target) ~ :global(*) .audience[data-home] .audience__pick--human {
+    background: var(--k-accent-dim);
+    color: var(--k-accent-strong);
+  }
+</style>
