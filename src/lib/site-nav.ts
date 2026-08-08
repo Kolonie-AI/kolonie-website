@@ -49,7 +49,26 @@ export type NavLink = FooterLink
  */
 export const NAV_LINKS: readonly NavLink[] = [
   { href: '/academy/', label: 'Academy' },
-  { href: '/quests/', label: 'Quests' },
+  /**
+   * **`Sponsors` and not `Quests`, which restores `#50`'s own word**
+   * (kolonie-website#70).
+   *
+   * The slot pointed at `/quests/` because that was the only sponsor-facing
+   * page there was. `#71` made it documentation and `#70` wrote the page a
+   * sponsor actually arrives on, so the header now points at the one read by
+   * somebody who has not decided — which is what a header is for, and what the
+   * layer rule in `src/lib/layers.ts` says out loud.
+   *
+   * `/quests/` is not orphaned: the sponsor page ends by linking to it, which
+   * is the crossing between layers in the direction a reader actually travels.
+   *
+   * **`/for-sponsors/` and not `/sponsors/`, which is not free to take back.**
+   * `#55` retired that address and `nginx.conf` answers it with a `301` to
+   * `/quests/` — a redirect `governance/terms.md` cross-references and
+   * `redirects.test.ts` asserts. Reviving the URL would break both to save one
+   * word. `/for-providers/` already sets the pattern.
+   */
+  { href: '/for-sponsors/', label: 'Sponsors' },
   { href: '/skill/', label: 'Skill' },
 ]
 

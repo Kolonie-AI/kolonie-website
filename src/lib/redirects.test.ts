@@ -84,7 +84,21 @@ describe("the addresses that moved to /quests", () => {
     expect(prefixRules).toHaveLength(0);
   });
 
-  /** Nothing still points at the old address from inside the site. */
+  /**
+   * Nothing still points at the old address from inside the site.
+   *
+   * **Asserted against the `href` and not against the file's text**
+   * (kolonie-website#70). It was a substring check until the header gained
+   * `/for-sponsors/` — the page `#70` wrote — whose own comment has to name the
+   * retired address in order to explain why it was not taken back. A check that
+   * cannot tell a link from a sentence about a link fails on the one edit that
+   * documents itself properly.
+   *
+   * `/quests/` moved out of the header in the same change and is reached from
+   * the sponsor page instead, which is the crossing between layers in the
+   * direction a reader travels (`#66`). So what is asserted is that it is still
+   * linked *somewhere* a reader can get to, rather than from one named file.
+   */
   it("leaves no internal link on the old address", () => {
     const nav = readFileSync(
       join(process.cwd(), "src/lib/site-nav.ts"),
@@ -94,9 +108,17 @@ describe("the addresses that moved to /quests", () => {
       join(process.cwd(), "src/lib/site-footer.ts"),
       "utf8",
     );
-    expect(nav).not.toContain("/sponsors/");
-    expect(footer).not.toContain("/sponsors/");
-    expect(nav).toContain("/quests/");
-    expect(footer).toContain("/quests/");
+    const sponsorPage = readFileSync(
+      join(process.cwd(), "src/content/docs/for-sponsors.mdx"),
+      "utf8",
+    );
+
+    const linksTo = (source: string, href: string): boolean =>
+      new RegExp(`href:\\s*['"]${href}['"]|\\]\\(${href}\\)`).test(source);
+
+    expect(linksTo(nav, "/sponsors/")).toBe(false);
+    expect(linksTo(footer, "/sponsors/")).toBe(false);
+    expect(linksTo(nav, "/for-sponsors/")).toBe(true);
+    expect(linksTo(sponsorPage, "/quests/") || linksTo(footer, "/quests/")).toBe(true);
   });
 });
