@@ -11,6 +11,7 @@ template: splash
 
 import { docsCheckout } from '../../lib/kolonie-docs.ts'
 import { JURISDICTION, readEntity } from '../../lib/entity.ts'
+import Words from '../../components/Words.astro'
 
 {/*
   The company is read from `kolonie-docs` at build time and not typed here
@@ -27,6 +28,8 @@ export const entity = readEntity(docsCheckout())
 That is an unusual answer and it is the reason this page exists. Nothing on this
 site said who was behind it, and *nobody visible* is a fair thing to hold against
 a project asking you to trust it with a question or with money.
+
+<Words />
 
 ## The checkable half
 

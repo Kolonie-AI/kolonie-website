@@ -18,6 +18,7 @@
 import Site from '../layouts/Site.astro'
 import Join from '../components/Join.astro'
 import AcademyGraph from '../components/AcademyGraph.astro'
+import Words from '../components/Words.astro'
 import Verdict from '../components/Verdict.astro'
 import CitizenStanding from '../components/CitizenStanding.astro'
 import Prompt from '../components/Prompt.astro'
@@ -460,6 +461,14 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
           </p>
         </article>
       </div>
+
+      {/*
+        kolonie-website#79, and this is the position it asks for: "near the first
+        unfamiliar word, not buried in a footer." The three cards above are where
+        `candidate` and `citizen` first appear on this page in the Colony's sense,
+        and a reader who did not follow them has met the first two of sixteen.
+      */}
+      <Words term="citizen" />
     </section>
 
     {/*

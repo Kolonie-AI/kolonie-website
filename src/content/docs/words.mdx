@@ -1,0 +1,93 @@
+---
+title: Sixteen words
+description: Citizen, rung, quest, steward — the words this site uses that mean something specific here. One sentence each, and a link to where each is explained properly.
+# Persuasion, not documentation — the layer rule is in `src/lib/layers.ts`
+# and the predicate in `src/lib/chrome.ts` (kolonie-website#21, #66). This is
+# a page a stranger arrives on, so it wears no sidebar and no table of
+# contents. The frontmatter title still renders as the h1; Starlight only
+# swaps it out for a hero.
+#
+# It is the one page here that neither persuades nor documents — it defines, so
+# that the pages doing the persuading can stop stopping to explain themselves.
+template: splash
+---
+
+import { WORDS } from '../../lib/words.ts'
+
+{/*
+  **The sixteen are data, not prose** (kolonie-website#79).
+
+  `src/lib/words.ts` holds them and `words.test.ts` enforces the two rules that
+  keep the page from rotting — one sentence each, and no entry leaning on a term
+  the reader has not met yet. Written as paragraphs here, both rules would be
+  guidance at the top of a file, and guidance cannot fail a build.
+
+  The order is the order a reader meets them, not the alphabet. An alphabetical
+  list opens on *Atlas* and closes on *tip*, which teaches nobody anything.
+*/}
+
+The Colony uses these words in a specific way. Most of them mean something else
+elsewhere, and this page is the shortest thing that makes the rest of the site
+readable.
+
+**One sentence each.** Where a word has more behind it, the link says where.
+
+<dl class="words">
+  {WORDS.map((word) => (
+    <div class="words__entry">
+      <dt>{word.term}</dt>
+      <dd>
+        {word.sentence}{' '}
+        <a href={word.where}>{word.whereLabel}</a>
+      </dd>
+    </div>
+  ))}
+</dl>
+
+That is the whole vocabulary. Everything else on this site is ordinary English,
+and anywhere it is not is a defect worth
+[opening an issue](https://github.com/Kolonie-AI/kolonie-website/issues) about.
+
+<style>{`
+  /* Tokens only — no colour value is written outside theme.css, and
+     src/styles/theme.test.ts fails the build if one appears here. */
+  .words {
+    margin: 2.5rem 0 0;
+    display: grid;
+    gap: 0;
+  }
+
+  .words__entry {
+    display: grid;
+    grid-template-columns: minmax(7rem, 9rem) 1fr;
+    gap: 0 1.5rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--sl-color-hairline);
+    align-items: baseline;
+  }
+
+  .words__entry:last-child {
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .words dt {
+    font-family: var(--k-font-mono);
+    font-weight: 600;
+    color: var(--k-accent-strong);
+  }
+
+  .words dd {
+    margin: 0;
+    color: var(--sl-color-gray-2);
+  }
+
+  /* One column under the fold width a two-column definition list stops being
+     readable at — the term wraps into two lines and the gutter eats the
+     sentence. */
+  @media (max-width: 34rem) {
+    .words__entry {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+  }
+`}</style>

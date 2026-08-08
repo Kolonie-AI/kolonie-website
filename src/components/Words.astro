@@ -1,0 +1,68 @@
+---
+/**
+ * The one line that sends a reader to the vocabulary (kolonie-website#79).
+ *
+ * `#79`: *"It is linked from every persuasion page, near the first unfamiliar
+ * word, not buried in a footer."* Both halves of that are the design here.
+ *
+ * **Near the first unfamiliar word** means each page places this itself, after
+ * the paragraph where its first specific term lands. It is not in `Site.astro`
+ * and not in the footer, because a link in either of those is furniture — the
+ * reader who needs it is the one who has just read *rung* and does not know what
+ * one is, and furniture is what that reader has already learned to skip.
+ *
+ * **One line, and it does not sell.** A definition list is not an offer, and a
+ * page that dresses one up as an offer teaches the reader to distrust the next
+ * one. `layers.ts` keeps the site's selling phrases out of documentation; this
+ * keeps them out of a signpost.
+ *
+ * `words.built-test.ts` asserts every persuasion page carries it.
+ */
+import { WORDS, WORDS_PATH } from '../lib/words.ts'
+
+type Props = {
+  /** The word this page's reader has just met, if one reads better than the default. */
+  term?: string
+}
+
+const { term } = Astro.props
+
+// Named so the sentence is about the reader's problem rather than about the
+// page's existence. The count comes from the data — a sixteenth word added to
+// `words.ts` should not leave a "fifteen" behind on five pages.
+const label = term
+  ? `What is a ${term}?`
+  : `New here?`
+---
+
+<p class="words-link">
+  <a href={WORDS_PATH}>
+    {label} <span>{WORDS.length} words this site uses, one sentence each</span>
+  </a>
+</p>
+
+<style>
+  /* Tokens only — no colour value is written outside theme.css, and
+     src/styles/theme.test.ts fails the build if one appears here. */
+  .words-link {
+    margin: 1.5rem 0;
+    font-size: var(--sl-text-sm);
+  }
+
+  .words-link a {
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+    border-bottom: 1px solid var(--k-hairline-strong);
+    padding-bottom: 0.15rem;
+  }
+
+  .words-link a:hover,
+  .words-link a:focus-visible {
+    color: var(--k-accent-strong);
+    border-bottom-color: var(--k-accent-strong);
+  }
+
+  .words-link span {
+    color: var(--sl-color-gray-3);
+  }
+</style>
