@@ -32,6 +32,13 @@ import { LEGAL_PAGES } from "./legal-pages.ts";
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 const fragment = readFileSync(join(dist, "site-chrome", "index.html"), "utf8");
 
+const fragmentCss = [
+  ...[...fragment.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"[^>]*>/g)].map(
+    (match) => readFileSync(join(dist, match[1].replace(/^\//, "")), "utf8"),
+  ),
+  ...[...fragment.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((match) => match[1]),
+].join("\n");
+
 describe("the chrome fragment the Atlas includes (#99)", () => {
   it("is built at the path the API fetches", () => {
     expect(fragment.length).toBeGreaterThan(1000);
@@ -93,6 +100,29 @@ describe("the chrome fragment the Atlas includes (#99)", () => {
 
     expect(hrefs.length).toBeGreaterThan(0);
     for (const href of hrefs) expect(href.startsWith("/")).toBe(true);
+  });
+
+  /**
+   * `#100` is the failure this assertion names: the fragment emitted the
+   * header and footer with Astro's scope classes, but only linked `theme.css`.
+   * Their rules had been folded into the landing page's content-hashed CSS, so
+   * the Atlas drew the mark at the width of its container and left the footer
+   * without columns.
+   *
+   * Every scope marker in the extracted chrome must occur in the CSS that the
+   * same fragment tells its consumer to load. This checks the relationship,
+   * rather than pinning today's generated scope or asset hash.
+   */
+  it("loads a rule for every scoped class its chrome emits", () => {
+    const chrome = fragment.slice(fragment.indexOf("<header"), fragment.indexOf("</footer>"));
+    const scopes = new Set(chrome.match(/astro-[a-z0-9]+/g) ?? []);
+
+    expect(scopes.size).toBeGreaterThan(0);
+    for (const scope of scopes) {
+      expect(fragmentCss, `${scope} has no rule in the fragment's stylesheets`).toContain(
+        `.${scope}`,
+      );
+    }
   });
 
   /**

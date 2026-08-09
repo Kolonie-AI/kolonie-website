@@ -30,6 +30,17 @@ export default defineConfig({
   site: 'https://kolonie.ai',
   integrations: [mdx()],
   /**
+   * `/site-chrome/` is consumed as a document fragment by the API-rendered
+   * Atlas pages. Its component CSS must therefore be named in that document,
+   * not folded into a stylesheet that only another page happens to request
+   * (kolonie-website#100).
+   *
+   * `never` still lets Vite content-hash the assets; the stable contract is the
+   * fragment URL, whose `<link>` elements carry the current asset names on each
+   * build. No hashed filename crosses into another repository's source.
+   */
+  build: { inlineStylesheets: 'never' },
+  /**
    * **Kept, and it is the one setting Starlight was making that had to be
    * copied out rather than dropped** (kolonie-website#95).
    *
