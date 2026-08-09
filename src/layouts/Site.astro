@@ -242,11 +242,15 @@ const themeColor = themeColorFrom(themeCss)
        * tables. It is a component rather than more rules here because three
        * surfaces need it and the landing page needs none of it.
        */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
+      /* `box-sizing` and `.sr-only` were here until kolonie-website#99 and are
+         in `theme.css` now — the one file both this layout and
+         `src/pages/site-chrome.astro` load. The chrome fragment the Atlas
+         includes carries the site's header and footer into a page this layout
+         never renders, and a header laid out without `border-box` overflows its
+         own row by the width of its padding. The rules that the *chrome* needs
+         belong with the tokens it already reads; the rules about the document
+         stay here, because the page including a fragment owns its own `html`
+         and `body`. */
 
       html {
         background: var(--k-bg);
@@ -357,21 +361,6 @@ const themeColor = themeColorFrom(themeCss)
         outline: 2px solid var(--k-accent);
         outline-offset: 3px;
         border-radius: var(--k-radius);
-      }
-
-      /* The visually-hidden utility. It arrived with Starlight and stayed with
-         `#95`: components across the site use it, and a page that dropped it
-         would show every label those components hide. */
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border-width: 0;
       }
 
       .skip-link {

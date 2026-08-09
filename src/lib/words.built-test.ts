@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { NOT_PAGES } from "./built-pages.ts";
 
 import { isDocumentation } from "./chrome.ts";
 import { WORDS, WORDS_PATH } from "./words.ts";
@@ -21,11 +22,22 @@ import { WORDS, WORDS_PATH } from "./words.ts";
 
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 
+/**
+ * Every built page, as an absolute path.
+ *
+ * `NOT_PAGES` is what keeps `/site-chrome/` out of it — the chrome fragment the
+ * Atlas includes (`kolonie-website#99`), which is built HTML and is not a page.
+ * The list and the reason are in `built-pages.ts`.
+ */
 const pagesUnder = (directory: string): string[] =>
   readdirSync(directory).flatMap((entry) => {
     const path = join(directory, entry);
     if (statSync(path).isDirectory()) return pagesUnder(path);
-    return entry.endsWith(".html") ? [path] : [];
+    if (!entry.endsWith(".html")) return [];
+
+    const served = path.slice(dist.length + 1);
+
+    return NOT_PAGES.some((route) => served.startsWith(route)) ? [] : [path];
   });
 
 const servedPath = (file: string): string =>
@@ -143,11 +155,29 @@ describe("every persuasion page reaches it (kolonie-website#79)", () => {
    * own body. That is loose on purpose — the point is that it is placed by the
    * page, near its own first specific word, rather than that it lands on a
    * particular line.
+   *
+   * **Measured across `<main>` and not across the file** (kolonie-website#99).
+   * It was the whole document until then, and the whole document includes the
+   * `<head>`: `#95` moved the prose layer into a component, Astro inlines a
+   * component's stylesheet into the pages that use it, and several kilobytes of
+   * CSS arriving above the content pushed `/pricing/` from 0.66 to 0.68 without
+   * a word of the page moving. A heuristic that a stylesheet can fail is one
+   * that will be nudged rather than read the next time it goes red — and the
+   * sentence it is standing in for was always about the *body*, which is what
+   * it now measures.
    */
   it.each(persuasion)("%s places the link in its body rather than its footer", (path) => {
     const file = pages.find((candidate) => servedPath(candidate) === path)!;
     const html = readFileSync(file, "utf8");
-    const at = html.indexOf(`href="${WORDS_PATH}"`);
-    expect(at / html.length).toBeLessThan(0.67);
+
+    const opens = html.indexOf("<main");
+    const closes = html.indexOf("</main>");
+    expect(opens, `${path} has no <main>`).toBeGreaterThan(-1);
+
+    const body = html.slice(opens, closes);
+    const at = body.indexOf(`href="${WORDS_PATH}"`);
+
+    expect(at, `${path} does not link to the vocabulary from its body`).toBeGreaterThan(-1);
+    expect(at / body.length).toBeLessThan(0.67);
   });
 });

@@ -472,6 +472,47 @@
   --k-syn-comment: hsl(200 12% 33%);
 }
 
+/* ---- The reset, and the one utility the chrome depends on ---------------- */
+
+/*
+ * **These are here rather than in `src/layouts/Site.astro` because two surfaces
+ * need them** (kolonie-website#99).
+ *
+ * `src/pages/site-chrome.astro` builds this site's header and footer as a
+ * fragment for `kolonie-platform` to put around the Atlas pages, which are
+ * rendered by another process on this domain. That fragment loads this file and
+ * nothing else of ours — so anything the header and footer *depend on* has to
+ * be in it.
+ *
+ * `box-sizing` is the one that bites and it bit: without it the header's row
+ * lays its padding outside its `max-width`, and the bar overflowed its own
+ * container by 241px on the first Atlas page rendered with it. `.sr-only` is
+ * the other: the header hides the word *GitHub* behind its icon with it, and a
+ * page without the rule shows the label.
+ *
+ * **What did not move is every rule about `html` and `body`.** Those stay in
+ * `Site.astro`. A fragment may bring the rules its own elements need; it must
+ * not bring rules about the document it is being included into, whose margins,
+ * background and type are that page's to decide.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 /* ---- What the tokens are actually used for ------------------------------ */
 
 /* Headings are the monospace face. This is the whole of the visual identity:

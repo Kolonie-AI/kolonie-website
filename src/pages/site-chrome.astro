@@ -1,0 +1,102 @@
+---
+/**
+ * The site's chrome, as one document another process can include
+ * (kolonie-website#99).
+ *
+ * ## What this is for
+ *
+ * `kolonie.ai/atlas` and every `/atlas/<provider>` page are rendered by the API
+ * and served on this domain as host routes (`kolonie-platform#546`). They
+ * therefore have none of this site's chrome: measured on 2026-08-08, `/atlas`
+ * had no `<header>`, no `<footer>`, and one link in a `nav`. A visitor arriving
+ * from a search result got a page with no navigation, no way back, and no link
+ * to the privacy policy, the terms or the imprint.
+ *
+ * This page exists so that the process rendering those pages can put the site's
+ * own header and footer around them, from the site's own source, without a
+ * second copy of either living in another repository.
+ *
+ * ## Why not the option `#99` recommends
+ *
+ * `#99` recommends **option 2** — the site fetches the catalogue at request time
+ * and renders the Atlas itself — and asks that anything ruling it out be said
+ * out loud. Two of the issue's own criteria rule it out together:
+ *
+ * > The catalogue is still live — an entry curated at noon is on the page at
+ * > noon, not at the next deploy.
+ *
+ * > The pages still work with no JavaScript.
+ *
+ * **This site is static.** `astro build` writes `dist/` and nginx serves it;
+ * there is no server-side render at request time and no adapter, by the
+ * decision `ARCHITECTURE.md` records and the `Dockerfile` implements. So "the
+ * site renders the Atlas" can only mean one of two things, and each fails one
+ * of those criteria: baked at build time, which is not live and is the deploy
+ * storm `#546` rejected; or fetched in the browser the way `/academy` does it,
+ * which does not work with JavaScript off. `#99` names that cost for `/academy`
+ * in the same breath, and the Atlas is the page an *agent* fetches — a
+ * first-class reader that runs no scripts.
+ *
+ * Option 1 — the API reproducing the header and footer — is the one `#99` warns
+ * will be reached for because it is nearest, and it is the second copy that
+ * `#42` and `#51` were written about, this time across two repositories and two
+ * languages.
+ *
+ * So: **option 3, in its narrowest form.** One source, two consumers, and the
+ * new coupling is one HTTP fetch of one URL on this host, which the API already
+ * knows because it renders a canonical link to it on every Atlas page.
+ *
+ * ## The contract, which is the whole of the coupling
+ *
+ * This is an ordinary built page. The consumer takes three things out of it:
+ *
+ * | | |
+ * |---|---|
+ * | the stylesheet links and `<style>` blocks in `<head>` | so the chrome is styled, and so the theme tokens reach the page |
+ * | the one `<header class="site-header">` element | rendered above the content |
+ * | the one `<footer class="site-footer">` element | rendered below it |
+ *
+ * There is exactly one of each on this page, which is what makes the extraction
+ * unambiguous. `src/lib/chrome-fragment.built-test.ts` asserts that, and asserts
+ * that the four legal links are inside the footer — the thing `#42` and `#44`
+ * require of every page and which the Atlas pages did not have at all.
+ *
+ * **It is `/site-chrome/` and not `/_chrome/`**, which was the first spelling:
+ * Astro excludes any file or directory under `src/pages/` whose name starts
+ * with an underscore, so that route built nothing at all and did so silently.
+ * The leading underscore is Astro's own marker for *this is not a route*, which
+ * is exactly what it was being used to say.
+ *
+ * **Nothing about this page is written for a reader.** It is served, it is
+ * reachable, and it says so; a person who lands on it sees the header and the
+ * footer with nothing between them. It is not in the sitemap, not in
+ * `/llms.txt` and not in the navigation, because it is not a page — it is the
+ * one machine-readable exception `AGENTS.md` §1 already allows for, in the
+ * shape that section describes: no copy of its own, no call to action, and it
+ * renders in no navigation.
+ *
+ * **The relative stylesheet URLs are load-bearing and they work.** `/atlas` is
+ * on this same host — Traefik routes `/atlas*` to the API — so `/_astro/x.css`
+ * resolves to this site's build from an Atlas page without anything having to
+ * rewrite it.
+ */
+
+import SiteFooter from '../components/SiteFooter.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+import '../styles/theme.css'
+---
+
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Site chrome — Kolonie AI</title>
+    {/* Not a page anybody should find in a search result. */}
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+
+  <body>
+    <SiteHeader />
+    <SiteFooter />
+  </body>
+</html>

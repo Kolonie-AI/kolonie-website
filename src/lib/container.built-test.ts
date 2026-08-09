@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { NOT_PAGES } from "./built-pages.ts";
 
 /**
  * **One centred container, and the header sits in it** (kolonie-website#81).
@@ -39,9 +40,9 @@ const dist = fileURLToPath(new URL("../../dist", import.meta.url));
  * the file does. A test that matched around it would be a test about the
  * compiler; removing it first is what leaves the selector anybody wrote.
  */
-const htmlPages = readdirSync(dist, { recursive: true, encoding: "utf8" }).filter((file) =>
-  file.endsWith(".html"),
-);
+const htmlPages = readdirSync(dist, { recursive: true, encoding: "utf8" })
+  .filter((file) => file.endsWith(".html"))
+  .filter((file) => !NOT_PAGES.some((route) => file.startsWith(route)));
 
 /**
  * **The inline `<style>` blocks are read too, and they have to be.** Astro
@@ -69,12 +70,19 @@ const landing = readFileSync(join(dist, "index.html"), "utf8");
 /** The declaration block for a selector, from the minified output. */
 const ruleFor = (selector: string): string | undefined => {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  // The boundary allows whitespace as well as `,` and `}`: the CSS files are
-  // minified and a rule there is always preceded by one of the two, but an
-  // inline `<style>` block starts its first rule after a newline. Without it
-  // `Prose.astro`'s composition rule — the one #96 is about — is invisible to
-  // this test while looking perfectly matched.
-  return styles.match(new RegExp(`(?:^|[,}\\s])${escaped}\\{([^}]*)\\}`))?.[1];
+  /**
+   * The boundary allows a newline as well as `,` and `}`, and **allows nothing
+   * else**. The CSS files are minified and a rule there is always preceded by
+   * one of the two; an inline `<style>` block starts its first rule after a
+   * newline. Without the newline, `Prose.astro`'s composition rule — the one
+   * #96 is about — is invisible to this test while looking perfectly matched.
+   *
+   * A general `\s` was the first spelling and it is wrong: a *space* before the
+   * selector is a descendant combinator, so `pre` would match the `pre` inside
+   * `.prose pre{…}` and this would return a rule about a different element
+   * while reporting the one it was asked for.
+   */
+  return styles.match(new RegExp(`(?:^|[,}\\n])\\s*${escaped}\\{([^}]*)\\}`))?.[1];
 };
 
 describe("one container, shared (kolonie-website#81)", () => {
@@ -288,7 +296,7 @@ describe("one composition width, one reading width inside it (#96)", () => {
     // code line does is `Site.astro`'s base layer since `#98`, because the site
     // had two answers to it. `Prose.astro` draws the frame and takes no
     // position on the text — asserting it here would be the second position.
-    const pre = styles.match(/(?:^|[,}\s])pre\{([^}]*)\}/)?.[1];
+    const pre = ruleFor("pre");
     expect(pre, "no base-layer rule for pre").toBeDefined();
     expect(pre).toContain("max-width:100%");
     expect(pre).toContain("white-space:pre-wrap");

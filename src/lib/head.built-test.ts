@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { NOT_PAGES } from "./built-pages.ts";
 import { OG_IMAGE } from "./head.ts";
 
 /**
@@ -21,11 +22,22 @@ import { OG_IMAGE } from "./head.ts";
 
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 
+/**
+ * Every built page, as an absolute path.
+ *
+ * `NOT_PAGES` is what keeps `/site-chrome/` out of it — the chrome fragment the
+ * Atlas includes (`kolonie-website#99`), which is built HTML and is not a page.
+ * The list and the reason are in `built-pages.ts`.
+ */
 const pagesUnder = (directory: string): string[] =>
   readdirSync(directory).flatMap((entry) => {
     const path = join(directory, entry);
     if (statSync(path).isDirectory()) return pagesUnder(path);
-    return entry.endsWith(".html") ? [path] : [];
+    if (!entry.endsWith(".html")) return [];
+
+    const served = path.slice(dist.length + 1);
+
+    return NOT_PAGES.some((route) => served.startsWith(route)) ? [] : [path];
   });
 
 describe("the shared head tags in the built site", () => {

@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { NOT_PAGES } from "./built-pages.ts";
 import { DOCS, GITHUB, NAV_LINKS, SEND, SIGN_IN } from "./site-nav.ts";
 
 /**
@@ -24,11 +25,13 @@ import { DOCS, GITHUB, NAV_LINKS, SEND, SIGN_IN } from "./site-nav.ts";
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 
 /** Every built page, found rather than listed. */
+/**
+ * Every built page, found rather than listed — minus the built HTML that is not
+ * a page. `NOT_PAGES` has one entry and `built-pages.ts` says why.
+ */
 const pages = readdirSync(dist, { recursive: true, encoding: "utf8" })
   .filter((file) => file.endsWith("index.html"))
-  // Pagefind ships its own fixtures under `pagefind/`; they are not this site's
-  // pages and carry no header.
-  .filter((file) => !file.startsWith("pagefind"));
+  .filter((file) => !NOT_PAGES.some((route) => file.startsWith(route)));
 
 const html = (file: string) => readFileSync(join(dist, file), "utf8");
 

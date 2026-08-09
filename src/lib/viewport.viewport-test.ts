@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { join, extname } from "node:path";
 import { chromium, type Browser, type Page } from "playwright";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { NOT_PAGES } from "./built-pages.ts";
 
 /**
  * **The site on a phone, measured rather than reasoned about**
@@ -60,6 +61,12 @@ const CONTENT_TYPES: Record<string, string> = {
  */
 const routes = readdirSync(dist, { recursive: true, encoding: "utf8" })
   .filter((file) => file.endsWith(".html"))
+  /**
+   * `/site-chrome/` is built HTML and is not a page — it is the header and the
+   * footer with nothing between them, for the Atlas to include (`#99`). It has
+   * no content to overflow, no text to be too small and no controls to press.
+   */
+  .filter((file) => !NOT_PAGES.some((route) => file.startsWith(route)))
   .map((file) => "/" + file.replace(/index\.html$/, ""))
   .sort();
 

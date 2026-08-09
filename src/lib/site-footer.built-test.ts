@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { NOT_PAGES } from "./built-pages.ts";
 import { SITE_DESCRIPTION } from "./head.ts";
 import { LLMS_SUMMARY } from "./llms.ts";
 import { LEGAL_PAGES } from "./legal-pages.ts";
@@ -33,9 +34,13 @@ import {
 
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 
-const pages = readdirSync(dist, { recursive: true, encoding: "utf8" }).filter((file) =>
-  file.endsWith("index.html"),
-);
+/**
+ * Every built page, found rather than listed — minus the built HTML that is not
+ * a page. `NOT_PAGES` has one entry and `built-pages.ts` says why.
+ */
+const pages = readdirSync(dist, { recursive: true, encoding: "utf8" })
+  .filter((file) => file.endsWith("index.html"))
+  .filter((file) => !NOT_PAGES.some((route) => file.startsWith(route)));
 
 const html = (file: string) => readFileSync(join(dist, file), "utf8");
 
