@@ -249,3 +249,38 @@ this section, the worker stops here.**
 A heading rather than a table held in the worker, because a table would be a
 second record of a fact this repository already states, and the second record
 goes stale without anybody editing it.
+
+### The check prerequisite
+
+```bash
+git clone --depth 1 https://github.com/Kolonie-AI/kolonie-docs .kolonie-docs >&2; echo "export KOLONIE_DOCS=$PWD/.kolonie-docs"
+```
+
+**`npm run check` cannot pass without a checkout of `kolonie-docs`**, and that is
+deliberate rather than an oversight: the blog and the pages naming the legal
+entity read their records out of that repository, and `src/lib/kolonie-docs.ts`
+fails loudly rather than rendering an empty blog — *"an empty blog is
+indistinguishable from a build that had nothing new to publish."*
+
+A developer has that checkout beside this one and never notices. **An unattended
+worker checks out one repository**, so it did not: on 2026-08-09 the coding
+worker took `kolonie-website#100`, wrote a change, and failed the check on
+`No checkout of Kolonie-AI/kolonie-docs was found` — a wall that had nothing to
+do with the issue and that no amount of rewriting the issue would have moved
+(`kolonie-docs#247` is the mechanism this uses, and `kolonie-website#102` is the
+run it was written for).
+
+**This heading is machine-read too, and it is the sibling of the one above.** The
+worker runs the block after the model's own work and before re-running the check,
+and honours any `export NAME=value` line it prints back — which is why the clone
+goes to stderr and only the `export` reaches stdout.
+
+**`--depth 1` and no ref**: the check reads published records, not history, and
+pinning a commit here would be a second place that decides which docs the site
+builds against.
+
+**One line, and that is a constraint rather than a style.** The worker reads the
+**first non-empty line** of the fenced block and nothing after it
+(`first_fenced_block_under`), so a command broken across two lines with a
+trailing `\` arrives truncated and half-run. Written as one line with `;`, it
+survives that reader; written prettily, it would not.
