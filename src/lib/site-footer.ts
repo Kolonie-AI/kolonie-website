@@ -144,16 +144,25 @@ export const navigationLinks: readonly FooterLink[] = [
 ]
 
 /**
- * The social column, and it is two links (kolonie-website#51,
+ * The social column, and it is one link again (kolonie-website#51,
  * kolonie-docs#226).
  *
- * **It says it grows on the day there is a second, and 2026-08-08 was that
- * day.** The comment this replaces read *"the Colony holds none, and the
- * organisation's `twitter_username` is `null`"*, checked 2026-08-06 against
- * `kolonie-docs/growth/README.md`. `@kolonieai` exists since 2026-08-08, with
- * the mark as its avatar, a header in the illustration style and the operator
- * sentence as its bio — so the row is replaced rather than annotated, which is
- * that register's own rule.
+ * **It says it grows on the day there is a second, and it shrinks the same
+ * way.** `@kolonieai` was added on 2026-08-08 with the mark as its avatar and
+ * the operator sentence as its bio; **X suspended the account on 2026-08-09**
+ * and the reason is not known here. The row is replaced rather than annotated,
+ * which is that register's own rule, and the link is gone rather than left to
+ * point at a suspension notice on every page of the site.
+ *
+ * **A dead link in a footer is worse than a missing one**, and that is the whole
+ * argument for removing it the same day rather than waiting for the appeal: the
+ * footer is on every page, `rel="me"` claims the account as the Colony's own,
+ * and a reader who follows it learns that the Colony links to a suspended
+ * account. Nothing about that improves by being left up while somebody finds
+ * out why.
+ *
+ * **It goes back when the account does.** `kolonie-docs/growth/README.md` is
+ * where the state of that lives; this list follows it rather than leading it.
  *
  * The Academy's `social-account` rung is still a different subject: that is a
  * **citizen** proving it holds an account
@@ -170,5 +179,4 @@ export const navigationLinks: readonly FooterLink[] = [
  */
 export const socialLinks: readonly FooterLink[] = [
   { href: 'https://github.com/Kolonie-AI', label: 'GitHub' },
-  { href: 'https://x.com/kolonieai', label: 'X' },
 ]
