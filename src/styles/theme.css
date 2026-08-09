@@ -257,6 +257,15 @@
    *
    * 80rem is 1280px, which is `#81`'s number and `agentmail.to`'s. Backgrounds,
    * borders and rules go full-bleed; **content does not.**
+   *
+   * **This is the number for every surface the Colony serves, not only for this
+   * site** (kolonie-website#96, decided by the maintainer 2026-08-08). There
+   * were three: 1280 here, 1080 on the fourteen pages a documentation framework
+   * laid out, and 736 in the console. `#95` removed the second and
+   * `kolonie-platform#584` raised the third — the console composes to this same
+   * width, and a person moving between `kolonie.ai` and `console.kolonie.ai`
+   * does not see the layout change under them. If this value ever moves, `#584`
+   * is the other half that has to move with it.
    */
   --k-container: 80rem;
 

@@ -33,11 +33,18 @@ import {
 
 const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 
-const pages = readdirSync(dist, { recursive: true, encoding: "utf8" })
-  .filter((file) => file.endsWith("index.html"))
-  .filter((file) => !file.startsWith("pagefind"));
+const pages = readdirSync(dist, { recursive: true, encoding: "utf8" }).filter((file) =>
+  file.endsWith("index.html"),
+);
 
 const html = (file: string) => readFileSync(join(dist, file), "utf8");
+
+/** The built stylesheets, with Astro's scoping hash taken out. */
+const styles = readdirSync(join(dist, "_astro"))
+  .filter((file) => file.endsWith(".css"))
+  .map((file) => readFileSync(join(dist, "_astro", file), "utf8"))
+  .join("\n")
+  .replaceAll(/:where\(\.astro-[a-z0-9]+\)/g, "");
 
 it("found the built pages at all", () => {
   expect(pages.length).toBeGreaterThan(10);
@@ -48,6 +55,30 @@ describe.each(pages)("%s", (file) => {
 
   it("renders the footer", () => {
     expect(page).toContain('class="site-footer');
+  });
+
+  /**
+   * **One footer, and it is this one** (kolonie-website#94).
+   *
+   * Measured in Firefox at 1440px on 2026-08-08: fourteen pages rendered a
+   * second `<footer>` *above* this one — Starlight's own, carrying the edit
+   * link, the last-updated line and the pagination. `src/lib/chrome.ts`
+   * suppressed the first two on the pages a stranger arrives on, correctly, and
+   * what was left was a pagination that on some pages had nothing in it. An
+   * empty landmark is worse than a missing one: a screen reader announces a
+   * region and there is nothing in it.
+   *
+   * `#95` removed the framework that emitted it. This is the assertion that it
+   * cannot come back — as a landmark count rather than as a check for one
+   * framework's markup, so a different empty `<footer>` fails it too.
+   */
+  it("emits exactly one footer landmark, and it is not empty", () => {
+    const footers = [...page.matchAll(/<footer\b[^>]*>([\s\S]*?)<\/footer>/g)];
+
+    expect(footers, "more than one <footer> on the page").toHaveLength(1);
+
+    const inner = footers[0][1].replace(/<[^>]+>/g, "").trim();
+    expect(inner, "the footer landmark has no text in it").not.toBe("");
   });
 
   it("opens on the wordmark and the one-sentence description", () => {
@@ -171,12 +202,6 @@ describe("the description is quoted rather than written again", () => {
  * anybody reviewing the page, because the thing is meant not to be noticed.
  */
 describe("the crest anchors the footer (kolonie-website#82)", () => {
-  const styles = readdirSync(join(dist, "_astro"))
-    .filter((file) => file.endsWith(".css"))
-    .map((file) => readFileSync(join(dist, "_astro", file), "utf8"))
-    .join("\n")
-    .replaceAll(/:where\(\.astro-[a-z0-9]+\)/g, "");
-
   const rule = styles.match(/\.site-footer__anchor\{([^}]*)\}/)?.[1];
 
   it.each(pages)("is on %s, so it anchors every page", (file) => {
@@ -224,5 +249,39 @@ describe("the crest anchors the footer (kolonie-website#82)", () => {
     // edges. The clip is what makes that safe, and it is on the footer.
     expect(styles).toMatch(/\.site-footer\{[^}]*overflow:hidden/);
     expect(styles).toMatch(/\.site-footer\{[^}]*position:relative/);
+  });
+});
+
+/**
+ * **The footer is full-bleed and its columns are not** (kolonie-website#94).
+ *
+ * Measured in Firefox at 1440px on 2026-08-08: `.site-footer` spanned the
+ * viewport on `/` and the four legal pages, and was **1080** — squeezed into a
+ * documentation framework's article column — on the other fourteen. The same
+ * component read as two different designs depending on which page you arrived
+ * on, because the box around it was not the same box.
+ *
+ * `#81`'s rule decides which half is which: *"Backgrounds, borders and rules go
+ * full-bleed; content does not."* The footer has a background and a top rule,
+ * so the element spans the window; the four columns inside it stop at
+ * `--k-container`, in the same track as the header's row and the page.
+ *
+ * Verified in Chromium at 1280, 1440 and 2560 on 2026-08-09: `.site-footer`
+ * measures the viewport on all nineteen pages, and its columns measure 1280.
+ */
+describe("the footer is the same box on every page (#94)", () => {
+  it("takes no width cap of its own", () => {
+    const rule = styles.match(/\.site-footer\{([^}]*)\}/)?.[1];
+    expect(rule, "no rule for .site-footer").toBeDefined();
+
+    // The failure this catches is a `max-width` arriving on the element that
+    // carries the background — which is what a documentation framework's
+    // article column was doing to it from the outside.
+    expect(rule).not.toMatch(/max-width/);
+    expect(rule).toMatch(/border-top|background/);
+  });
+
+  it("caps its columns instead", () => {
+    expect(styles).toMatch(/\.site-footer__[a-z-]+[^{]*\{[^}]*max-width:var\(--k-container\)/);
   });
 });

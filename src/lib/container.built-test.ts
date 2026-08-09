@@ -39,9 +39,28 @@ const dist = fileURLToPath(new URL("../../dist", import.meta.url));
  * the file does. A test that matched around it would be a test about the
  * compiler; removing it first is what leaves the selector anybody wrote.
  */
-const styles = readdirSync(join(dist, "_astro"))
-  .filter((file) => file.endsWith(".css"))
-  .map((file) => readFileSync(join(dist, "_astro", file), "utf8"))
+const htmlPages = readdirSync(dist, { recursive: true, encoding: "utf8" }).filter((file) =>
+  file.endsWith(".html"),
+);
+
+/**
+ * **The inline `<style>` blocks are read too, and they have to be.** Astro
+ * inlines a small component stylesheet into the pages that use it rather than
+ * emitting a file — so `Prose.astro`'s rules, which are the composition on
+ * fourteen of the site's pages since kolonie-website#95, are in the HTML and
+ * not under `_astro/`. A test that read only the files would have passed by
+ * finding nothing.
+ */
+const styles = [
+  ...readdirSync(join(dist, "_astro"))
+    .filter((file) => file.endsWith(".css"))
+    .map((file) => readFileSync(join(dist, "_astro", file), "utf8")),
+  ...htmlPages.flatMap((file) =>
+    [...readFileSync(join(dist, file), "utf8").matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(
+      (match) => match[1],
+    ),
+  ),
+]
   .join("\n")
   .replaceAll(/:where\(\.astro-[a-z0-9]+\)/g, "");
 
@@ -50,7 +69,12 @@ const landing = readFileSync(join(dist, "index.html"), "utf8");
 /** The declaration block for a selector, from the minified output. */
 const ruleFor = (selector: string): string | undefined => {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return styles.match(new RegExp(`(?:^|[,}])${escaped}\\{([^}]*)\\}`))?.[1];
+  // The boundary allows whitespace as well as `,` and `}`: the CSS files are
+  // minified and a rule there is always preceded by one of the two, but an
+  // inline `<style>` block starts its first rule after a newline. Without it
+  // `Prose.astro`'s composition rule — the one #96 is about — is invisible to
+  // this test while looking perfectly matched.
+  return styles.match(new RegExp(`(?:^|[,}\\s])${escaped}\\{([^}]*)\\}`))?.[1];
 };
 
 describe("one container, shared (kolonie-website#81)", () => {
@@ -62,6 +86,10 @@ describe("one container, shared (kolonie-website#81)", () => {
   it.each([
     [".site-header__row", "the header's inner row"],
     [".page", "the landing page"],
+    // kolonie-website#96: the content pages, the legal pages and the blog all
+    // compose through `Prose.astro`, and they were the fourteen that composed
+    // to 1080 while `/` composed to 1280.
+    [".prose", "every rendered document"],
   ])("caps %s — %s — with the shared token", (selector) => {
     const rule = ruleFor(selector);
     expect(rule, `no rule for ${selector}`).toBeDefined();
@@ -95,6 +123,59 @@ describe("one container, shared (kolonie-website#81)", () => {
   it("puts the header's content in a row of its own", () => {
     // The wrapper has to exist in the served HTML, not only in the stylesheet.
     expect(landing).toContain('class="site-header__row');
+  });
+
+  /**
+   * **The same row, on every page** (kolonie-website#93).
+   *
+   * `#81` capped the composition and reached five pages; fourteen still
+   * stretched. Measured in Firefox at 2560px on 2026-08-08: the header row was
+   * 1280 on `/` and the four legal pages and **2512** on the other fourteen.
+   * The markup agreed and the box around it did not — `SiteHeader.astro`
+   * rendered on both surfaces, but on a Starlight page it rendered inside the
+   * framework's own header shell, which has no container cap, and passed a
+   * `bare` prop that removed its own.
+   *
+   * `#95` removed the shell and the prop, so what is asserted is that the cap
+   * cannot be lifted again: **exactly one rule in the built CSS sets a
+   * `max-width` on the row, and no rule anywhere clears it.** `bare` was
+   * `max-width:none` in a file that also declared the cap, which is the shape
+   * this catches.
+   *
+   * The pixel widths are not asserted here for `container.built-test.ts`'s own
+   * reason, stated at the top of this file: a header that is edge-to-edge at
+   * 2560 looks deliberate at 1440, and what a test can hold is that the three
+   * containers are the same declaration.
+   */
+  it("caps the header's row from exactly one place, and never lifts it", () => {
+    const capped = [...styles.matchAll(/\.site-header__row[^{]*\{([^}]*)\}/g)]
+      .map((match) => match[1])
+      .filter((block) => /max-width:/.test(block));
+
+    expect(capped, "the header row is capped in more than one place").toHaveLength(1);
+    expect(capped[0]).toContain("max-width:var(--k-container)");
+
+    expect(
+      styles,
+      "something clears the header row's cap — this is how #93 happened",
+    ).not.toMatch(/\.site-header__row[^{]*\{[^}]*max-width:(none|100%|unset)/);
+  });
+
+  /**
+   * And the row is on every page, not only on the one this file reads.
+   *
+   * `site-header.built-test.ts` already asserts the header itself is on every
+   * built page; this is the wrapper inside it, which is the element `#93` is
+   * about and the one that was missing its cap on three quarters of the site.
+   */
+  it("renders the row on every built page", () => {
+    expect(htmlPages.length).toBeGreaterThan(10);
+
+    const without = htmlPages.filter(
+      (file) => !readFileSync(join(dist, file), "utf8").includes('class="site-header__row'),
+    );
+
+    expect(without, `pages with no capped header row: ${without.join(", ")}`).toEqual([]);
   });
 });
 
@@ -151,5 +232,78 @@ describe("the hero is the first screen, in either view (#81, #86)", () => {
     expect(panel).toBeGreaterThan(-1);
     expect(cost, "the cost line left the hero entirely").toBeGreaterThan(-1);
     expect(cost, "the cost line is above the panel again").toBeGreaterThan(panel);
+  });
+});
+
+/**
+ * **One composition width, and the homepage is the reference**
+ * (kolonie-website#96, decided by the maintainer 2026-08-08).
+ *
+ * Three widths were measured on one site in Firefox at 1440px on 2026-08-08:
+ * 1280 on `/`, **1080** on the fourteen pages a documentation framework laid
+ * out, and 736 on `console.kolonie.ai` (`kolonie-platform#584`, since raised).
+ * `#95` removed the framework, so the fourteen compose through `Prose.astro`
+ * and the number is `--k-container` on all of them.
+ *
+ * **The distinction this has to preserve** is the one `theme.css` states:
+ * `--k-container` caps the *composition* and `--k-measure` caps a *line of
+ * prose*. So this is not *make everything 1280 wide* — it is that the
+ * composition is 1280 and running text stays readable inside it, which is what
+ * the legal pages were already doing correctly and why `#96` calls them the
+ * model.
+ *
+ * Verified in Chromium at 390, 1280, 1440 and 2560 on 2026-08-09: every page's
+ * composition matches `/`'s, paragraphs sit at 748px on a 1280px composition,
+ * and tables and code blocks use the full width.
+ */
+describe("one composition width, one reading width inside it (#96)", () => {
+  it("caps the composition and the measure with two different tokens", () => {
+    const composition = ruleFor(".prose");
+    expect(composition).toContain("max-width:var(--k-container)");
+
+    // The measure is on the text elements and not on their container, so a
+    // table or a code block still uses the whole composition. A single rule
+    // capping `.prose` at the measure would be the failure this catches: it
+    // reads as correct and narrows a 26-row table to 68 characters.
+    const measure = styles.match(
+      /\.prose[^{]*:is\(h1,h2,h3,h4,p,ul,ol,dl,blockquote\)\{([^}]*)\}/,
+    )?.[1];
+    expect(measure, "running text is not capped at a measure").toBeDefined();
+    expect(measure).toContain("max-width:var(--k-measure)");
+
+    expect(composition).not.toContain("max-width:var(--k-measure)");
+  });
+
+  it("lets a table and a code block use the whole composition", () => {
+    // Both scroll inside themselves rather than widening the document — the
+    // trade `#49` made for the legal pages' tables and `#98` needs for code.
+    for (const selector of [".prose table", ".prose pre"]) {
+      const rule = styles.match(
+        new RegExp(`\\${selector.replace(" ", "[^{]*")}[^{]*\\{([^}]*)\\}`),
+      )?.[1];
+      expect(rule, `no rule for ${selector}`).toBeDefined();
+      expect(rule).toContain("overflow-x:auto");
+      expect(rule).toContain("max-width:100%");
+    }
+  });
+
+  /**
+   * The console is the same decision one host over, and the token says so.
+   *
+   * `#96`'s last criterion is that `kolonie-platform#584` is cross-referenced
+   * from wherever the value lives — because the two surfaces agreeing today is
+   * worth nothing if the next person to move this number does not know there is
+   * a second one.
+   */
+  it("names the console's half of the decision where the value is", () => {
+    const theme = readFileSync(
+      fileURLToPath(new URL("../styles/theme.css", import.meta.url)),
+      "utf8",
+    );
+    const declaration = theme.slice(
+      theme.lastIndexOf("/*", theme.indexOf("--k-container: 80rem")),
+      theme.indexOf("--k-container: 80rem"),
+    );
+    expect(declaration).toContain("kolonie-platform#584");
   });
 });
