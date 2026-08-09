@@ -97,7 +97,19 @@ const isCurrent = (href: string) =>
   */}
   <a href="/" class="site-header__mark">
     <span class="site-header__mark-svg" set:html={MARK} />
-    Kolonie AI
+    {/*
+      **The word folds below `--k-bp-sm`; the shield does not**
+      (kolonie-website#98). Measured at 390px on 2026-08-09 the bar wanted
+      439px: 157 of wordmark, 36 of burger, 183 of the primary button and two
+      gaps. The wordmark is the one of the four that is repeated — the page's
+      own `h1` and the `<title>` both say where the reader is, and the shield
+      still links home.
+
+      `.sr-only` rather than `display: none`, so what folds is the *drawing* and
+      not the name: a screen reader still announces *Kolonie AI* on the link,
+      at every width, which is the whole of what the link is for.
+    */}
+    <span class="site-header__mark-word">Kolonie AI</span>
   </a>
 
   {/*
@@ -220,6 +232,13 @@ const isCurrent = (href: string) =>
   .site-header__mark {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    /* 44px in both dimensions, which is what both platform vendors ask of
+       anything a thumb is meant to find (kolonie-website#98). It measured 31
+       high, and 28 wide once the word folded below `--k-bp-sm` and left the
+       shield on its own. */
+    min-height: 2.75rem;
+    min-width: 2.75rem;
     gap: var(--k-space-2);
     color: var(--k-text-strong);
     font-family: var(--k-font-mono);
@@ -232,6 +251,26 @@ const isCurrent = (href: string) =>
 
   .site-header__mark-svg {
     display: inline-flex;
+  }
+
+  /* **Hidden to the eye and not to a screen reader, and written phone-first**
+     (kolonie-website#33, #98). What a phone gets is what is written here; the
+     word comes back in the `min-width` block below, which is the only shape of
+     media query this repository allows and `responsive.test.ts` enforces.
+
+     The declarations are `.sr-only`'s from `Site.astro`, applied by a rule
+     rather than by a class, because the class is a fact about an element and
+     this is a fact about a width. */
+  .site-header__mark-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 
   /* `:global` because the SVG arrives through `set:html`, which Astro does not
@@ -284,12 +323,14 @@ const isCurrent = (href: string) =>
     color: var(--k-accent);
   }
 
+  /* 2.75rem is 44px (kolonie-website#98). It was 2.25rem — 36px — which is the
+     size a burger looks right at and smaller than a thumb finds reliably. */
   .site-header__menu summary {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border: var(--k-border) solid var(--k-hairline-strong);
     border-radius: var(--k-radius);
     cursor: pointer;
@@ -375,8 +416,16 @@ const isCurrent = (href: string) =>
     gap: var(--k-space-3);
   }
 
+  /* The icon is 20px and the control around it is 44 (kolonie-website#98). The
+     drawing is the right size and the target was the same size as the drawing,
+     which is the commonest way an icon button ends up unpressable. */
   .site-header__icon {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    margin: calc(-1 * var(--k-space-2));
     color: var(--k-text-muted);
   }
 
@@ -397,6 +446,17 @@ const isCurrent = (href: string) =>
   @media (min-width: 40rem) {
     .site-header__row {
       padding-block: var(--k-space-4);
+    }
+
+    /* There is room for the word here, so it is drawn rather than only spoken
+       (kolonie-website#98). */
+    .site-header__mark-word {
+      position: static;
+      width: auto;
+      height: auto;
+      margin: 0;
+      overflow: visible;
+      clip: auto;
     }
 
     .site-header__menu {

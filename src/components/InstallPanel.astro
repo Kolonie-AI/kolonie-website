@@ -153,7 +153,13 @@ const tabs = [...SKILL_REPOSITORIES, null]
     min-width: 0;
   }
 
+  /* 44px in the smaller dimension (kolonie-website#98): seven of these sit in a
+     row on a phone and each was 29 tall. Same treatment as the audience
+     switch — `min-height` and centring, so the pill is not redrawn. */
   .panel__tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
     padding: 0.2rem 0.55rem;
     border: var(--k-border) solid transparent;
     border-radius: 999px;

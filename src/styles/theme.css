@@ -194,7 +194,27 @@
    * Every component asks for a step on it by name; nothing sets a size in
    * `rem` of its own, which is what makes the scale a hierarchy rather than a
    * suggestion. */
-  --k-text-xs: 0.75rem;
+  /* **`--k-text-xs` is 14px on a phone and 12px above `--k-bp-sm`**
+   * (kolonie-website#98).
+   *
+   * It was 12px everywhere, and 12px is below the floor `#98` sets: *nothing
+   * that must be read is under 14px*. Measured in Chromium at 390px on
+   * 2026-08-09, before this: 252 elements on `/` and 396 on `/academy/`
+   * computed under 14px — chips, labels, table headers, the footer's links,
+   * every one of them this token.
+   *
+   * **Raised here rather than at each of them**, which is what makes it one
+   * change instead of forty, and **only at the width where it matters**: 12px
+   * on a desktop at arm's length is a label, and 12px on a phone at arm's
+   * length is unreadable. The step reappears above `--k-bp-sm` in the media
+   * query at the bottom of this file, where the rest of the width-dependent
+   * behaviour lives.
+   *
+   * On a phone this collapses the gap between `xs` and `sm`, deliberately: at
+   * that size the distinction between a label and small text was never legible
+   * anyway, and a scale that renders as two indistinguishable sizes is a scale
+   * pretending to have a step. */
+  --k-text-xs: 0.875rem;
   --k-text-sm: 0.875rem;
   --k-text-base: 1rem;
   --k-text-lg: 1.125rem;
@@ -495,6 +515,11 @@ h6 {
     --k-flow-section: var(--k-space-8);
     --k-gutter: var(--k-space-5);
     --k-section-y: var(--k-space-7);
+
+    /* The smallest step, back down to 12px once the screen is not a phone
+       (kolonie-website#98). The token's own comment above carries the
+       argument. */
+    --k-text-xs: 0.75rem;
   }
 }
 

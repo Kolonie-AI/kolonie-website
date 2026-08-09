@@ -36,6 +36,8 @@
  * already has, and both of them work.
  */
 import { PROVIDER_ENQUIRY } from '../lib/provider-enquiry.ts'
+import Button from './Button.astro'
+
 ---
 
 <form class="enquiry" id="provider-enquiry" novalidate>
@@ -67,7 +69,17 @@ import { PROVIDER_ENQUIRY } from '../lib/provider-enquiry.ts'
 
   <div class="enquiry__captcha" id="enq-captcha" hidden></div>
 
-  <button type="submit" class="btn btn--primary">Send it</button>
+  {/*
+    **The component rather than its class names** (kolonie-website#98).
+
+    This was `<button type="submit" class="btn btn--primary">`, and
+    `Button.astro`'s styles are scoped — so the class names reached nothing and
+    the only submit button on the site rendered at the browser's default:
+    13.3px of Arial in a 58 × 21 box, on a page written for a customer. `Button`
+    already renders a `<button>` when it is given no `href`, which is what this
+    needed all along.
+  */}
+  <Button variant="primary" type="submit">Send it</Button>
 
   <p class="enquiry__status" id="enq-status" role="status" aria-live="polite"></p>
 </form>

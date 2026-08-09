@@ -99,7 +99,9 @@ const { code, label = 'shell', lang = null, shell = false, kind } = Astro.props;
       gap: var(--k-space-3);
     }
 
-    .prompt-copy {
+    /* 44px, per kolonie-website#98 — it measured 36 high. */
+  .prompt-copy {
+    min-height: 2.75rem;
       align-self: auto;
       margin: var(--k-space-3);
     }
@@ -113,7 +115,9 @@ const { code, label = 'shell', lang = null, shell = false, kind } = Astro.props;
     min-width: 0;
   }
 
+  /* 44px, per kolonie-website#98 — it measured 36 high. */
   .prompt-copy {
+    min-height: 2.75rem;
     flex: none;
     align-self: flex-end;
     margin: 0 var(--k-space-3) var(--k-space-3);

@@ -28,6 +28,22 @@ jobs:
 
       - run: npm ci --no-audit --no-fund
 
+      # `npm run check` ends in the viewport suite, which loads every built page
+      # in a real browser at 390px (kolonie-website#98). `npm run test:viewport`
+      # installs Chromium itself, so this step is not what makes the suite work
+      # — it is what supplies the **system libraries** Chromium needs, which
+      # need `sudo` and so cannot live in a package script a stranger runs.
+      #
+      # The cache is what keeps it from being a download per run. The key is the
+      # lockfile, because the browser build Playwright wants is pinned by the
+      # Playwright version in it.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - run: npx playwright install --with-deps chromium
+
       # astro check first: a type error should fail before a build that would
       # succeed anyway and hide it.
       - run: npm run check

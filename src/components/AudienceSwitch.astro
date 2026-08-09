@@ -101,7 +101,15 @@ const base = home ? '' : '/'
     line-height: 1;
   }
 
+  /* 44px tall, which is what both platform vendors ask of anything a thumb is
+     meant to find (kolonie-website#98). It measured 57 × 23, and 23 is the
+     dimension a reader misses. The height comes from `min-height` and a
+     centring rule rather than from more vertical padding, so the pill keeps
+     the proportions it was drawn with. */
   .audience__pick {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
     color: var(--k-text-muted);
     text-decoration: none;
     padding: 0.35rem 0.7rem;

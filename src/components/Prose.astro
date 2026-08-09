@@ -99,9 +99,13 @@ const { class: className, ...rest } = Astro.props
   /* An h2 opens a section, so it is given a line to sit on — the same treatment
      `/` gives its own, so the two surfaces separate sections the same way.
 
-     The rule is drawn at the measure rather than across the composition: a
-     hairline running 1280px over a 724px column reads as a page divider rather
-     than as the top of the section under it. */
+     **The rule runs the composition rather than the measure**, and that is what
+     the `max-width` above resolves to rather than a second declaration: 68ch of
+     the monospace face at `--k-type-h2` is wider than 80rem, so the heading is
+     capped by the container. It is the right answer for a rule that separates
+     sections — a hairline that stopped at the text column would read as
+     belonging to the paragraph rather than to the section — but it is an
+     answer arrived at by arithmetic, so it is written down. */
   .prose :global(h2) {
     padding-top: var(--k-space-4);
     border-top: var(--k-border) solid var(--k-hairline);
@@ -164,13 +168,12 @@ const { class: className, ...rest } = Astro.props
     text-transform: uppercase;
   }
 
-  /* Same trade as the table: the block scrolls, the document does not
-     (kolonie-website#98). A code sample is the one kind of content that cannot
-     be reflowed, so it is the one that has to be allowed its own scroll
-     surface. */
+  /* **The box, and not the wrapping** (kolonie-website#98). What a long code
+     line does is decided once, in `Site.astro`'s base layer, because the site
+     had two answers to it and `#98` asked for one. This adds the frame a
+     fenced block in a document wears and takes no position on the text
+     inside it. */
   .prose :global(pre) {
-    max-width: 100%;
-    overflow-x: auto;
     padding: var(--k-space-4);
     border: var(--k-border) solid var(--k-hairline);
     border-radius: var(--k-radius);

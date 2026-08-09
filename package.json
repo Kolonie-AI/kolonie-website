@@ -2,7 +2,7 @@
   "name": "kolonie-website",
   "version": "0.1.0",
   "private": true,
-  "description": "Public website and docs for Kolonie AI — kolonie.ai",
+  "description": "Public website and docs for Kolonie AI \u2014 kolonie.ai",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
@@ -17,8 +17,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "test": "vitest run",
-    "check": "astro check && vitest run && astro build && npm run test:built",
-    "test:built": "vitest run --config vitest.built.config.ts"
+    "check": "astro check && vitest run && astro build && npm run test:built && npm run test:viewport",
+    "test:built": "vitest run --config vitest.built.config.ts",
+    "test:viewport": "playwright install chromium && vitest run --config vitest.viewport.config.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
@@ -29,6 +30,7 @@
     "@astrojs/check": "^0.9.4",
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "playwright": "^1.62.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"
   }

@@ -272,6 +272,14 @@ const themeColor = themeColorFrom(themeCss)
       h4 {
         color: var(--k-text-strong);
         line-height: var(--k-leading-heading);
+        /* **A heading may break a word rather than the page**
+           (kolonie-website#98). Measured at 390px on 2026-08-09, `/quests/`
+           scrolled sideways by 19px and the whole of it was the `h1`:
+           *Commissioning a quest*, set in the monospace face at `--k-type-h1`,
+           where the first word alone is wider than the screen. A heading is
+           the one place a long word is likely and a scrollbar is least
+           acceptable — the reader has not read a sentence yet. */
+        overflow-wrap: break-word;
       }
 
       h1 {
@@ -299,10 +307,48 @@ const themeColor = themeColorFrom(themeCss)
 
       code {
         font-family: var(--k-font-mono);
-        font-size: 0.9em;
+        /* **A floor rather than a ratio** (kolonie-website#98). `0.9em` alone
+           put inline code at 10.8px inside a 12px label on a phone — the
+           smallest text on the site, in the one face that most needs its
+           characters distinguishable. The `max()` keeps the ratio wherever
+           the ratio is above the floor and stops there. */
+        font-size: max(0.9em, 0.875rem);
         padding: 0.15em 0.35em;
         border-radius: var(--k-radius);
         background: var(--k-surface-raised);
+      }
+
+      /*
+       * **What a long code line does, decided once** (kolonie-website#98).
+       *
+       * The site had two answers: `Snippet.astro` wrapped, and a fenced block
+       * in a content page scrolled inside its own box. Measured at 390px on
+       * 2026-08-09, `/the-register/` rendered a `code` element 690px wide in a
+       * 390px viewport. `#98` asks for one behaviour, the same on every page.
+       *
+       * **It wraps.** A code block on this site is a command a reader is meant
+       * to copy and to read, and a scroll surface inside a page hides the end
+       * of the line behind a gesture nobody is told about — on a phone, where
+       * the line is longest and the affordance is smallest. Wrapping never
+       * hides anything.
+       *
+       * `overflow-x: auto` stays underneath it for the case wrapping cannot
+       * help: a single unbroken token longer than the screen. That is a
+       * fallback rather than a second policy — nothing reaches it unless the
+       * content is genuinely unwrappable.
+       *
+       * The cost is honest and is the reason this is written down: a wrapped
+       * line does not say where it ended. `overflow-wrap: anywhere` rather
+       * than `break-word` so the break happens at the last possible point
+       * rather than early, and `tab-size: 2` so an indented continuation still
+       * lines up under what it belongs to.
+       */
+      pre {
+        max-width: 100%;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        tab-size: 2;
       }
 
       /* Focus is visible on everything, on a page whose accent is the only

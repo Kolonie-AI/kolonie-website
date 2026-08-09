@@ -151,8 +151,13 @@ Markdown file here** — that is the one thing that file forbids everywhere.
 - **No checkboxes, no roadmaps, no status tables in the content.** Those drift
   within a week and this is the most public place they could drift in.
 - **`npm run check` before every commit.** It runs `astro check`, then the unit
-  tests, then the build — in that order, so a type error fails before a test run
-  that would report it worse, and both fail before a build that would hide them.
+  tests, then the build, then the built-output tests, then the viewport tests —
+  in that order, so a type error fails before a test run that would report it
+  worse, and both fail before a build that would hide them. The last step loads
+  every built page in a headless Chromium at 390px (#98) and installs the
+  browser on its first run; it **fails rather than skips** if it cannot launch
+  one, because an unverified phone layout and a correct one must not look the
+  same on the way past.
   Install with `npm ci`. `astro check` type-checks `src/lib/*.test.ts` too, so a
   `node_modules` installed without dev dependencies fails the first command in
   the chain with `Cannot find module 'vitest'` — a message that blames the

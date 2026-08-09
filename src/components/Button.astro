@@ -76,6 +76,10 @@ const classes = ['btn', `btn--${variant}`, extra].filter(Boolean).join(' ')
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    /* 44px, the floor both platform vendors set for anything a thumb is meant
+       to find (kolonie-website#98). It measured 43 — near enough to look right
+       and not near enough to be it. */
+    min-height: 2.75rem;
     gap: var(--k-space-2);
     padding: var(--k-space-3) var(--k-space-5);
     border: var(--k-border) solid transparent;

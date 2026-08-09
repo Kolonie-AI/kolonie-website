@@ -275,16 +275,23 @@ describe("one composition width, one reading width inside it (#96)", () => {
   });
 
   it("lets a table and a code block use the whole composition", () => {
-    // Both scroll inside themselves rather than widening the document — the
-    // trade `#49` made for the legal pages' tables and `#98` needs for code.
-    for (const selector of [".prose table", ".prose pre"]) {
-      const rule = styles.match(
-        new RegExp(`\\${selector.replace(" ", "[^{]*")}[^{]*\\{([^}]*)\\}`),
-      )?.[1];
-      expect(rule, `no rule for ${selector}`).toBeDefined();
-      expect(rule).toContain("overflow-x:auto");
-      expect(rule).toContain("max-width:100%");
-    }
+    // A table narrowed to the measure is a table that stops being one, so it
+    // composes at the container's width and scrolls inside itself rather than
+    // widening the document — the trade `#49` made for the legal pages' 26 rows.
+    const table = styles.match(/\.prose[^{]*table[^{]*\{([^}]*)\}/)?.[1];
+    expect(table, "no rule for .prose table").toBeDefined();
+    expect(table).toContain("overflow-x:auto");
+    expect(table).toContain("max-width:100%");
+    expect(table).not.toContain("max-width:var(--k-measure)");
+
+    // A code block is the other one, and its rule is **not** here: what a long
+    // code line does is `Site.astro`'s base layer since `#98`, because the site
+    // had two answers to it. `Prose.astro` draws the frame and takes no
+    // position on the text — asserting it here would be the second position.
+    const pre = styles.match(/(?:^|[,}\s])pre\{([^}]*)\}/)?.[1];
+    expect(pre, "no base-layer rule for pre").toBeDefined();
+    expect(pre).toContain("max-width:100%");
+    expect(pre).toContain("white-space:pre-wrap");
   });
 
   /**
