@@ -33,7 +33,20 @@ const css = [
     .filter((href): href is string => href !== undefined && href.startsWith("/"))
     .map((href) => readFileSync(join(dist, href.slice(1)), "utf8")),
   ...[...landing.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]),
-].join("\n");
+]
+  .join("\n")
+  /**
+   * Astro's scoping hash, taken out before anything is matched — the same step
+   * `container.built-test.ts` takes and for the same reason.
+   *
+   * **It became necessary with kolonie-website#95.** The hero's `h1` was sized
+   * in two places: `index.astro`, which owns the hero, and an unscoped
+   * `.hero h1` in `theme.css` left over from the framework's splash template.
+   * `#95` deleted the leftover, so the only rule left is the scoped one, and a
+   * scoped rule reaches the stylesheet as `.hero:where(.astro-x) h1:where(…)`.
+   * Removing the hash is what leaves the selector somebody actually wrote.
+   */
+  .replaceAll(/:where\(\.astro-[a-z0-9]+\)/g, "");
 
 /** Text as a reader sees it: tags stripped, entities resolved. */
 const text = (html: string) =>

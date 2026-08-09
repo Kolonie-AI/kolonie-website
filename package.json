@@ -21,7 +21,7 @@
     "test:built": "vitest run --config vitest.built.config.ts"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.41.4",
+    "@astrojs/mdx": "^7.0.5",
     "astro": "^7.1.4",
     "sharp": "^0.34.4"
   },

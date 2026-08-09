@@ -62,7 +62,7 @@ describe("the skill list", () => {
 
 describe("the page written for a machine", () => {
   const page = readFileSync(
-    fileURLToPath(new URL("../content/docs/skill.mdx", import.meta.url)),
+    fileURLToPath(new URL("../content/pages/skill.mdx", import.meta.url)),
     "utf8",
   );
   /**

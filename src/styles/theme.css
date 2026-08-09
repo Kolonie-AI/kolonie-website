@@ -5,16 +5,18 @@
  * fails if any of them drops under WCAG AA, and a second test fails if a colour
  * value appears in a page or a component.
  *
- * The `--k-*` tokens are the source. The `--sl-*` assignments underneath map
- * them onto Starlight's own names, which is what makes the sidebar, the search
- * dialog, the asides and the 404 page follow the theme without being touched.
- * Set a `--k-*` value; do not set an `--sl-*` value anywhere else.
+ * The `--k-*` tokens are the whole vocabulary. **They used to be half of it**:
+ * fifty `--sl-*` assignments underneath mapped every one of them onto
+ * Starlight's own names, so that a framework this site had switched off would
+ * still follow the theme. kolonie-website#95 removed the framework and the
+ * mapping with it, and a component asks for a `--k-*` token now or it asks for
+ * nothing.
  *
  * The direction is kolonie-website#11: dark, monospace, terminal-adjacent, and
- * restrained. Amber rather than green is deliberate — the accent had to stay out
- * of the way of `--sl-color-green`, which already means *passed* on the Academy
- * page, and an accent that also reads as a status is a palette arguing with
- * itself. Amber is the other terminal the reference points at.
+ * restrained. Amber rather than green is deliberate — the accent had to stay
+ * out of the way of `--k-good`, which means *passed* on the Academy page, and
+ * an accent that also reads as a status is a palette arguing with itself. Amber
+ * is the other terminal the reference points at.
  */
 
 /* Two self-hosted families, and every file under `public/fonts/` is a copy from
@@ -25,9 +27,8 @@
  * (AGENTS.md), and the unicode-range keeps even those two from being fetched by
  * a reader who never renders the glyphs.
  *
- * **Both are `font-display: swap` and both latin files are preloaded** by
- * `sharedHeadTags` in `src/lib/head.ts`, on every page and both surfaces
- * (kolonie-website#48). Swap alone still costs a reflow when the face lands;
+ * **Both are `font-display: swap` and both latin files are preloaded** from
+ * `FONT_PRELOADS` in `src/lib/head.ts`, on every page (kolonie-website#48). Swap alone still costs a reflow when the face lands;
  * the preload is what makes the swap happen before first paint rather than
  * after it. */
 @font-face {
@@ -57,12 +58,13 @@
 /* Inter, self-hosted, and the prose face (kolonie-website#48).
  *
  * Before this it was `--k-font-prose: var(--sl-font-system)` — a variable
- * Starlight defines. On `/terms/`, rendered by the framework, it resolved to a
- * system sans stack; on `/`, which left the framework in `#30`, it resolved to
- * nothing and the browser's default *serif* won. The same two lines produced
- * the right result on one page and the wrong one on the other, which is why the
- * defect survived so long. A self-hosted face has no such asymmetry: it is
- * declared here, so it is the same face wherever this file is loaded.
+ * another package defined. On `/terms/`, rendered by that package, it resolved
+ * to a system sans stack; on `/`, which left the framework in `#30`, it
+ * resolved to nothing and the browser's default *serif* won. The same two lines
+ * produced the right result on one page and the wrong one on the other, which
+ * is why the defect survived so long. A self-hosted face has no such asymmetry:
+ * it is declared here, so it is the same face wherever this file is loaded.
+ * `#95` is the issue that removed the last variable of that kind.
  *
  * Inter rather than a system stack because a system stack is a different
  * typeface per visitor, and the type scale below was set against one of them.
@@ -116,8 +118,9 @@
 
   /* The five colours that mean something rather than decorate: the four aside
    * kinds, and the green the Academy page uses for a skill an agent holds.
-   * Starlight's defaults are a documentation site's, and a saturated blue note
-   * box on this background is the single loudest thing on the page. Each is the
+   * A documentation framework's defaults are a documentation site's, and a
+   * saturated blue note box on this background is the single loudest thing on
+   * the page. Each is the
    * same construction — a dim ground, a mid for the rule down the side, a high
    * for the title — and every one of the pairs is in the contrast test. */
   --k-note-dim: hsl(205 45% 14%);
@@ -183,13 +186,14 @@
   --k-tracking-label: 0.06em;
 
   /* One scale, and every size on the site is a step on it (kolonie-website#22).
-   * It existed as Starlight's defaults, which is a scale nobody chose — so the
-   * page had sizes rather than a hierarchy. The ratio is 1.2 through the body
+   * It existed as a framework's defaults, which is a scale nobody chose — so
+   * the page had sizes rather than a hierarchy. The ratio is 1.2 through the body
    * range, opening up above it, because a landing page needs one size that is
    * unmistakably the loudest and prose does not.
    *
-   * The `--sl-text-*` mapping below points at these, so Starlight's own
-   * components move with the site instead of beside it. */
+   * Every component asks for a step on it by name; nothing sets a size in
+   * `rem` of its own, which is what makes the scale a hierarchy rather than a
+   * suggestion. */
   --k-text-xs: 0.75rem;
   --k-text-sm: 0.875rem;
   --k-text-base: 1rem;
@@ -378,75 +382,15 @@
   --k-bp-sm: 40rem;
   --k-bp-md: 60rem;
 
-  /* ---- The mapping onto Starlight --------------------------------------- */
-
-  --sl-color-white: var(--k-text-strong);
-  --sl-color-gray-1: var(--k-text-strong);
-  --sl-color-gray-2: var(--k-text);
-  --sl-color-gray-3: var(--k-text-muted);
-  --sl-color-gray-4: var(--k-hairline-strong);
-  --sl-color-gray-5: var(--k-hairline-strong);
-  --sl-color-gray-6: var(--k-surface);
-  --sl-color-gray-7: var(--k-surface-raised);
-  --sl-color-black: var(--k-bg);
-
-  --sl-color-accent-low: var(--k-accent-dim);
-  --sl-color-accent: var(--k-accent);
-  --sl-color-accent-high: var(--k-accent-strong);
-
-  --sl-color-blue-low: var(--k-note-dim);
-  --sl-color-blue: var(--k-note);
-  --sl-color-blue-high: var(--k-note-high);
-  --sl-color-purple-low: var(--k-tip-dim);
-  --sl-color-purple: var(--k-tip);
-  --sl-color-purple-high: var(--k-tip-high);
-  --sl-color-orange-low: var(--k-caution-dim);
-  --sl-color-orange: var(--k-caution);
-  --sl-color-orange-high: var(--k-caution-high);
-  --sl-color-red-low: var(--k-danger-dim);
-  --sl-color-red: var(--k-danger);
-  --sl-color-red-high: var(--k-danger-high);
-  --sl-color-green-low: var(--k-good-dim);
-  --sl-color-green: var(--k-good);
-  --sl-color-green-high: var(--k-good-high);
-
-  --sl-color-text: var(--k-text);
-  --sl-color-text-accent: var(--k-accent-strong);
-  --sl-color-text-invert: var(--k-on-accent);
-  --sl-color-bg: var(--k-bg);
-  --sl-color-bg-nav: var(--k-surface);
-  --sl-color-bg-sidebar: var(--k-bg);
-  --sl-color-bg-inline-code: var(--k-surface-raised);
-  --sl-color-bg-accent: var(--k-accent);
-  --sl-color-hairline-light: var(--k-hairline-strong);
-  --sl-color-hairline: var(--k-hairline);
-  --sl-color-hairline-shade: var(--k-bg);
-
-  --sl-font: var(--k-font-prose);
-  --sl-font-mono: var(--k-font-mono);
-
-  /* The scale, handed to Starlight so its components sit on it too (`#22`). */
-  --sl-text-xs: var(--k-text-xs);
-  --sl-text-sm: var(--k-text-sm);
-  --sl-text-base: var(--k-text-base);
-  --sl-text-lg: var(--k-text-lg);
-  --sl-text-xl: var(--k-text-xl);
-  --sl-text-2xl: var(--k-text-2xl);
-  --sl-text-3xl: var(--k-text-3xl);
-  --sl-text-4xl: var(--k-text-4xl);
-  --sl-text-5xl: var(--k-text-5xl);
-
-  /* The headings, from the roles rather than from the ruler (`#48`), so a
-     documentation page and the landing page set an h2 at the same size. */
-  --sl-text-body: var(--k-type-body);
-  --sl-text-h1: var(--k-type-h1);
-  --sl-text-h2: var(--k-type-h2);
-  --sl-text-h3: var(--k-type-h3);
-  --sl-text-h4: var(--k-text-xl);
-  --sl-text-h5: var(--k-text-lg);
-
-  --sl-line-height: 1.7;
-  --sl-line-height-headings: 1.15;
+  /* ---- Leading ------------------------------------------------------------
+   *
+   * These two were `--sl-line-height` and `--sl-line-height-headings` until
+   * kolonie-website#95, at the bottom of a fifty-line block that mapped every
+   * token in this file onto Starlight's own names. The framework is gone and so
+   * is the mapping; these two are here because the site's own layout and prose
+   * layer read them, which is more than the other fifty could say. */
+  --k-leading: 1.7;
+  --k-leading-heading: 1.15;
 }
 
 :root[data-theme='light'],
@@ -497,14 +441,6 @@
   --k-syn-value: hsl(275 50% 38%);
   --k-syn-punct: hsl(200 12% 33%);
   --k-syn-comment: hsl(200 12% 33%);
-
-  --sl-color-text-accent: var(--k-accent);
-  --sl-color-bg-nav: var(--k-surface);
-  --sl-color-bg-sidebar: var(--k-bg);
-  --sl-color-bg-inline-code: var(--k-surface-raised);
-  --sl-color-bg-accent: var(--k-accent);
-  --sl-color-hairline-light: var(--k-hairline);
-  --sl-color-hairline-shade: var(--k-hairline);
 }
 
 /* ---- What the tokens are actually used for ------------------------------ */
@@ -516,9 +452,7 @@ h2,
 h3,
 h4,
 h5,
-h6,
-.site-title,
-site-title a {
+h6 {
   font-family: var(--k-font-mono);
   letter-spacing: var(--k-tracking-heading);
   font-weight: 600;
@@ -526,78 +460,20 @@ site-title a {
 
 /* ---- Measure and rhythm ------------------------------------------------- */
 
-/* **The line length, and it is the largest single change `#22` makes.** `#21`
- * took the sidebar off the marketing pages, which is right and left the prose
- * running the full width of a desktop window — eighteen or twenty words a line,
- * where the eye starts losing the next one somewhere after fifteen.
+/* **This section was fifty lines of `.sl-markdown-content` rules until
+ * kolonie-website#95** — the measure, the vertical rhythm and the rule under an
+ * h2, all hung off a class Starlight put on its rendered article. It is
+ * `src/components/Prose.astro` now, unchanged in what it does and reachable
+ * from a page that is not a framework's.
  *
- * Capped on the text elements rather than on the container, deliberately: the
- * fork, the Academy graph, the verdict and every code block keep the full width
- * they were composed at, and only the things read as sentences are narrowed. A
- * container cap would have narrowed all of them together. */
-.sl-markdown-content > :is(p, ul, ol, dl, blockquote, h2, h3, h4, h5, h6) {
-  max-width: var(--k-measure);
-}
-
-/* Vertical rhythm as one rule rather than a margin per element. Blocks are one
- * step apart; a heading takes a section's step above it and a tight one below,
- * which is what makes a heading read as belonging to what follows it rather
- * than floating between two things. */
-.sl-markdown-content > * + * {
-  margin-top: var(--k-flow);
-}
-
-.sl-markdown-content > * + :is(h2, h3) {
-  margin-top: var(--k-flow-section);
-}
-
-.sl-markdown-content > :is(h2, h3) + * {
-  margin-top: var(--k-flow-tight);
-}
-
-/* An h2 opens a section, so it is given a line to sit on. One hairline, the
- * page's own colour, and no other decoration — `#11` refused gradients and
- * illustration and that refusal holds. */
-.sl-markdown-content > h2 {
-  padding-top: var(--k-space-4);
-  border-top: var(--k-border) solid var(--k-hairline);
-}
-
-/* ---- The hero ----------------------------------------------------------- */
-
-/* Starlight's hero title is a heading, but its tagline and buttons are not, and
- * a splash page that mixes the two faces at that size looks like an accident. */
-.hero h1,
-.hero .actions a {
-  font-family: var(--k-font-mono);
-}
-
-/* Composed rather than stacked (`#22`): the name is the loudest thing on the
- * page by a clear step, the sentence under it is set as a lede rather than as
- * body copy that happens to be first, and the two are close enough to read as
- * one block. */
-.hero h1 {
-  font-size: clamp(var(--k-type-h1), 7vw, var(--k-type-display));
-}
-
-.hero .tagline {
-  margin-top: var(--k-space-4);
-  max-width: var(--k-measure-lede);
-  font-size: var(--k-type-body);
-  line-height: 1.55;
-}
-
-.hero .actions {
-  margin-top: var(--k-space-6);
-}
-
-/* The site title sits next to a search box and a theme toggle; at the default
- * weight the monospace face is the loudest thing in the header, which is the
- * wrong thing for it to be. */
-.site-title {
-  font-weight: 500;
-  letter-spacing: var(--k-tracking-label);
-}
+ * `#22`'s argument for it is worth keeping where the tokens are: the cap goes
+ * on the text elements and not on their container, so the fork, the Academy
+ * graph, the verdict and every code block keep the full width they were
+ * composed at, and only the things read as sentences are narrowed.
+ *
+ * The two rules that were here and belonged to Starlight's own header and hero
+ * — `.site-title`, `.hero .tagline`, `.hero .actions` — went with the framework.
+ * The landing page's hero is `src/pages/index.astro` and always was. */
 
 /* ---- What opens up once there is room ----------------------------------- */
 
@@ -667,9 +543,8 @@ site-title a {
 /* ---- Motion: what actually moves (kolonie-website#34) --------------------- */
 
 /* **Interactive states, and this is most of the gain.** Every link, button and
- * summary on both surfaces — the Starlight pages and the landing page, which
- * left the framework in `#30` — settles into its hover and focus colours instead
- * of snapping. One declaration, one token, and nothing here animates a size or a
+ * summary on the site settles into its hover and focus colours instead of
+ * snapping. One declaration, one token, and nothing here animates a size or a
  * position, so no hover can cause a layout shift. */
 a,
 button,

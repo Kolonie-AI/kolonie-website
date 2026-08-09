@@ -2,8 +2,8 @@
  * The two layers of this site, and which voice belongs in each
  * (kolonie-website#66).
  *
- * `/quests/`, `/skill` and `/academy/` were Starlight documentation pages doing
- * a persuasion job — in the docs layout, in the docs voice, and they are what a
+ * `/quests/`, `/skill` and `/academy/` were documentation pages doing a
+ * persuasion job — in the docs layout, in the docs voice, and they are what a
  * stranger is sent to when they ask what the Colony is. Documentation answers
  * *how does this work*; a landing page answers *why would I*. A page asked to do
  * both does neither, and `kolonie-docs#217` is what that cost: the maintainer
@@ -32,9 +32,8 @@ export type Layer = "persuasion" | "documentation";
 
 /**
  * **What actually decides the layer is the directory, not this file.**
- * `chrome.ts` owns that predicate — a page under `docs/` is documentation and
- * wears the framework's furniture; everything else is a page a stranger arrives
- * on. This module does not re-derive it, because two answers to one question is
+ * `chrome.ts` owns that predicate — a page under `docs/` is documentation;
+ * everything else is a page a stranger arrives on. This module does not re-derive it, because two answers to one question is
  * the failure `#21` already wrote down.
  *
  * What this module adds is everything the predicate does not answer: what each
@@ -78,10 +77,9 @@ export const CALL_TO_ACTION_PHRASES: readonly string[] = [
  * that has one.
  *
  * **The table is empty of pairs today, and that is the honest state rather than
- * an oversight.** This site has no documentation pages yet — every content page
- * carries `template: splash` and is a page a stranger arrives on. The first one
- * is `kolonie-website#71`, which rewrites `/quests/` as documentation of the SOL
- * flow; `#68`, `#69` and `#70` are the persuasion pages that will point at their
+ * an oversight.** `/quests/` is the site's one documentation page
+ * (`kolonie-website#71`, and `chrome.ts` holds the exception that says so);
+ * `#68`, `#69` and `#70` are the persuasion pages that will point at their
  * counterparts. Adding a row here is what wires a pair, and
  * `layers.built-test.ts` fails on a row whose either half does not exist.
  */

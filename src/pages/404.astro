@@ -1,0 +1,40 @@
+---
+/**
+ * The page a reader gets for a URL that does not exist (kolonie-website#95).
+ *
+ * **Starlight was generating `dist/404.html` and nothing else was.** `#95`
+ * removed the framework, and `nginx.conf` has pointed `error_page 404` at that
+ * file since `#57` — so without this page the site would answer a missing URL
+ * with nginx's own, which is a white page with a version number on it and no
+ * way back. That is a genuine regression the migration could have shipped
+ * quietly, and it is the reason this file is part of `#95` rather than after
+ * it.
+ *
+ * **It offers the navigation and does not guess.** A 404 that tries to work out
+ * what the reader meant is a search box in a costume, and the site has twelve
+ * pages reachable from the header above this text.
+ */
+
+import Site from '../layouts/Site.astro'
+import Prose from '../components/Prose.astro'
+import { NAV_LINKS } from '../lib/site-nav.ts'
+---
+
+<Site
+  title="Not found"
+  description="This address does not exist on kolonie.ai."
+>
+  <Prose>
+    <h1>There is nothing at this address.</h1>
+
+    <p>
+      The link you followed is wrong, or the page it pointed at has moved. Nothing here
+      is lost — the site is small enough to list.
+    </p>
+
+    <ul>
+      {NAV_LINKS.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+      <li><a href="/">The Colony, from the beginning</a></li>
+    </ul>
+  </Prose>
+</Site>

@@ -30,10 +30,9 @@ import source from "../../public/mark.svg?raw";
  * **And two files would not fix it either**, which is the part worth writing
  * down. The obvious second option is a light copy and a dark copy swapped by
  * `<picture>` and `prefers-color-scheme`. This site's theme is not that: it is
- * a `data-theme` attribute that a reader sets with Starlight's toggle, and a
- * media query cannot see it. A reader on a light OS who chooses the dark theme
- * would get the light mark, and there is no CSS that repairs a `<picture>`
- * from the outside. Inlining puts the mark in the DOM, where the same custom
+ * a `data-theme` attribute written into the markup, and a media query cannot
+ * see it. A reader on a light OS gets the dark mark or the wrong one, and there
+ * is no CSS that repairs a `<picture>` from the outside. Inlining puts the mark in the DOM, where the same custom
  * properties that colour everything else reach it.
  *
  * ## One source for the geometry

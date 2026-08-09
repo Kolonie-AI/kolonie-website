@@ -1,0 +1,193 @@
+---
+/**
+ * The prose layer: what rendered markdown looks like on this site
+ * (kolonie-website#95).
+ *
+ * **Starlight was providing this and it came with Starlight.** `#95` removed
+ * the framework, and this is the half of it the site was actually using — the
+ * element styles for a rendered document. It is written against the same tokens
+ * in `src/styles/theme.css` as every other surface, so there is not a colour
+ * value in this file.
+ *
+ * It was `[legal].astro`'s own `<style>` block until `#95`, where `#30` and
+ * `#49` had left it: one page's prose layer, in that page. Three surfaces need
+ * it now — the content pages, the legal pages and the blog — and three copies
+ * of a vertical rhythm is three rhythms within a month.
+ *
+ * ## The composition and the measure are two different widths
+ *
+ * `src/styles/theme.css` says it and this component is where it is enforced:
+ *
+ * > `--k-measure` caps a *line of prose* so the eye does not lose its place.
+ * > `--k-container` caps the *composition*.
+ *
+ * So the wrapper is a container and the running text inside it is a measure.
+ * A table, a code block or a figure may use the whole composition — narrowing a
+ * 26-row table to 68 characters is how a table becomes unreadable — while a
+ * paragraph never exceeds one. The legal pages were already the model for this
+ * (`kolonie-website#96`); this makes them the rule.
+ *
+ * `:global()` because the content is rendered markdown and carries no scope
+ * class: Astro scopes the `.prose` half of each selector and leaves the element
+ * half alone, which keeps these rules off every other page without reaching for
+ * `is:global`.
+ */
+
+interface Props {
+  /**
+   * Extra classes for the caller, so a page can hang its own rules off the same
+   * element instead of wrapping this in a second one.
+   */
+  class?: string
+  /**
+   * Anything else — `data-*` in practice. A page that needs to mark this
+   * element does it here rather than adding a wrapper whose only job is to
+   * carry an attribute.
+   */
+  [key: string]: unknown
+}
+
+const { class: className, ...rest } = Astro.props
+---
+
+<div class:list={['prose', className]} {...rest}>
+  <slot />
+</div>
+
+<style>
+  /* Not one colour value in this file — every one is a token (AGENTS.md). */
+
+  /* The composition (kolonie-website#96). One width, the same `--k-container`
+     the header's row and the footer's columns use. */
+  .prose {
+    max-width: var(--k-container);
+    margin: 0 auto;
+    padding: var(--k-section-y) var(--k-gutter) var(--k-flow-section);
+  }
+
+  /* And the measure, on the elements that are a line of running text. `#49`
+     asks for roughly 60–75 characters and `--k-measure` is 68ch.
+
+     **Tables, code blocks and figures are deliberately not in this list.** They
+     compose at the container's width, which is the distinction the file header
+     is about. */
+  .prose :global(:is(h1, h2, h3, h4, p, ul, ol, dl, blockquote)) {
+    max-width: var(--k-measure);
+  }
+
+  /* Vertical rhythm as one rule rather than a margin per element: blocks are one
+     step apart, and a heading takes a section's step above it and a tight one
+     below — which is what makes a heading read as belonging to what follows it
+     rather than floating between two things. */
+  .prose :global(* + *) {
+    margin-top: var(--k-flow);
+  }
+
+  .prose :global(* + :is(h2, h3)) {
+    margin-top: var(--k-flow-section);
+  }
+
+  .prose :global(:is(h1, h2, h3) + *) {
+    margin-top: var(--k-flow-tight);
+  }
+
+  .prose :global(h1) {
+    margin-top: 0;
+    font-size: var(--k-type-h1);
+  }
+
+  /* An h2 opens a section, so it is given a line to sit on — the same treatment
+     `/` gives its own, so the two surfaces separate sections the same way.
+
+     The rule is drawn at the measure rather than across the composition: a
+     hairline running 1280px over a 724px column reads as a page divider rather
+     than as the top of the section under it. */
+  .prose :global(h2) {
+    padding-top: var(--k-space-4);
+    border-top: var(--k-border) solid var(--k-hairline);
+    font-size: var(--k-type-h2);
+  }
+
+  .prose :global(h3) {
+    font-size: var(--k-type-h3);
+  }
+
+  .prose :global(:is(ul, ol)) {
+    padding-left: var(--k-space-5);
+  }
+
+  .prose :global(li + li) {
+    margin-top: var(--k-space-2);
+  }
+
+  .prose :global(blockquote) {
+    padding-left: var(--k-space-4);
+    border-left: 2px solid var(--k-accent-dim);
+    color: var(--k-text-muted);
+  }
+
+  .prose :global(hr) {
+    border: 0;
+    border-top: var(--k-border) solid var(--k-hairline);
+  }
+
+  /* **Tables, and 375px is the width that decides their shape.** `privacy.md`
+     alone is 26 table rows, and the imprint's registration table is generated
+     from `legal-structure.md`. The table scrolls rather than the page: a table
+     that widens the document makes every paragraph on it scroll sideways too,
+     which is the failure `#49` names at that width and the one `#98` measured
+     on the landing page.
+
+     `display: block` is what gives a `<table>` its own scroll container without
+     a wrapper element that markdown cannot produce. */
+  .prose :global(table) {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: var(--k-type-small);
+  }
+
+  .prose :global(:is(th, td)) {
+    padding: var(--k-space-2) var(--k-space-3);
+    border: var(--k-border) solid var(--k-hairline);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .prose :global(th) {
+    color: var(--k-text-strong);
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-xs);
+    letter-spacing: var(--k-tracking-label);
+    text-transform: uppercase;
+  }
+
+  /* Same trade as the table: the block scrolls, the document does not
+     (kolonie-website#98). A code sample is the one kind of content that cannot
+     be reflowed, so it is the one that has to be allowed its own scroll
+     surface. */
+  .prose :global(pre) {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: var(--k-space-4);
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+  }
+
+  /* Inside a `<pre>` the background and padding belong to the block, not to
+     each token — `theme.css`'s inline-code rule would otherwise draw a second
+     box around every line. */
+  .prose :global(pre code) {
+    padding: 0;
+    background: none;
+  }
+
+  /* An image never widens the document, whatever its intrinsic size. */
+  .prose :global(:is(img, svg, video)) {
+    max-width: 100%;
+    height: auto;
+  }
+</style>

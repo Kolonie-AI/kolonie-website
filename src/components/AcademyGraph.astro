@@ -226,8 +226,8 @@ const readOn = new Date().toISOString().slice(0, 10)
   }
 
   .academy__summary {
-    color: var(--sl-color-gray-3);
-    font-size: var(--sl-text-sm);
+    color: var(--k-text-muted);
+    font-size: var(--k-text-sm);
     margin-bottom: 1.5rem;
   }
 
@@ -261,7 +261,7 @@ const readOn = new Date().toISOString().slice(0, 10)
     border-radius: 999px;
     color: var(--k-text-strong);
     font-family: var(--k-font-mono);
-    font-size: var(--sl-text-xs);
+    font-size: var(--k-text-xs);
     text-decoration: none;
   }
 
@@ -273,7 +273,7 @@ const readOn = new Date().toISOString().slice(0, 10)
 
   .academy .shape__more {
     margin: var(--k-space-4) 0 0;
-    font-size: var(--sl-text-xs);
+    font-size: var(--k-text-xs);
   }
 
   /* When the answer was read. Quiet, because it is a footnote and not a claim
@@ -282,7 +282,7 @@ const readOn = new Date().toISOString().slice(0, 10)
   .academy .academy__read {
     margin: var(--k-space-3) 0 0;
     color: var(--k-text-faint);
-    font-size: var(--sl-text-xs);
+    font-size: var(--k-text-xs);
   }
 
   /*
@@ -292,17 +292,17 @@ const readOn = new Date().toISOString().slice(0, 10)
   .academy .root {
     margin-block-end: 2rem;
     padding: 1.25rem;
-    border: 1px solid var(--sl-color-accent);
+    border: 1px solid var(--k-accent);
     border-radius: 0.6rem;
-    background: var(--sl-color-gray-6);
+    background: var(--k-surface);
   }
 
   .academy .root__eyebrow {
     margin: 0;
-    font-size: var(--sl-text-xs);
+    font-size: var(--k-text-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--sl-color-accent-high);
+    color: var(--k-accent-strong);
   }
 
   .academy .root h3 {
@@ -311,24 +311,24 @@ const readOn = new Date().toISOString().slice(0, 10)
 
   .academy .root__description {
     margin: 0.5rem 0 0.75rem;
-    color: var(--sl-color-gray-2);
+    color: var(--k-text);
   }
 
   .academy .band {
-    border-top: 1px solid var(--sl-color-hairline);
+    border-top: 1px solid var(--k-hairline);
     padding-top: 1.25rem;
     margin-bottom: 2.5rem;
   }
 
   .academy .band__label h3 {
     margin: 0;
-    font-size: var(--sl-text-lg);
+    font-size: var(--k-text-lg);
   }
 
   .academy .band__label p {
     margin: 0.25rem 0 1.25rem;
-    color: var(--sl-color-gray-3);
-    font-size: var(--sl-text-sm);
+    color: var(--k-text-muted);
+    font-size: var(--k-text-sm);
   }
 
   /*
@@ -344,10 +344,10 @@ const readOn = new Date().toISOString().slice(0, 10)
   }
 
   .academy .node {
-    border: 1px solid var(--sl-color-gray-5);
+    border: 1px solid var(--k-hairline-strong);
     border-radius: 0.5rem;
     padding: 1rem;
-    background: var(--sl-color-bg-nav);
+    background: var(--k-surface);
     /* Long task types and skill names must wrap rather than widen the track. */
     overflow-wrap: anywhere;
     /*
@@ -380,12 +380,12 @@ const readOn = new Date().toISOString().slice(0, 10)
 
   .academy .node__head h4 {
     margin: 0;
-    font-size: var(--sl-text-base);
+    font-size: var(--k-text-base);
   }
 
   .academy .node__type {
-    font-size: var(--sl-text-xs);
-    color: var(--sl-color-gray-3);
+    font-size: var(--k-text-xs);
+    color: var(--k-text-muted);
   }
 
   /*
@@ -397,11 +397,11 @@ const readOn = new Date().toISOString().slice(0, 10)
     align-items: center;
     gap: 0.3rem;
     padding: 0.05rem 0.45rem;
-    border: 1px solid var(--sl-color-accent);
+    border: 1px solid var(--k-accent);
     border-radius: 999px;
-    font-size: var(--sl-text-xs);
-    color: var(--sl-color-accent-high);
-    background: var(--sl-color-accent-low);
+    font-size: var(--k-text-xs);
+    color: var(--k-accent-strong);
+    background: var(--k-accent-dim);
   }
 
   .academy .node__cleared-glyph {
@@ -409,17 +409,17 @@ const readOn = new Date().toISOString().slice(0, 10)
   }
 
   .academy .node__badge {
-    font-size: var(--sl-text-xs);
-    border: 1px dashed var(--sl-color-gray-4);
+    font-size: var(--k-text-xs);
+    border: 1px dashed var(--k-hairline-strong);
     border-radius: 999px;
     padding: 0.05rem 0.5rem;
-    color: var(--sl-color-gray-2);
+    color: var(--k-text);
   }
 
   .academy .node__description {
     margin: 0 0 0.75rem;
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-2);
+    font-size: var(--k-text-sm);
+    color: var(--k-text);
   }
 
   .academy .node__edges {
@@ -445,10 +445,10 @@ const readOn = new Date().toISOString().slice(0, 10)
   }
 
   .academy .edge dt {
-    font-size: var(--sl-text-xs);
+    font-size: var(--k-text-xs);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--sl-color-gray-3);
+    color: var(--k-text-muted);
   }
 
   .academy .edge dd {
@@ -465,18 +465,18 @@ const readOn = new Date().toISOString().slice(0, 10)
     display: inline-flex;
     align-items: baseline;
     gap: 0.3rem;
-    font-size: var(--sl-text-xs);
-    font-family: var(--sl-font-mono, monospace);
+    font-size: var(--k-text-xs);
+    font-family: var(--k-font-mono, monospace);
     border-radius: 0.3rem;
     padding: 0.1rem 0.45rem;
-    border: 1px solid var(--sl-color-gray-5);
-    color: var(--sl-color-gray-2);
+    border: 1px solid var(--k-hairline-strong);
+    color: var(--k-text);
   }
 
   /* The hard edge: enforced, and the one you can follow upward. */
   .academy a.chip--require {
-    border-color: var(--sl-color-accent);
-    color: var(--sl-color-accent-high);
+    border-color: var(--k-accent);
+    color: var(--k-accent-strong);
     text-decoration: none;
   }
 
@@ -490,8 +490,8 @@ const readOn = new Date().toISOString().slice(0, 10)
   }
 
   .academy .chip--grant {
-    border-color: var(--sl-color-green);
-    color: var(--sl-color-green-high);
+    border-color: var(--k-good);
+    color: var(--k-good-high);
   }
 
   .academy .chip--none,
@@ -502,7 +502,7 @@ const readOn = new Date().toISOString().slice(0, 10)
 
   .academy .chip--none {
     border-style: dotted;
-    color: var(--sl-color-gray-3);
+    color: var(--k-text-muted);
   }
 
   .academy .chip--unteachable {
@@ -511,12 +511,12 @@ const readOn = new Date().toISOString().slice(0, 10)
 
   .academy .chip__note {
     font-family: inherit;
-    color: var(--sl-color-gray-3);
+    color: var(--k-text-muted);
   }
 
 
   .academy [data-state='error'] {
-    border-inline-start: 3px solid var(--sl-color-red);
+    border-inline-start: 3px solid var(--k-danger);
     padding-inline-start: 1rem;
   }
 </style>

@@ -13,7 +13,7 @@ import { pagesSitemap } from "../lib/sitemap.ts";
  */
 export const GET: APIRoute = async () => {
   const paths = orderPages(
-    (await getCollection("docs")).map((entry) => ({ path: pathForEntryId(entry.id) })),
+    (await getCollection("pages")).map((entry) => ({ path: pathForEntryId(entry.id) })),
   ).map((page) => page.path);
 
   return new Response(pagesSitemap(paths), {

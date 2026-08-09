@@ -1,17 +1,19 @@
 /**
- * The `<head>` every page on this site carries, in one place
- * (kolonie-website#30).
+ * The constants the `<head>` is written from (kolonie-website#30, #95).
  *
  * It lived in `astro.config.mjs`, inside Starlight's `head` option, which was
  * the only place a page could be described from while every page was a
- * Starlight page. `/` is not one any more — it is `src/pages/index.astro` — and
- * a landing page that quietly lost the Open Graph image or the theme colour
- * would fail in the place it costs most: the preview card of the link somebody
- * shared.
+ * Starlight page. `/` stopped being one in `#30` and every other page stopped
+ * in `#95`, so there is one surface writing a head now —
+ * `src/layouts/Site.astro` — and `sharedHeadTags`, the list that kept the two
+ * of them in agreement, went with the second one.
  *
- * So the tags are declared here and consumed twice — by the Starlight
- * integration for the four documentation-framework pages, and by
- * `src/layouts/Site.astro` for the one that left.
+ * **What did not go is this file.** The tags are written as markup in the
+ * layout and the *values* are here, read by `assets.test.ts` and
+ * `head.built-test.ts`. A landing page that quietly lost the Open Graph image
+ * fails in the place it costs most — the preview card of the link somebody
+ * shared — and a test that asserted against a string typed into the layout it
+ * is checking would not catch it.
  *
  * **Nothing here is an analytics tag, and nothing guards one any more**
  * (`kolonie-website#58`). This block used to name `analytics.built-test.ts` as
@@ -78,19 +80,6 @@ export const OG_IMAGE_ALT =
   'Kolonie AI — a colony for AI agents. kolonie.ai, mcp.kolonie.ai, api.kolonie.ai.'
 
 /**
- * Starlight writes `og:title`, `og:description` and the Twitter card, and no
- * image — so a link to the site shared anywhere renders as a bare line of text.
- * These are the tags that fills that in, in Starlight's own `head` shape.
- *
- * The landing page's layout writes the same tags as plain markup; it also
- * writes the ones Starlight was writing for it.
- */
-interface HeadTag {
-  tag: 'meta' | 'link'
-  attrs: Record<string, string>
-}
-
-/**
  * The two font files a page needs before it paints (kolonie-website#48).
  *
  * `font-display: swap` alone means the page paints in a fallback and reflows
@@ -112,51 +101,3 @@ export const FONT_PRELOADS = [
   '/fonts/inter-latin-wght-normal.woff2',
   '/fonts/jetbrains-mono-latin-wght-normal.woff2',
 ] as const
-
-export const sharedHeadTags = (themeColor: string): HeadTag[] => [
-  ...FONT_PRELOADS.map(
-    (href): HeadTag => ({
-      tag: 'link',
-      attrs: {
-        rel: 'preload',
-        href,
-        as: 'font',
-        type: 'font/woff2',
-        crossorigin: 'anonymous',
-      },
-    }),
-  ),
-  {
-    tag: 'meta',
-    attrs: { property: 'og:image', content: OG_IMAGE },
-  },
-  {
-    tag: 'meta',
-    attrs: { property: 'og:image:alt', content: OG_IMAGE_ALT },
-  },
-  {
-    tag: 'meta',
-    attrs: { name: 'twitter:card', content: 'summary_large_image' },
-  },
-  {
-    tag: 'link',
-    attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
-  },
-  // The Android half of the same thing (kolonie-website#62): an icon and a
-  // name for a home screen. It carries no `display` field, so nothing here
-  // claims this documentation site is an application — `build-assets.mjs`
-  // records that refusal beside the rest of the manifest.
-  //
-  // `/favicon.ico` is deliberately *not* declared beside these. It exists for
-  // clients that request that path without reading this head at all, and
-  // offering it here would let a browser prefer 48 fixed pixels to a vector.
-  {
-    tag: 'link',
-    attrs: { rel: 'manifest', href: '/site.webmanifest' },
-  },
-  // So a mobile reader does not get a white bar above a near-black page.
-  {
-    tag: 'meta',
-    attrs: { name: 'theme-color', content: themeColor },
-  },
-]

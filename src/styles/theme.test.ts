@@ -127,9 +127,9 @@ const pairs: Array<[string, string, number, string]> = [
     ],
   ),
 
-  // The four aside kinds and the Academy's "holds this skill" green. Starlight
-  // sets an aside's body in --sl-color-white on the dim ground and its title in
-  // the high, so those are the two pairs each has to survive.
+  // The four aside kinds and the Academy's "holds this skill" green. An aside
+  // sets its body in --k-text-strong on the dim ground and its title in the
+  // high, so those are the two pairs each has to survive.
   ...(["note", "tip", "caution", "danger", "good"] as const).flatMap(
     (kind): Array<[string, string, number, string]> => [
       ["--k-text-strong", `--k-${kind}-dim`, AA, `${kind}: what it says`],
@@ -236,9 +236,9 @@ describe("the self-hosted fonts are the fonts they claim to be", () => {
  * **The prose face resolves, on every page** (kolonie-website#48).
  *
  * The defect this replaces was not a missing font — it was a font stack that
- * pointed at `var(--sl-font-system)`, a variable **another package** declares.
- * On a page Starlight rendered it resolved; on `/`, which left the framework in
- * `#30`, it resolved to nothing and the browser's default serif won. One
+ * pointed at `var(--sl-font-system)`, a variable **another package** declared.
+ * On a page that package rendered it resolved; on `/`, which left the framework
+ * in `#30`, it resolved to nothing and the browser's default serif won. One
  * declaration, two answers, and no test could see it because the file itself
  * looked correct.
  *

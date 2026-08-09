@@ -72,7 +72,7 @@ export function sitemapIndex(sources: readonly SitemapSource[]): string {
  *
  * **The root is added rather than derived, because it is not in the
  * collection.** The homepage is `src/pages/index.astro` and every other page is
- * an entry under `src/content/docs/`, so a sitemap built from the collection
+ * an entry under `src/content/pages/`, so a sitemap built from the collection
  * alone omits the one URL every crawler starts at. `pathForEntryId` maps an
  * `index` entry to `/` and would cover this if one existed; none does.
  *

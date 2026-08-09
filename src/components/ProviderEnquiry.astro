@@ -211,14 +211,14 @@ import { PROVIDER_ENQUIRY } from '../lib/provider-enquiry.ts'
 
   .enquiry label {
     font-family: var(--k-font-mono);
-    font-size: var(--sl-text-sm);
+    font-size: var(--k-text-sm);
     color: var(--k-accent-strong);
   }
 
   .enquiry input,
   .enquiry textarea {
     font: inherit;
-    color: var(--sl-color-white);
+    color: var(--k-text-strong);
     background: var(--k-bg);
     border: 1px solid var(--k-hairline-strong);
     border-radius: 3px;
@@ -234,13 +234,13 @@ import { PROVIDER_ENQUIRY } from '../lib/provider-enquiry.ts'
 
   .enquiry input::placeholder,
   .enquiry textarea::placeholder {
-    color: var(--sl-color-gray-3);
+    color: var(--k-text-muted);
   }
 
   .enquiry__hint {
     margin: 0;
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-3);
+    font-size: var(--k-text-sm);
+    color: var(--k-text-muted);
   }
 
   .enquiry button {
@@ -257,7 +257,7 @@ import { PROVIDER_ENQUIRY } from '../lib/provider-enquiry.ts'
 
   .enquiry__status {
     margin: 0;
-    font-size: var(--sl-text-sm);
+    font-size: var(--k-text-sm);
   }
 
   .enquiry__status[data-state='sent'] {
@@ -265,12 +265,12 @@ import { PROVIDER_ENQUIRY } from '../lib/provider-enquiry.ts'
   }
 
   .enquiry__status[data-state='error'] {
-    color: var(--sl-color-red-high, var(--k-accent-strong));
+    color: var(--k-danger-high, var(--k-accent-strong));
   }
 
   .enquiry__noscript {
     border-left: 2px solid var(--k-hairline-strong);
     padding-left: 1rem;
-    color: var(--sl-color-gray-2);
+    color: var(--k-text);
   }
 </style>

@@ -29,7 +29,7 @@ const html = readFileSync(join(dist, "the-register", "index.html"), "utf8");
  * about the furniture around it.
  */
 const body = html.slice(
-  html.indexOf('<div class="sl-markdown-content"'),
+  html.indexOf('<div class="prose content-page'),
   html.indexOf('<footer class="site-footer'),
 );
 

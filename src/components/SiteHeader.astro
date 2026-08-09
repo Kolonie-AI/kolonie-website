@@ -24,10 +24,17 @@
  * rather than an omission, so if there is ever something to announce it arrives
  * as its own issue with the thing to announce already in hand.
  *
- * **One component, two surfaces.** `Site.astro` renders it directly and the
- * Starlight `Header` override renders it for every other page, so a header
- * cannot be right on `/` and stale on `/quests/` — which is the state `#40`
- * and `#42` both had to fix by hand.
+ * **One component, one surface** (kolonie-website#95). It was two: `Site.astro`
+ * rendered it for `/` and a Starlight `Header` override rendered it for every
+ * other page, wrapped in the framework's own bar. That wrapper is what `#93`
+ * was opened about — it has no container cap, so the header ran the full 2512px
+ * of a 2560px window on fourteen pages while their content sat in a 1080px
+ * column. The `bare` prop below existed to stop this component drawing a second
+ * bar inside that one.
+ *
+ * Both are gone with the framework. There is one caller, one bar, and the row
+ * inside it is capped at `--k-container` on every page — which is `#93`'s
+ * criterion, met by deletion rather than by a second rule.
  */
 
 import Button from './Button.astro'
@@ -49,27 +56,13 @@ const MARK = inlineMark(themeCss)
 
 interface Props {
   /**
-   * The current path, so the item for it can be marked. Optional: Starlight
-   * knows it, the landing page's layout does too, and nothing breaks without.
+   * The current path, so the item for it can be marked. Optional: the layout
+   * always knows it, and nothing breaks without it.
    */
   pathname?: string
-  /**
-   * The row without the bar around it.
-   *
-   * Starlight wraps whatever its `Header` slot renders in a fixed bar that
-   * already has a height, a gutter, a hairline and a background — all four from
-   * this site's own tokens, because `theme.css` maps them onto `--sl-*`. Drawing
-   * a second bar inside the first is two hairlines and two backgrounds, and it
-   * is what the header looked like the first time this rendered.
-   *
-   * So the framework's pages pass `bare` and the wrapper stays the bar; `/`,
-   * which has no wrapper since `#30`, does not and the component is the bar.
-   * The row inside is identical either way, which is the point of `#50`.
-   */
-  bare?: boolean
 }
 
-const { pathname, bare = false } = Astro.props
+const { pathname } = Astro.props
 
 /** `/academy/` is current on `/academy/` and on anything beneath it. */
 const isCurrent = (href: string) =>
@@ -78,7 +71,7 @@ const isCurrent = (href: string) =>
   (pathname === href || pathname.startsWith(href))
 ---
 
-<header class:list={['site-header', { 'site-header--bare': bare }]}>
+<header class="site-header">
   {/*
     **The row, and the reason it is a wrapper rather than a `max-width` on the
     header itself** (kolonie-website#81).
@@ -192,10 +185,11 @@ const isCurrent = (href: string) =>
     {SEND.label}
   </Button>
 
-  {/* Starlight's search, on documentation pages and nowhere else. The rule is
-      `src/lib/chrome.ts`; the override that applies it is the caller's, and
-      this is only the place it lands. */}
-  <slot name="search" />
+  {/* **There is no search box, and its absence is the decision** — `#21`'s,
+      unchanged by `#95`. A search over twelve pages occupies the most valuable
+      position on the page to answer a question nobody has, while signalling
+      *documentation* to somebody who arrived to find out what this is. `#95`
+      removed the index that was being built and shipped for it. */}
   </div>
 </header>
 
@@ -451,31 +445,5 @@ const isCurrent = (href: string) =>
          thing to click. */
       margin-inline: auto;
     }
-  }
-
-  /* ---- The row without the bar -------------------------------------------- */
-
-  /* Last in the file on purpose: it undoes the bar the rules above draw, and
-     one of those rules is inside the media query, so anything earlier would be
-     overridden at exactly the width where the header is widest. */
-  .site-header--bare {
-    border-bottom: 0;
-    background: transparent;
-  }
-
-  /* Split from the rule above since kolonie-website#81 put the padding on the
-     row: the bar's two full-bleed properties are the header's and the box the
-     content sits in is the row's, so undoing the bar has to reach both. */
-  .site-header--bare .site-header__row {
-    height: 100%;
-    max-width: none;
-    padding: 0;
-  }
-
-  /* The panel is positioned against this header, which without the bar sits
-     inside the wrapper's own gutter — so it is pulled back out to the edges of
-     the screen rather than being indented by a gutter twice. */
-  .site-header--bare .site-header__panel {
-    inset-inline: calc(-1 * var(--k-gutter));
   }
 </style>

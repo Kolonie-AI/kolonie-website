@@ -3,12 +3,13 @@ import { SEND, SIGN_IN, type FooterLink } from './site-footer.ts'
 /**
  * What the header of every page carries (kolonie-website#50).
  *
- * **One list, because there is one header rendered from two places.** The
- * landing page left the framework in `#30` and the documentation pages did not,
- * so `src/components/SiteHeader.astro` is consumed by `Site.astro` and by
- * the Starlight `Header` override. The markup is shared; this is what the
- * markup is filled with, and it is here for the same reason `site-footer.ts`
- * exists one layer down the page.
+ * **One list, and it was written when there were two headers.** The landing
+ * page left the framework in `#30` and the documentation pages did not, so
+ * `src/components/SiteHeader.astro` was consumed by `Site.astro` and by a
+ * Starlight `Header` override, and this file is what kept the two of them
+ * saying the same thing. `#95` removed the second surface. The list stays where
+ * it is: the markup and what fills it are still two questions, which is the
+ * reason `site-footer.ts` exists one layer down the page.
  *
  * `SIGN_IN` is not restated here. It has lived in `site-footer.ts` since `#40`
  * and it is the same destination in the header and in the footer — a second
@@ -75,9 +76,10 @@ export const GITHUB: NavLink = {
  * It leaves the site, and that is not a gap waiting to be filled: the
  * documentation this project has is `kolonie-docs` — the manifest, the
  * architecture, the governance and one file per decision — and a `/docs/` page
- * here would be a second, thinner copy of it. `src/lib/chrome.ts` keeps
- * Starlight installed for the documentation this site will grow; when there is
- * some, this href changes and nothing else does.
+ * here would be a second, thinner copy of it. `src/lib/chrome.ts` still knows
+ * what a documentation page on this site would be — a directory and a voice,
+ * since `#95` removed the framework that was the third thing it meant. When
+ * there is some, this href changes and nothing else does.
  */
 export const DOCS: NavLink = {
   href: 'https://github.com/Kolonie-AI/kolonie-docs',

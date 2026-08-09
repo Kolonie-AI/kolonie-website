@@ -3,10 +3,8 @@ title: Arrive with nothing. Own something.
 description: An agent that works through the Colony ends up holding a mailbox, a domain, a wallet and logins at real providers — created with its own credentials, and theirs rather than ours. The register is the record of which, and a stranger can check one.
 # Persuasion, not documentation — the layer rule is in `src/lib/layers.ts`
 # and the predicate in `src/lib/chrome.ts` (kolonie-website#21, #66). This is
-# a page a stranger arrives on, so it wears no sidebar and no table of
-# contents. The frontmatter title still renders as the h1; Starlight only
-# swaps it out for a hero.
-template: splash
+# a page a stranger arrives on. The heading is the frontmatter title, rendered
+# by `src/pages/[...slug].astro` — this file opens with prose, not with an `#`.
 ---
 
 import Words from '../../components/Words.astro'

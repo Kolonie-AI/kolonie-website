@@ -20,7 +20,7 @@ const html = readFileSync(join(dist, "run-a-swarm", "index.html"), "utf8");
 
 /** The page's own body. See `the-register.built-test.ts` for why the chrome comes off. */
 const body = html.slice(
-  html.indexOf('<div class="sl-markdown-content"'),
+  html.indexOf('<div class="prose content-page'),
   html.indexOf('<footer class="site-footer'),
 );
 

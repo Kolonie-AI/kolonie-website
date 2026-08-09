@@ -7,21 +7,21 @@ before your first edit. If it contradicts your general habits, this file wins.
 
 ## 1. What this repository is
 
-`kolonie.ai` — the public site. Astro + Starlight, static, served by nginx
-behind Traefik.
+`kolonie.ai` — the public site. Astro, static, served by nginx behind Traefik.
 
 ```
-src/content/docs/       the pages
+src/content/pages/      the pages
 src/content.config.ts   the collection definition — without it the build is empty
 src/components/         Astro components a page embeds
+src/layouts/Site.astro  the layout, and there is one
 src/lib/                logic with no DOM in it, and the only thing under test
-src/pages/              routes that are not pages — /llms.txt, /blog
+src/pages/              the routes: [...slug] renders the collection, plus /llms.txt, /blog, /404
 src/styles/theme.css    every colour, type and spacing token, and the only place
 scripts/                generators — the favicon, the OG image, the ASCII wordmark
 public/                 served as-is: the fonts, the icons, the OG image
-astro.config.mjs        site config and Starlight integration
+astro.config.mjs        site config, and short since #95
 Dockerfile              build with node, serve with nginx
-nginx.conf              static serving, Starlight's own 404
+nginx.conf              static serving, the site's own 404
 ```
 
 **`/academy` reads the Colony's API in the browser, at page load.** It is the one
@@ -93,20 +93,29 @@ exception rather than an extension of it — the content half of `/llms.txt`,
 under the same convention, at the adjacent conventional path, containing not one
 sentence of its own (kolonie-website#47).
 
-**Starlight is here for documentation the site does not have yet, and it is
-confined to it** (#21). Every page a stranger arrives on — `/`, `/sponsors`,
-`/sponsors/ideas`, `/skill`, `/academy` — carries `template: splash` in its
-frontmatter, which is what removes the sidebar column, and Starlight's controls
-are overridden in `src/components/starlight/` to render only on documentation
-pages. **A page under `src/content/docs/docs/` is documentation and gets the
-furniture; everything else is not and gets none of it** — that rule is
-`src/lib/chrome.ts` and lives nowhere else.
+**Starlight was here and is not** (#95). It arrived for documentation the site
+does not have, and #21, #30, #49, #50, #51 and #64 each switched off one more
+part of it. What #95 measured before removing it: seven components overridden,
+four of them rendering nothing, `template: splash` on twelve of twelve content
+pages, no page with a search control, a sidebar or a table of contents, and
+`/pagefind/pagefind.js` built and shipped on every deploy and reached by
+nothing. **The framework was being paid for and not used.**
 
-So a new page takes `template: splash` unless it is documentation, and needs no
-other decision. The framework stays because there will be documentation and
-reinstalling it later costs more than confining it now; what was removed is a
-search box over five pages, a sidebar for a site with no hierarchy, and a theme
-switcher for a preference the reader's system already states.
+There is one layout — `src/layouts/Site.astro` — and every page wears it. A new
+page is a `.mdx` file under `src/content/pages/` with a `title` and a
+`description`, and needs no other decision; `src/pages/[...slug].astro` renders
+it and the heading is the frontmatter title.
+
+**The documentation/persuasion split survives the framework, and it is now
+about voice rather than furniture.** A page under `src/content/pages/docs/` is
+documentation; everything else is a page a stranger arrives on. That rule is
+`src/lib/chrome.ts` and lives nowhere else — see the layer rule in §3, which is
+what it now feeds.
+
+One thing about the config is worth knowing before touching it:
+`scopedStyleStrategy: 'where'` in `astro.config.mjs` is Starlight's setting,
+kept deliberately. Astro's default would add a class's worth of specificity to
+every scoped component rule in the repository at once. The file says why.
 
 **The site is English only.** Not an accident and not a gap waiting to be filled:
 agents read English, and a second language doubles the surface that can go
@@ -149,9 +158,9 @@ Markdown file here** — that is the one thing that file forbids everywhere.
   the chain with `Cannot find module 'vitest'` — a message that blames the
   TypeScript configuration for an incomplete install (#12).
 - **Colour lives in `src/styles/theme.css` and nowhere else.** It defines the
-  colour, type and spacing tokens; pages and components consume them, and
-  Starlight's own `--sl-*` names are assigned there once so the sidebar, the
-  search dialog, the asides and the 404 page follow without being touched. A
+  colour, type and spacing tokens and pages and components consume them. The
+  `--sl-*` aliases that used to sit underneath went with the framework in #95;
+  a `--sl-` name anywhere in this repository is now a leftover. A
   colour value in any other file fails `src/styles/theme.test.ts`, which also
   computes every text-on-background pair in both themes and fails under WCAG AA.
   The favicon and the Open Graph image are generated from the same tokens by

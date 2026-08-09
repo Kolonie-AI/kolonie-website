@@ -96,13 +96,13 @@ const base = home ? '' : '/'
     border: 1px solid var(--k-hairline-strong);
     border-radius: 999px;
     padding: 2px;
-    font-size: var(--sl-text-xs);
+    font-size: var(--k-text-xs);
     font-family: var(--k-font-mono);
     line-height: 1;
   }
 
   .audience__pick {
-    color: var(--sl-color-gray-3);
+    color: var(--k-text-muted);
     text-decoration: none;
     padding: 0.35rem 0.7rem;
     border-radius: 999px;
@@ -131,7 +131,7 @@ const base = home ? '' : '/'
 
   :global(#agent:target) ~ :global(*) .audience[data-home] .audience__pick--human {
     background: none;
-    color: var(--sl-color-gray-3);
+    color: var(--k-text-muted);
   }
 
   :global(#agent:target) ~ :global(*) .audience[data-home] .audience__pick--agent {

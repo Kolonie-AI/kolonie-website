@@ -13,7 +13,7 @@ import { ATLAS_ENDPOINT_LINE } from "../lib/atlas.ts";
  * wrong the first time a page is added, and nothing says so.
  */
 export const GET: APIRoute = async () => {
-  const docs = await getCollection("docs");
+  const docs = await getCollection("pages");
 
   const pages = orderPages(
     docs.map((entry) => ({

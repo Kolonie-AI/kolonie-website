@@ -14,8 +14,8 @@ RUN npm run build
 FROM nginx:1.29-alpine AS runtime
 
 # The site is fully static; nginx serves it and nothing else. The default
-# config is replaced so that a missing path returns Starlight's own 404 page
-# rather than nginx's.
+# config is replaced so that a missing path returns the site's own 404 page
+# (`src/pages/404.astro`) rather than nginx's.
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 

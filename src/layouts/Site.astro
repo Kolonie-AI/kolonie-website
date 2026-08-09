@@ -1,14 +1,10 @@
 ---
 /**
- * The shell for the pages that are not documents (kolonie-website#30, #49).
+ * The site's layout. **There is one, and this is it** (kolonie-website#95).
  *
- * **It was `Landing.astro` and served one page until `#49`.** The legal pages
- * rendered through `StarlightPage`, which brought the framework's own light
- * theme with it — two design systems on one domain, one click apart in the
- * footer. `[legal].astro`'s own comment already said a legal page *"is a page a
- * stranger arrives on rather than documentation"*, which is `#21`'s rule, and
- * then called `StarlightPage` anyway. They render through this instead, and the
- * name follows what the file is: the site's layout, not the landing page's.
+ * It served one page from `#30`, five from `#49`, and every page on the site
+ * from `#95`. The line each of those issues moved is the same line: how much of
+ * this site a documentation framework was rendering. It is now none of it.
  *
  * `/` was `src/content/docs/index.mdx` with `template: splash`: a Markdown file
  * rendered by a documentation framework, which meant a hero of a centred title
@@ -17,25 +13,27 @@
  * *Next → The Academy*. `#21` set out to remove that furniture and this was the
  * page it survived on.
  *
- * **This is one page leaving, not a framework migration.** `/academy`,
- * `/skill`, `/quests`, `/who-builds-this` and `/blog` are documents, are well
- * served by being documents, and stay on Starlight. What that costs is this
- * file: the base layer Starlight was providing — the element styles, the skip
- * link, the header — has to exist here instead. It is written against the same
- * tokens in `src/styles/theme.css`, so the two surfaces cannot drift into two
- * designs, and there is not a colour value in this file.
+ * **What `#95` measured is why the rest followed.** Twelve of twelve content
+ * pages carried `template: splash`, which switches the framework's layout off;
+ * seven components were overridden, four of them to render nothing; no page
+ * showed a search control, a sidebar or a table of contents. Every visible part
+ * of Starlight had been switched off one override at a time, and what was left
+ * was a content column the site did not want. The base layer it had been
+ * providing — the element styles, the skip link — is below, written against the
+ * same tokens in `src/styles/theme.css`, and there is not a colour value in
+ * this file.
  *
- * **Dark only, and only here.** Decided by the maintainer on 2026-08-05: both
- * references are dark-only, the brand is terminal-adjacent, and a light theme
- * is a second design that will always be the worse one. `#22` chose *follow the
- * system* and that was right for a documentation site. The documentation pages
- * keep both themes and `theme.test.ts` keeps checking both — which is why the
- * light block in `theme.css` is not dead code and must not be removed on the
- * strength of this layout.
+ * **Dark only.** Decided by the maintainer on 2026-08-05: both references are
+ * dark-only, the brand is terminal-adjacent, and a light theme is a second
+ * design that will always be the worse one. `#22` chose *follow the system* and
+ * that was right for a documentation site.
  *
- * `#49` widened *only here* from one page to five and did not reopen the
- * decision: a legal page reached from a dark footer is a page a reader arrived
- * at from the dark site, and it was the odd one out rather than the exception.
+ * **The light block in `theme.css` is not dead code and must not be removed on
+ * the strength of this layout.** It was kept for the documentation pages until
+ * `#95`, and those are gone — what keeps it now is `theme.test.ts`, which
+ * computes every text-on-background pair in *both* sets. The palette is checked
+ * in a theme the site does not serve so that turning one on is a decision
+ * rather than a repair.
  */
 
 import {
@@ -79,14 +77,23 @@ const themeColor = themeColorFrom(themeCss)
     <link rel="canonical" href={canonical} />
     <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    {/* The second of the two places this has to be declared since `#30` — the
-        other is `sharedHeadTags`, which carries the reasoning (`#62`). */}
+    {/* The Android half of a home-screen icon (`#62`). It carries no `display`
+        field, so nothing here claims this site is an application —
+        `scripts/build-assets.mjs` records that refusal beside the rest of the
+        manifest.
+
+        `/favicon.ico` is deliberately *not* declared beside it. That file
+        exists for clients that request the path without reading this head at
+        all, and offering it here would let a browser prefer 48 fixed pixels to
+        a vector. */}
     <link rel="manifest" href="/site.webmanifest" />
 
-    {/* The same two files the Starlight pages preload, from the same list
-        (kolonie-website#48) — the reason `sharedHeadTags` exists at all is that
-        this page writes its own head and quietly losing a tag here is the
-        failure that costs most. */}
+    {/* The two font files a page needs before it paints (kolonie-website#48).
+        The list is `FONT_PRELOADS` in `src/lib/head.ts`, which is where it went
+        when there were two surfaces writing a head and one of them could
+        quietly lose a tag. There is one now and the list stays there: it is
+        read by `fonts.built-test.ts`, and a preload asserted against a constant
+        is a stronger check than one asserted against a copy. */}
     {FONT_PRELOADS.map((href) => (
       <link
         rel="preload"
@@ -167,10 +174,10 @@ const themeColor = themeColorFrom(themeCss)
          Starlight was providing this one. */}
     <a href="#main" class="skip-link">Skip to content</a>
 
-    {/* The same component the Starlight pages render, from the same list
-        (kolonie-website#50). This page wrote its own header from `#30` until
-        then — a wordmark and two links, which is what a header looks like when
-        nobody owns it. There is one now, and it is not written here. */}
+    {/* One header, on one surface (kolonie-website#50, #95). `#50` had to
+        require that every page render the same component, because there were
+        two surfaces that could disagree; since `#95` there is one, and the
+        requirement is met by there being nowhere else for a header to be. */}
     <SiteHeader pathname={Astro.url.pathname} />
 
     <main id="main">
@@ -218,17 +225,22 @@ const themeColor = themeColorFrom(themeCss)
       }
     </script>
 
-    {/* The same component the Starlight pages render (kolonie-website#51).
-         This page left the framework in #30 and wrote its own footer until
-         then — and two hand-maintained footers is how /privacy/ ends up linked
-         from five pages out of six, which is what #42 had to repair. */}
+    {/* And one footer (kolonie-website#51, #95). Two hand-maintained footers
+         is how /privacy/ ended up linked from five pages out of six, which is
+         what #42 had to repair; there is now one component and one place that
+         renders it. */}
     <SiteFooter />
 
     <style is:global>
       /*
-       * The base layer for the pages that are not documents. Starlight ships one
-       * and it comes with Starlight; this is the same job done against the same
-       * tokens, and nothing here is a colour value.
+       * The base layer, for every page on the site (kolonie-website#95).
+       * Starlight shipped one and it came with Starlight; this is the same job
+       * done against the same tokens, and nothing here is a colour value.
+       *
+       * What a rendered *document* looks like on top of this is
+       * `src/components/Prose.astro` — the element rhythm, the measure and the
+       * tables. It is a component rather than more rules here because three
+       * surfaces need it and the landing page needs none of it.
        */
       *,
       *::before,
@@ -250,7 +262,7 @@ const themeColor = themeColorFrom(themeCss)
            `--k-text-base` and set the most-read text on the site two steps
            below the same text on a documentation page one click away. */
         font-size: var(--k-type-body);
-        line-height: var(--sl-line-height);
+        line-height: var(--k-leading);
         -webkit-font-smoothing: antialiased;
       }
 
@@ -259,7 +271,7 @@ const themeColor = themeColorFrom(themeCss)
       h3,
       h4 {
         color: var(--k-text-strong);
-        line-height: var(--sl-line-height-headings);
+        line-height: var(--k-leading-heading);
       }
 
       h1 {
@@ -301,9 +313,9 @@ const themeColor = themeColorFrom(themeCss)
         border-radius: var(--k-radius);
       }
 
-      /* Starlight's, because components written for the documentation pages use
-         it and a landing page that dropped it would show the labels those
-         components hide. */
+      /* The visually-hidden utility. It arrived with Starlight and stayed with
+         `#95`: components across the site use it, and a page that dropped it
+         would show every label those components hide. */
       .sr-only {
         position: absolute;
         width: 1px;

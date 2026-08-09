@@ -1,47 +1,40 @@
 /**
- * Which pages wear a documentation framework's furniture, and which do not
- * (kolonie-website#21).
+ * Which pages are documentation, and which are read by somebody who has not
+ * decided yet (kolonie-website#21, #66, #95).
  *
- * The site is Starlight, and every page carried its chrome: rendered on the
- * landing page, a reader met *"Skip to content · Kolonie AI · Search Ctrl K ·
- * Cancel · GitHub · Select theme · Dark · Light · Auto"* before a single word
- * about the Colony.
+ * **This file decided what chrome a page wore until `#95`.** The site was
+ * Starlight, and every page carried its furniture: rendered on the landing
+ * page, a reader met *"Skip to content · Kolonie AI · Search Ctrl K · Cancel ·
+ * GitHub · Select theme · Dark · Light · Auto"* before a single word about the
+ * Colony. `#21` took that off the pages a stranger arrives on; `#95` removed
+ * the framework that was still generating it, so there is no chrome left to
+ * decide about.
  *
- * **The arithmetic is the argument.** The site is five pages. A search box
- * searches five pages, and it occupies the most valuable position on the page to
- * answer a question nobody has — while signalling *documentation* to somebody who
- * arrived to find out what this is.
+ * **The predicate outlived the thing it was switching.** What it answers now is
+ * the question `src/lib/layers.ts` asks — which *voice* a page is written in:
  *
- * **Starlight stays, and is confined.** It keeps whatever documentation the site
- * grows, and there will be some; replacing it outright is a rewrite, and throwing
- * it away now means installing it again later. So the chrome is decided per page
- * rather than switched off globally.
+ * > A page in the documentation may be read by somebody who has already
+ * > decided. A page above it is read by somebody who has not.
  *
- * **The rule is the directory, because a list of page ids is a list somebody has
- * to remember to edit.** A page under `docs/` is documentation and gets the
- * furniture — sidebar, search, table of contents, edit link, last updated.
- * Everything else is a page a stranger arrives on and gets none of it. Adding a
- * marketing page is then the default, which is the case that should need no
- * decision.
+ * That decides tone, length, and whether the page may carry a call to action;
+ * `layers.built-test.ts` enforces the last of those against the built output.
+ * None of it is layout, which is why this survived a migration that deleted
+ * everything it used to be consulted by.
  *
- * What is **not** decided here, because it is not chrome and not optional: the
- * skip link and the keyboard order. `#21` is explicit that removing chrome must
- * not remove accessibility.
+ * **The rule is the directory, because a list of page ids is a list somebody
+ * has to remember to edit.** A page under `docs/` is documentation. Everything
+ * else is a page a stranger arrives on. Adding a marketing page is then the
+ * default, which is the case that should need no decision.
  *
- * **Colour themes were on that list until `#64` and are not any more.** `#21`
- * read *both themes* as an accessibility guarantee, and on a site that offered
- * a choice it was one. The site did not offer it: the landing page has been a
- * single theme since `#30`, so what the Starlight pages actually provided was a
- * second theme the rest of the site could not follow — a visitor on a light
- * system read a dark page and then a white one. `#64` settled the site on the
- * theme it already committed to, and the guarantee that replaces *both themes*
- * is the contrast test, which computes every text-on-background pair in the
- * remaining set rather than trusting the palette.
- *
- * The theme is now applied by absence — nothing writes `data-theme`, so
- * `theme.css`'s dark `:root` block is what matches. The two files that make
- * that true are `../components/starlight/ThemeProvider.astro` and
- * `ThemeSelect.astro` beside it, and both carry the reasoning.
+ * **Colour themes were on this file's list until `#64`.** `#21` read *both
+ * themes* as an accessibility guarantee, and on a site that offered a choice it
+ * was one. The site did not offer it: the landing page has been a single theme
+ * since `#30`, so what the Starlight pages actually provided was a second theme
+ * the rest of the site could not follow — a visitor on a light system read a
+ * dark page and then a white one. `#64` settled the site on the theme it
+ * already committed to, and the guarantee that replaces *both themes* is the
+ * contrast test, which computes every text-on-background pair rather than
+ * trusting the palette.
  */
 
 /** The one directory whose pages are documentation. */
@@ -70,10 +63,11 @@ export const DOCUMENTATION_PREFIX = "docs/";
 export const DOCUMENTATION_ROUTES: ReadonlySet<string> = new Set(["quests"]);
 
 /**
- * Whether this page is documentation, from the Starlight route id.
+ * Whether this page is documentation, from its entry id in the `pages`
+ * collection.
  *
- * The id is the content file's path without its extension — `index`,
- * `quests/ideas`, `docs/whatever`.
+ * The id is the content file's path under `src/content/pages/` without its
+ * extension — `academy`, `quests/ideas`, `docs/whatever`.
  *
  * Note that `quests` and `quests/ideas` are deliberately on opposite sides:
  * the first is the reference for commissioning, and the second is a gallery of

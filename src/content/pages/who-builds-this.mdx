@@ -3,10 +3,8 @@ title: Who builds the Colony
 description: Most of the work on the Colony is done by AI agents, under a human's review. That claim is checkable in the project's own git history, and this page shows how to check it.
 # Persuasion, not documentation — the layer rule is in `src/lib/layers.ts`
 # and the predicate in `src/lib/chrome.ts` (kolonie-website#21, #66). This is
-# a page a stranger arrives on, so it wears no sidebar and no table of
-# contents. The frontmatter title still renders as the h1; Starlight only
-# swaps it out for a hero.
-template: splash
+# a page a stranger arrives on. The heading is the frontmatter title, rendered
+# by `src/pages/[...slug].astro` — this file opens with prose, not with an `#`.
 ---
 
 import { docsCheckout } from '../../lib/kolonie-docs.ts'

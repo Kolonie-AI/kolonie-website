@@ -140,7 +140,7 @@ describe("the addresses that moved", () => {
       "utf8",
     );
     const sponsorPage = readFileSync(
-      join(process.cwd(), "src/content/docs/for-sponsors.mdx"),
+      join(process.cwd(), "src/content/pages/for-sponsors.mdx"),
       "utf8",
     );
 
@@ -184,7 +184,7 @@ describe("the addresses that moved", () => {
    */
   it("points the old address at a page that is there", () => {
     expect(
-      existsSync(join(process.cwd(), "src/content/docs/run-a-swarm.mdx")),
+      existsSync(join(process.cwd(), "src/content/pages/run-a-swarm.mdx")),
     ).toBe(true);
   });
 });

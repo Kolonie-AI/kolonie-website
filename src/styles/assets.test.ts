@@ -132,14 +132,20 @@ describe("the site is not shared as a bare link", () => {
   it("names it in the head, at an absolute URL", () => {
     // Relative Open Graph images are ignored by most consumers.
     //
-    // Declared in `src/lib/head.ts` since kolonie-website#30, not in
-    // `astro.config.mjs`: `/` left Starlight, so the config is no longer the
-    // only place a page's head is written from, and the two surfaces read this
-    // one list. `head.built-test.ts` checks the tag survived onto every built
-    // page, which is the assertion that catches them drifting apart.
-    const head = read("../lib/head.ts");
-    expect(head).toContain("https://kolonie.ai/og.png");
-    expect(head).toContain("summary_large_image");
+    // The URL is a constant in `src/lib/head.ts` — written out rather than
+    // composed from `SITE`, so that what this reads is the absolute string and
+    // not an interpolation that would pass while producing a relative path.
+    expect(read("../lib/head.ts")).toContain("https://kolonie.ai/og.png");
+
+    // The card is markup rather than a constant, and it is asserted where the
+    // markup is. It was in `sharedHeadTags` until kolonie-website#95, which is
+    // the list `astro.config.mjs` and the layout both read while there were two
+    // surfaces writing a head; there is one now and the list is gone with the
+    // framework that needed it.
+    //
+    // `head.built-test.ts` checks both tags survived onto *every* built page,
+    // which is the assertion that catches a page losing one.
+    expect(read("../layouts/Site.astro")).toContain("summary_large_image");
   });
 
   it("draws the mark into it rather than beside a retyped copy of it", () => {

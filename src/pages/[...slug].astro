@@ -1,0 +1,54 @@
+---
+/**
+ * Every page in the `pages` collection (kolonie-website#95).
+ *
+ * **This route is what replaced Starlight.** The framework owned the mapping
+ * from a content file to a URL, and twelve of twelve of those files turned its
+ * layout off with `template: splash` — so what it was actually providing was
+ * this file: a slug, a `<title>`, a heading and a rendered body.
+ *
+ * **Every published URL is unchanged**, which was the constraint on `#95` and
+ * the reason the collection kept its ids. `academy.mdx` is `/academy/`,
+ * `quests/ideas.mdx` is `/quests/ideas/`, exactly as before.
+ *
+ * **The heading is rendered here rather than left to the document.** Starlight
+ * rendered the frontmatter title as the `h1` and every page was written
+ * assuming it — none of the twelve opens with its own `#`. The legal pages are
+ * the opposite case and stay that way: those documents live in `kolonie-docs`
+ * and carry their own heading, so `[legal].astro` adds none. Two conventions,
+ * because there are two kinds of source, and each file says which it is.
+ */
+
+import { getCollection, render, type CollectionEntry } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+
+import Site from '../layouts/Site.astro'
+import Prose from '../components/Prose.astro'
+import { isDocumentation } from '../lib/chrome.ts'
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const pages = await getCollection('pages')
+  return pages.map((page) => ({ params: { slug: page.id }, props: { page } }))
+}
+
+const { page } = Astro.props as { page: CollectionEntry<'pages'> }
+const { Content } = await render(page)
+
+/**
+ * Which layer this page is in (`src/lib/layers.ts`, `src/lib/chrome.ts`).
+ *
+ * It decides nothing about the chrome any more — there is one layout and it is
+ * the same on both — and it is still read here, because `layers.built-test.ts`
+ * asserts over the built output and needs the answer to be *in* the output. A
+ * data attribute is the honest way to carry a classification the CSS does not
+ * use: it cannot silently become a style rule.
+ */
+const layer = isDocumentation(page.id) ? 'documentation' : 'persuasion'
+---
+
+<Site title={page.data.title} description={page.data.description}>
+  <Prose class="content-page" data-layer={layer}>
+    <h1>{page.data.heading ?? page.data.title}</h1>
+    <Content />
+  </Prose>
+</Site>

@@ -3,11 +3,13 @@ import { LEGAL_PAGES } from './legal-pages.ts'
 /**
  * What the footer of every page carries (kolonie-website#42).
  *
- * **One list, because there are two footers and they must not drift.** The
- * landing page left the framework in `#30` and writes its own; the Starlight
- * pages get theirs from `src/components/starlight/Footer.astro`. `#42` and `#44`
+ * **One list, because there were two footers and they must not drift.** The
+ * landing page left the framework in `#30` and wrote its own while the
+ * documentation pages got theirs from a Starlight override; `#42` and `#44`
  * both require their page to be linked from *every* page's footer, and two
- * hand-maintained lists is how one of them silently stops being.
+ * hand-maintained lists is how one of them silently stops being. `#95` left one
+ * footer, and this file is why the merge was a deletion rather than a
+ * reconciliation.
  *
  * The same argument `src/lib/head.ts` makes about the head tags, one layer down
  * the page.
@@ -38,10 +40,9 @@ export const legalLinks: readonly FooterLink[] = [...LEGAL_PAGES]
  * routes *what are you and what do you want*, and a login is not a fourth kind
  * of reader, it is a returning one.
  *
- * It lives in this file rather than in `Site.astro` because the landing page
- * left the framework in `#30` and the Starlight pages did not, so there are two
- * headers to keep in agreement — the same argument this file already makes about
- * the two footers, one layer up the page.
+ * It lives in this file rather than in `Site.astro` for the same reason the
+ * rest of the list does: it is read by the header and by the footer, which were
+ * two surfaces until `#95` and are two components still.
  */
 export const SIGN_IN: FooterLink = {
   href: 'https://console.kolonie.ai/',

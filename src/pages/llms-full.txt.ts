@@ -33,7 +33,7 @@ export const GET: APIRoute = async () => {
   container.addServerRenderer({ name: "astro:jsx", renderer: mdxRenderer });
 
   const entries = orderPages(
-    (await getCollection("docs")).map((entry) => ({
+    (await getCollection("pages")).map((entry) => ({
       path: pathForEntryId(entry.id),
       title: entry.data.title,
       entry,

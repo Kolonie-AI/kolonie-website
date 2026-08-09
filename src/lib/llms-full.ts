@@ -114,7 +114,10 @@ export function htmlToText(html: string, headingOffset = 1): string {
     text = text.replace(new RegExp(`<${tag}\\b[^>]*/>`, "gi"), "");
   }
 
-  // Starlight wraps every heading in an anchor that repeats the heading text.
+  // A heading anchor repeats the heading's own text, so it arrives in the
+  // extracted prose twice. Starlight emitted these on every heading until
+  // kolonie-website#95; the rule stays because a markdown plugin that adds them
+  // back would otherwise reintroduce the duplication silently.
   text = text.replace(/<a\b[^>]*class="[^"]*anchor[^"]*"[^>]*>[\s\S]*?<\/a>/gi, "");
 
   // Fenced blocks first: their contents must survive the tag stripping below
