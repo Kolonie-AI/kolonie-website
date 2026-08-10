@@ -113,20 +113,17 @@ const isCurrent = (href: string) =>
   </a>
 
   {/*
-    A `<details>` and not a script (kolonie-website#50). Below `--k-bp-sm` the
-    wordmark and `Sign in` stay in the bar and everything else folds into this;
-    above it, the CSS opens the panel permanently and hides the toggle, so the
-    same markup is a menu on a phone and a row on a desktop. A scripted menu
-    would be a fourth thing on this site that stops working with JavaScript
+    A `<details>` and not a script (kolonie-website#50). Below `--k-bp-sm` only
+    the mark and the toggle stay in the bar; the complete navigation folds into
+    this panel. Above it, CSS opens the panel permanently and hides the toggle,
+    so the same markup is a menu on a phone and a row on a desktop. A scripted
+    menu would be a fourth thing on this site that stops working with JavaScript
     off, and the accordion on `/` already made this choice for the same reason
     (`#37`).
 
-    **`Sign in` is outside it rather than inside and repeated.** It has to be in
-    the bar at every width, and the obvious way to do that — one copy in the
-    panel and a second in the bar, each hidden at the other's width — puts two
-    links with the same name in the document. CSS can hide one from the eye and
-    not from a screen reader, and *Sign in, Sign in* is a worse header than a
-    missing button. One copy, and it simply never folds.
+    `Sign in` and `Send your agent` each occur once, inside the panel
+    (kolonie-website#101). That makes them reachable as soon as the phone menu
+    opens without duplicating either action for desktop and mobile.
   */}
   <details class="site-header__menu">
     <summary aria-label="Menu">
@@ -144,13 +141,15 @@ const isCurrent = (href: string) =>
         }
       </nav>
 
-      {/*
-        The audience switch (kolonie-website#78). Inside the panel, so it folds
-        with everything else below `--k-bp-sm` — `Sign in` is the one thing that
-        stays in the bar at every width, and a second permanent control beside it
-        is what makes a header stop fitting on a phone.
-      */}
+      {/* The audience switch (kolonie-website#78). Inside the panel, so it folds
+          with everything else below `--k-bp-sm`. */}
       <AudienceSwitch home={pathname === '/'} />
+
+      <a class="site-header__returning" href={SIGN_IN.href}>{SIGN_IN.label}</a>
+
+      <Button class="site-header__send" href={SEND.href} variant="primary">
+        {SEND.label}
+      </Button>
 
       <div class="site-header__actions">
         {/* A word for a screen reader, an icon for everybody else — the same
@@ -175,27 +174,6 @@ const isCurrent = (href: string) =>
       </div>
     </div>
   </details>
-
-  {/*
-    **The filled button describes what a new visitor does** (kolonie-website#87).
-
-    It said `Sign in` from `#40` until then, which is a label for somebody who
-    already belongs — on every page, as the one persistent action the site has.
-    `#87`: *"The primary action should describe what a **new** visitor is about
-    to do."*
-
-    `Sign in` is beside it now rather than gone: a returning visitor is looking
-    for those two words and finds them, and a new one is no longer offered them
-    as the thing to press. The same pair, in the same order, as the hero's.
-
-    It stays outside the folding panel for `#50`'s reason, unchanged — the
-    primary action has to be in the bar at every width.
-  */}
-  <a class="site-header__returning" href={SIGN_IN.href}>{SIGN_IN.label}</a>
-
-  <Button class="site-header__sign-in" href={SEND.href} variant="primary">
-    {SEND.label}
-  </Button>
 
   {/* **There is no search box, and its absence is the decision** — `#21`'s,
       unchanged by `#95`. A search over twelve pages occupies the most valuable
@@ -291,27 +269,16 @@ const isCurrent = (href: string) =>
 
   /* ---- The phone: a bar and a panel under it ----------------------------- */
 
-  /* `margin-left: auto` puts the toggle at the right-hand end of the bar, just
-     before the sign-in button that never folds. */
+  /* `margin-left: auto` puts the toggle at the learned right-hand edge. */
   .site-header__menu {
     margin-left: auto;
   }
 
-  /* Never folds and never wraps: it is the one thing in this bar that has to be
-     in the same place on a phone and on a desktop. */
-  .site-header__sign-in {
-    white-space: nowrap;
-  }
-
-  /* Quiet, beside the filled button rather than inside it (kolonie-website#87).
-     Text and not an outline button: two bordered controls side by side read as
-     two alternatives of the same weight, which is the thing `#87` is undoing.
-
-     Hidden below `--k-bp-sm`, where the bar holds the wordmark, the burger and
-     the one action and nothing else fits — the console is reachable from the
-     footer of every page, which is where `#40` put it as well. */
+  /* Quiet account access, but still a complete 44px target on a phone. */
   .site-header__returning {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
     color: var(--k-text-muted);
     font-size: var(--k-type-small);
     white-space: nowrap;
@@ -321,6 +288,11 @@ const isCurrent = (href: string) =>
   .site-header__returning:hover,
   .site-header__returning:focus-visible {
     color: var(--k-accent);
+  }
+
+  .site-header__send {
+    width: 100%;
+    white-space: nowrap;
   }
 
   /* 2.75rem is 44px (kolonie-website#98). It was 2.25rem — 36px — which is the
@@ -371,18 +343,38 @@ const isCurrent = (href: string) =>
     top: 0.3rem;
   }
 
+  .site-header__menu[open] .site-header__burger {
+    background: transparent;
+  }
+
+  .site-header__menu[open] .site-header__burger::before {
+    top: 0;
+    transform: rotate(45deg);
+  }
+
+  .site-header__menu[open] .site-header__burger::after {
+    top: calc(-1 * var(--k-border));
+    transform: rotate(-45deg);
+  }
+
   /* The panel drops out of the bar rather than pushing it down, so opening the
      menu does not move the page under the reader's thumb. */
   .site-header__panel {
     position: absolute;
     z-index: 20;
+    top: 100%;
     inset-inline: 0;
     display: flex;
     flex-direction: column;
     gap: var(--k-space-4);
     padding: var(--k-space-5) var(--k-gutter);
-    border-bottom: var(--k-border) solid var(--k-hairline);
+    border: var(--k-border) solid var(--k-hairline-strong);
+    border-top-color: var(--k-hairline);
     background: var(--k-surface);
+  }
+
+  .site-header__panel :global(.audience) {
+    align-self: flex-start;
   }
 
   .site-header__nav {
@@ -392,6 +384,9 @@ const isCurrent = (href: string) =>
   }
 
   .site-header__nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
     color: var(--k-text-muted);
     font-family: var(--k-font-mono);
     font-size: var(--k-type-small);
@@ -414,6 +409,8 @@ const isCurrent = (href: string) =>
     display: flex;
     align-items: center;
     gap: var(--k-space-3);
+    padding-top: var(--k-space-4);
+    border-top: var(--k-border) solid var(--k-hairline);
   }
 
   /* The icon is 20px and the control around it is 44 (kolonie-website#98). The
@@ -435,9 +432,8 @@ const isCurrent = (href: string) =>
 
   /* ---- What opens up once there is room ---------------------------------- */
 
-  /* Above `--k-bp-sm` there is no menu: the toggle is gone, the panel is a row
-     in the bar, and the standalone `Sign in` that was holding the phone bar
-     together is hidden because the real one is now visible.
+  /* Above `--k-bp-sm` there is no menu: the toggle is gone and the panel is a
+     row in the bar.
 
      **The `open` attribute is not consulted**, deliberately. The panel is shown
      by this rule whatever state the `<details>` is in, so a reader who opened
@@ -468,11 +464,6 @@ const isCurrent = (href: string) =>
       display: none;
     }
 
-    /* There is room for it here, and this is where a returning visitor looks. */
-    .site-header__returning {
-      display: inline;
-    }
-
     /* **Both, and neither is redundant.** How a browser hides a closed
        `<details>` changed: older engines set `display: none` on the children,
        which the rule below overrides, and newer ones hide `::details-content`
@@ -495,6 +486,15 @@ const isCurrent = (href: string) =>
       padding: 0;
       border: 0;
       background: transparent;
+    }
+
+    .site-header__send {
+      width: auto;
+    }
+
+    .site-header__actions {
+      padding-top: 0;
+      border-top: 0;
     }
 
     .site-header__nav {

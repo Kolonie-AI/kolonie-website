@@ -130,6 +130,13 @@ const { class: className, ...rest } = Astro.props
     color: var(--k-text-muted);
   }
 
+  /* A legal page may print its destination as the link text. At 320px an
+     unbroken URL is wider than the prose measure, so break the label rather
+     than widen the whole document (kolonie-website#101). */
+  .prose :global(a) {
+    overflow-wrap: anywhere;
+  }
+
   .prose :global(hr) {
     border: 0;
     border-top: var(--k-border) solid var(--k-hairline);

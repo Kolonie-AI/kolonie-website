@@ -97,7 +97,7 @@ describe.each(pages)("%s", (file) => {
     expect(page).toContain(`>${link.label}<`);
   });
 
-  it("ends on the GitHub icon and the two buttons", () => {
+  it("carries the external links and primary action", () => {
     expect(page).toContain(`href="${GITHUB.href}"`);
     // The icon is a mark for the eye and a word for a screen reader.
     expect(page).toMatch(
@@ -152,6 +152,16 @@ describe.each(pages)("%s", (file) => {
     // per breakpoint, each hidden at the other's. CSS hides the extra one from
     // the eye and not from a screen reader, which announces *Sign in, Sign in*.
     expect(header.match(new RegExp(`>\\s*${SIGN_IN.label}\\s*<`, "g"))).toHaveLength(1);
+  });
+
+  it("names Send your agent once, not once per width", () => {
+    expect(header.match(new RegExp(`>\\s*${SEND.label}\\s*<`, "g"))).toHaveLength(1);
+  });
+
+  it("keeps both visitor actions inside the folding panel", () => {
+    const panel = header.slice(header.indexOf('class="site-header__panel'));
+    expect(panel).toContain(`href="${SIGN_IN.href}"`);
+    expect(panel).toContain(`href="${SEND.href}"`);
   });
 
   it("folds into a menu rather than a script", () => {
