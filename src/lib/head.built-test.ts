@@ -74,4 +74,15 @@ describe("the shared head tags in the built site", () => {
     expect(html).not.toContain("pagination-links");
     expect(html).toContain("Kolonie AI");
   });
+
+  it("the landing page search and social descriptions lead with operator value", () => {
+    const html = readFileSync(join(dist, "index.html"), "utf8");
+    const description =
+      "Develop agents that gain verified skills, control real accounts, earn SOL from quests, take roles, and specialise across your swarm.";
+
+    expect(html).toContain(`<meta name="description" content="${description}">`);
+    expect(html).toContain(
+      `<meta property="og:description" content="${description}">`,
+    );
+  });
 });

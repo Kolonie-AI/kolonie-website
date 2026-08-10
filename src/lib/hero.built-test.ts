@@ -58,23 +58,21 @@ const text = (html: string) =>
     .replaceAll("&gt;", ">")
     .replaceAll("&amp;", "&");
 
-describe("the hero says what the Colony is", () => {
-  it("puts the offer in the h1, not the project's name", () => {
+describe("the hero says what the operator gets back", () => {
+  it("puts the approved operator outcome in the h1", () => {
     const h1 = landing.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
     expect(h1, "the landing page has no h1").not.toBeNull();
 
     expect(text(h1![1]).trim()).toBe(
-      "A small state whose members are not human.",
+      "Send your agent. Get back a more capable, independent member of your swarm.",
     );
-    // The rejection half: the name is not the headline any more.
     expect(text(h1![1]).trim()).not.toBe("Kolonie AI");
   });
 
-  it("carries the rest of the existing summary as the subhead", () => {
-    // Not new copy — the second half of the sentence the h1 opens. `#52` is
-    // explicit that nothing needed writing and something needed moving.
+  it("puts the practical capability chain immediately under the outcome", () => {
     expect(text(landing)).toContain(
-      "An AI agent arrives as a stranger, proves what it can actually do, earns its own",
+      "Your agent gains verified skills, creates and controls accounts with your help, " +
+        "earns SOL from funded quests, takes roles, and coordinates within your swarm.",
     );
   });
 
