@@ -29,6 +29,7 @@ const dist = fileURLToPath(new URL("../../dist", import.meta.url));
 
 /** The width `#98` measured at, and the width this suite is about. */
 const PHONE = { width: 390, height: 844 } as const;
+const HEADER_WIDTHS = [320, 390, 430] as const;
 
 /**
  * The floors, both from `#98`'s goal: *"Nothing a reader is meant to press is
@@ -141,6 +142,7 @@ afterAll(async () => {
 });
 
 const measure = async (route: string): Promise<Measurement> => {
+  await page.setViewportSize(PHONE);
   const response = await page.goto(origin + route, { waitUntil: "load" });
   expect(response?.status(), `${route} did not serve`).toBeLessThan(400);
 
@@ -255,4 +257,79 @@ describe.each(routes)("%s at 390px", (route) => {
         .join(", ")}`,
     ).toEqual([]);
   });
+});
+
+describe.each([320, 430] as const)("every route at %ipx", (width) => {
+  it.each(routes)("%s does not scroll sideways", async (route) => {
+    await page.setViewportSize({ width, height: PHONE.height });
+    const response = await page.goto(origin + route, { waitUntil: "load" });
+    expect(response?.status(), `${route} did not serve`).toBeLessThan(400);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
+  });
+});
+
+describe.each(HEADER_WIDTHS)("the mobile header at %ipx", (width) => {
+  it.each(["/", "/academy/"])("composes deliberately on %s", async (route) => {
+    await page.setViewportSize({ width, height: PHONE.height });
+    await page.goto(origin + route, { waitUntil: "load" });
+
+    const header = page.locator(".site-header");
+    const mark = header.locator(".site-header__mark");
+    const toggle = header.locator("summary");
+    const signIn = header.getByRole("link", { name: "Sign in", exact: true });
+    const send = header.getByRole("link", { name: "Send your agent", exact: true });
+
+    expect(await mark.isVisible()).toBe(true);
+    expect(await toggle.isVisible()).toBe(true);
+    expect(await signIn.isVisible()).toBe(false);
+    expect(await send.isVisible()).toBe(false);
+
+    const markBox = await mark.boundingBox();
+    const toggleBox = await toggle.boundingBox();
+    expect(markBox).not.toBeNull();
+    expect(toggleBox).not.toBeNull();
+    expect(markBox!.x).toBeLessThanOrEqual(17);
+    expect(toggleBox!.x + toggleBox!.width).toBeGreaterThanOrEqual(width - 17);
+
+    await toggle.click();
+    expect(await signIn.isVisible()).toBe(true);
+    expect(await send.isVisible()).toBe(true);
+    expect(await header.getByRole("link", { name: "GitHub", exact: true }).isVisible()).toBe(true);
+    expect(await header.getByRole("link", { name: "Docs", exact: true }).isVisible()).toBe(true);
+    expect(await header.locator(".audience").isVisible()).toBe(true);
+
+    expect(await signIn.count()).toBe(1);
+    expect(await send.count()).toBe(1);
+    for (const control of await header.locator("a, summary").all()) {
+      const box = await control.boundingBox();
+      expect(box).not.toBeNull();
+      expect(Math.min(box!.width, box!.height)).toBeGreaterThanOrEqual(TAP_TARGET_PX);
+    }
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
+  });
+});
+
+it("opens the mobile menu without JavaScript", async () => {
+  const context = await browser.newContext({
+    viewport: { ...PHONE },
+    javaScriptEnabled: false,
+  });
+  const noScriptPage = await context.newPage();
+  await noScriptPage.goto(origin + "/", { waitUntil: "load" });
+  await noScriptPage.locator(".site-header summary").click();
+  expect(
+    await noScriptPage
+      .locator(".site-header")
+      .getByRole("link", { name: "Sign in", exact: true })
+      .isVisible(),
+  ).toBe(true);
+  await context.close();
 });
