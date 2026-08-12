@@ -88,6 +88,17 @@ describe("the chrome fragment the Atlas includes (#99)", () => {
   });
 
   /**
+   * Atlas pages deliberately carry no JavaScript. The fragment therefore has
+   * to contain the state they can publish as-is, not a loading state that only
+   * this site's script can replace.
+   */
+  it("contains no script or script-dependent loading state", () => {
+    expect(fragment).not.toMatch(/<script\b/);
+    expect(fragment).not.toContain("Checking the Colony");
+    expect(fragment).toContain('href="https://status.kolonie.ai"');
+  });
+
+  /**
    * The styles have to travel with the markup or the Atlas gets this site's
    * header as unstyled links. A relative href is correct and load-bearing:
    * `/atlas` is on this same host, so `/_astro/x.css` resolves to this site's
