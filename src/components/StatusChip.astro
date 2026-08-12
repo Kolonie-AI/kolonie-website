@@ -38,24 +38,40 @@
  * against the API is load the Colony did not ask for, from readers who are not
  * customers.
  */
+
+interface Props {
+  /** Render the settled, fetch-free state used by the Atlas chrome fragment. */
+  static?: boolean
+}
+
+const { static: staticMode = false } = Astro.props
 ---
 
-<p class="liveness" data-state="checking">
-  <span class="liveness__dot" aria-hidden="true"></span>
-  <span data-liveness-text>Checking the Colony…</span>
-</p>
-
-{/*
-  Without JavaScript the chip says what it is rather than disappearing or
-  claiming a state it has not read. Same discipline as `registration.ts`: state
-  the failure, or show nothing — never a false answer.
-*/}
-<noscript>
+{staticMode ? (
   <p class="liveness" data-state="unknown">
     <span class="liveness__dot" aria-hidden="true"></span>
-    <span>Liveness is read live and needs JavaScript</span>
+    <span>The Colony's status is at <a href="https://status.kolonie.ai">status.kolonie.ai</a></span>
   </p>
-</noscript>
+) : (
+  <>
+    <p class="liveness" data-state="checking">
+      <span class="liveness__dot" aria-hidden="true"></span>
+      <span data-liveness-text>Checking the Colony…</span>
+    </p>
+
+    {/*
+      Without JavaScript the chip says what it is rather than disappearing or
+      claiming a state it has not read. Same discipline as `registration.ts`:
+      state the failure, or show nothing — never a false answer.
+    */}
+    <noscript>
+      <p class="liveness" data-state="unknown">
+        <span class="liveness__dot" aria-hidden="true"></span>
+        <span>Liveness is read live and needs JavaScript</span>
+      </p>
+    </noscript>
+  </>
+)}
 
 <style>
   /* No colour value here — every one is a token from theme.css (#11). */
@@ -93,39 +109,41 @@
   }
 </style>
 
-<script>
-  import {
-    DEFAULT_API_BASE,
-    healthUrl,
-    loadRegistrationState,
-  } from '../lib/registration.ts'
+{!staticMode && (
+  <script>
+    import {
+      DEFAULT_API_BASE,
+      healthUrl,
+      loadRegistrationState,
+    } from '../lib/registration.ts'
 
-  // `querySelectorAll` and not `querySelector`: this component renders in the
-  // footer of every page, and a page that ever carried two footers would
-  // otherwise leave the second one saying "Checking the Colony…" forever.
-  const chips = document.querySelectorAll<HTMLElement>(
-    '.liveness[data-state="checking"]',
-  )
+    // `querySelectorAll` and not `querySelector`: this component renders in the
+    // footer of every page, and a page that ever carried two footers would
+    // otherwise leave the second one saying "Checking the Colony…" forever.
+    const chips = document.querySelectorAll<HTMLElement>(
+      '.liveness[data-state="checking"]',
+    )
 
-  if (chips.length) {
-    const base = import.meta.env.PUBLIC_KOLONIE_API_BASE ?? DEFAULT_API_BASE
-    // One fetch for the page, however many chips read it. Not a loop over the
-    // chips: that would be one request per element for one fact.
-    const state = await loadRegistrationState(globalThis.fetch, healthUrl(base))
+    if (chips.length) {
+      const base = import.meta.env.PUBLIC_KOLONIE_API_BASE ?? DEFAULT_API_BASE
+      // One fetch for the page, however many chips read it. Not a loop over the
+      // chips: that would be one request per element for one fact.
+      const state = await loadRegistrationState(globalThis.fetch, healthUrl(base))
 
-    for (const chip of chips) {
-      const text = chip.querySelector<HTMLElement>('[data-liveness-text]')
-      if (!text) continue
+      for (const chip of chips) {
+        const text = chip.querySelector<HTMLElement>('[data-liveness-text]')
+        if (!text) continue
 
-      if (state.outcome === 'open') {
-        chip.dataset.state = 'open'
-        text.textContent = 'The Colony answered as this page loaded'
-      } else {
-        // **Never "closed".** See the component comment; this is the whole of
-        // what `#9` was.
-        chip.dataset.state = 'unknown'
-        text.textContent = `The Colony ${state.reason} when this page asked`
+        if (state.outcome === 'open') {
+          chip.dataset.state = 'open'
+          text.textContent = 'The Colony answered as this page loaded'
+        } else {
+          // **Never "closed".** See the component comment; this is the whole of
+          // what `#9` was.
+          chip.dataset.state = 'unknown'
+          text.textContent = `The Colony ${state.reason} when this page asked`
+        }
       }
     }
-  }
-</script>
+  </script>
+)}

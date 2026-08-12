@@ -43,6 +43,12 @@ import {
   socialLinks,
 } from '../lib/site-footer.ts'
 
+interface Props {
+  staticStatus?: boolean
+}
+
+const { staticStatus = false } = Astro.props
+
 /**
  * The copyright holder, read from `kolonie-docs` at build time rather than
  * typed (kolonie-website#41). The same argument the imprint and
@@ -104,7 +110,7 @@ const MARK = inlineMark(themeCss)
       {/* The sentence `/llms.txt` opens with and `kolonie.about` returns — see
           `SITE_DESCRIPTION`. Not a fourth wording of what this is. */}
       <p class="site-footer__lede">{SITE_DESCRIPTION}</p>
-      <StatusChip />
+      <StatusChip static={staticStatus} />
     </div>
 
     <nav class="site-footer__column" aria-labelledby="footer-navigation">

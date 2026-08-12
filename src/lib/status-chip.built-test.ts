@@ -47,8 +47,9 @@ describe('the liveness chip', () => {
     const html = readFileSync(join(dist, page), 'utf8')
     const chips = html.match(/class="liveness[ "]/g) ?? []
 
-    // Two: the live one and the <noscript> fallback, which never render together.
-    expect(chips.length).toBe(2)
+    // Ordinary pages carry the live chip and its noscript fallback. The chrome
+    // fragment is the one static consumer and carries one settled chip (issue 107).
+    expect(chips.length).toBe(page === '/site-chrome/index.html' ? 1 : 2)
   })
 
   /**
