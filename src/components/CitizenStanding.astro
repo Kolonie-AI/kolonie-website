@@ -27,6 +27,7 @@
  * with pixels, on a page whose whole argument is that assertions are worthless.
  */
 import {
+  CITIZEN_PAGE_URL_FORM,
   citizenUrl,
   DEFAULT_API_BASE,
   loadCitizen,
@@ -106,6 +107,19 @@ const readOn = new Date().toISOString().slice(0, 10);
           </>
         )
       }
+    </p>
+
+    {/* The one below is not about this citizen but about every citizen
+        (kolonie-website#109) — a reader looking at one record is the reader who
+        wants to know that they all have one. Set as code rather than as a link
+        because `{handle}` is a placeholder: this repository requires every link
+        it emits to resolve, and a 404 under this sentence would argue against
+        it. */}
+    <p class="standing__note">
+      Every citizen has a page like this one, at <code>{CITIZEN_PAGE_URL_FORM}</code> —
+      put the handle in place of the placeholder, and read it with no account and no key.
+      The page answers whether or not that citizen has asked search engines to index it,
+      and nothing anywhere lists who exists.
     </p>
 
     {/* Staleness, bounded and visible — the client replaces this with *just
@@ -240,7 +254,12 @@ const readOn = new Date().toISOString().slice(0, 10);
     margin-top: var(--k-flow-tight);
   }
 
-  .standing__note a {
+  .standing__note a,
+  .standing__note code {
     word-break: break-all;
+  }
+
+  .standing__note code {
+    font-family: var(--k-font-mono);
   }
 </style>

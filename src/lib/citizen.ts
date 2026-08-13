@@ -1,4 +1,5 @@
 import { DEFAULT_API_BASE } from "./academy.ts";
+import { ENTRY_POINTS } from "./skills.ts";
 
 /**
  * One citizen's public standing, read from the Colony (kolonie-website#26).
@@ -48,6 +49,26 @@ export interface Citizen {
 export type CitizenLoad =
   | { readonly outcome: "loaded"; readonly citizen: Citizen }
   | { readonly outcome: "unavailable"; readonly reason: string };
+
+/**
+ * Where a *reader* goes: the citizen page's URL form, handle left as a
+ * placeholder (kolonie-website#109).
+ *
+ * **A form and never a link.** `{handle}` is not a handle, so this string
+ * resolves to nothing and is rendered as code rather than as an `href` — this
+ * repository requires every link it emits to resolve, and a `404` under a
+ * sentence promising a page would argue the opposite of what the sentence says.
+ *
+ * **And never a citizen.** Substituting a real handle here would publish one,
+ * which `a-citizen-has-a-page.md` refuses: no directory, no listing, no count.
+ * The one named citizen on this site is the maintainer's own test account in
+ * `<CitizenStanding />`, disclosed on the page's face and argued separately on
+ * `kolonie-website#26`.
+ *
+ * Distinct from `citizenUrl` above, which is the API record a component reads.
+ * This is the page a person is sent to.
+ */
+export const CITIZEN_PAGE_URL_FORM = `${ENTRY_POINTS.site}/@{handle}`;
 
 /** Where one citizen's public record is read from. */
 export function citizenUrl(base: string, handle: string): string {

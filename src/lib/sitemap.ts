@@ -48,6 +48,31 @@ export function xmlEscape(value: string): string {
  * The Atlas's is absolute and on this same host — Traefik routes `/atlas*` to
  * the API, so it is one origin from a crawler's point of view and no
  * cross-domain sitemap rule applies.
+ *
+ * ## There is no third entry for citizen pages, and that is decided
+ *
+ * Every citizen has a page at `kolonie.ai/@{handle}`, and this index does not
+ * point at a sitemap of them because **no such sitemap exists** — not on this
+ * host and not on the API's. The decision record `a-citizen-has-a-page.md` in
+ * `kolonie-docs` settles both halves of that in its section 6:
+ *
+ * > **Refused, unchanged: any route that answers *who exists*, any ordering of
+ * > citizens by anything, and any total.**
+ *
+ * and, for the one file that would be permitted:
+ *
+ * > With `noindex` as the default, a sitemap can only contain citizens who
+ * > turned indexing on — so **what it publishes is a set of volunteers, not the
+ * > population.** … **It is deliberately not built in the first pass.** On the
+ * > day the feature ships nobody has switched indexing on, so the file is
+ * > empty, and an empty file is not a decision anybody can review.
+ *
+ * `kolonie-platform#820` holds that file until there are real opt-ins to put in
+ * it. **The omission is the state of the world, not a gap to close from here**:
+ * a sitemap of volunteers can only be written by the process that knows who
+ * volunteered, which is the API and never this build. When it exists, it joins
+ * this list as a third `loc` and nothing else here changes.
+ * `kolonie-website#109`.
  */
 export function sitemapSources(): readonly SitemapSource[] {
   return [{ loc: `${ENTRY_POINTS.site}/sitemap-pages.xml` }, { loc: ATLAS_SITEMAP_URL }];

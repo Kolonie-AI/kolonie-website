@@ -27,6 +27,20 @@ describe("the sitemap index", () => {
     expect(index).not.toContain("<url>");
   });
 
+  /**
+   * **No third entry for citizen pages** (kolonie-website#109). Not an
+   * oversight: `a-citizen-has-a-page.md` permits a sitemap of citizens who
+   * turned indexing on and refuses any route that answers *who exists*, and the
+   * permitted file is deliberately unbuilt until there are opt-ins to put in it
+   * (`kolonie-platform#820`). This fails if the omission is "fixed" from here,
+   * by pointing at a file nobody serves.
+   */
+  it("names no citizen surface, because none is published", () => {
+    expect(index.match(/<sitemap>/g)).toHaveLength(2);
+    expect(index).not.toContain("/@");
+    expect(index.toLowerCase()).not.toContain("citizen");
+  });
+
   it("escapes for XML rather than for HTML", () => {
     expect(xmlEscape("a&b'c")).toBe("a&amp;b&apos;c");
   });

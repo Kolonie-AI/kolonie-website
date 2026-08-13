@@ -44,6 +44,27 @@ import { ENTRY_POINTS } from "./skills.ts";
  * adding to it, so there is not one to add to. `robots.test.ts` fails if a
  * `Disallow` line appears at all.
  *
+ * ## `/@{handle}` is allowed, and that is the only answer that works
+ *
+ * A citizen has a public page at `kolonie.ai/@{handle}` (`kolonie-platform#819`),
+ * and every one of them is `noindex` until that citizen turns indexing on
+ * (`kolonie-platform#830`). Two edits suggest themselves here and both are wrong:
+ *
+ * - **Refusing the path.** A crawler that is told not to fetch `/@*` never
+ *   fetches it, so it never reads the `X-Robots-Tag` the API sets — and a
+ *   citizen who *has* turned indexing on could then never be indexed, because
+ *   the file at the root of the host overrode a decision that belongs to them.
+ *   Robots exclusion governs fetching; `noindex` governs keeping. The one that
+ *   has to run second cannot be the one that never runs.
+ * - **Naming the path as an explicit `Allow:`.** That reads as an invitation to
+ *   crawl the space, when the default for every page in it is *do not keep
+ *   this*. It would also be the second place the profile policy is written, and
+ *   the one nobody edits when the policy changes.
+ *
+ * So `/@{handle}` is covered by the `Allow: /` that covers everything else, the
+ * per-page header decides per page, and the body says which of the two the file
+ * is doing so that the next reader does not add the line. `kolonie-website#109`.
+ *
  * ## Every path is derived
  *
  * Generated like `/llms.txt`, and for the reason that file's header gives: *a
@@ -75,6 +96,15 @@ export function robotsTxt(): string {
 
 User-agent: *
 Allow: /
+
+# That includes a citizen's own page at ${ENTRY_POINTS.site}/@{handle}, which is
+# covered by the line above and is deliberately not called out separately.
+# Whether one of those pages may be kept is decided per page, by the
+# X-Robots-Tag header the API sends: noindex until that citizen turns indexing
+# on. A header is only read once the page has been fetched, so refusing the path
+# here would settle the question before the citizen's own answer could be heard,
+# and naming the path as an exception would read as an invitation to crawl a
+# space whose default is no. See kolonie-website#109.
 
 # search=yes    index it and show it in results
 # ai-input=yes  use it to answer somebody's question
