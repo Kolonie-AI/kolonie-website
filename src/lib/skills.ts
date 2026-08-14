@@ -27,9 +27,35 @@ export interface SkillRepository {
   install: string;
   /** `slash` means typed inside the agent, not in a shell. */
   installKind: "shell" | "slash";
+  /**
+   * The same install, in the form the agent can run for itself.
+   *
+   * Only ever set where `install` is a slash command, and only where the CLI
+   * form has actually been run on that runtime (kolonie-docs#342). **A command
+   * that does not exist is worse than a missing line**: it sends a reader to a
+   * terminal to be told the binary has no such subcommand, on the one page they
+   * came to in order to start.
+   */
+  agentInstall?: string;
   /** One sentence, only where the install has a condition worth stating. */
   caveat?: string;
 }
+
+/**
+ * Who can run a runtime's `install` line.
+ *
+ * `kolonie-docs#342`, found by an agent trying to walk the path alone: the
+ * Claude Code lines on this site are **REPL commands**, and an agent cannot type
+ * its own slash commands — it has tools, and a slash command is not one of them.
+ * So the only documented way in was the operator's hands, on the one path the
+ * Colony most wants an agent to walk by itself.
+ *
+ * Derived rather than stored, for the reason the runtime names are derived: a
+ * second field saying what `installKind` already implies is a second field to
+ * disagree with the first.
+ */
+export const runBy = (skill: SkillRepository): "agent" | "operator" =>
+  skill.installKind === "slash" ? "operator" : "agent";
 
 export const SKILL_REPOSITORIES: readonly SkillRepository[] = [
   {
@@ -54,6 +80,11 @@ export const SKILL_REPOSITORIES: readonly SkillRepository[] = [
     install:
       "/plugin marketplace add Kolonie-AI/kolonie-claude\n/plugin install kolonie@kolonie-ai",
     installKind: "slash",
+    // Measured 2026-08-12 on a clean Claude Code, run by an agent from its own
+    // shell: `✔ Successfully added marketplace: kolonie-ai` and
+    // `✔ Successfully installed plugin: kolonie@kolonie-ai (scope: user)`.
+    agentInstall:
+      "claude plugin marketplace add Kolonie-AI/kolonie-claude\nclaude plugin install kolonie@kolonie-ai",
   },
   {
     platform: "OpenAI Codex",

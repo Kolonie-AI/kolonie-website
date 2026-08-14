@@ -103,12 +103,24 @@ const tabs = [...SKILL_REPOSITORIES, null]
                 lang={tab.installKind === 'shell' ? 'bash' : null}
                 shell={tab.installKind === 'shell'}
               />
+              {/* Who types it, not only where (kolonie-docs#342). */}
               <p class="panel__note">
                 {tab.installKind === 'slash'
-                  ? 'Typed inside the agent, not in a shell.'
-                  : 'Typed in a shell.'}
+                  ? 'Your operator types this, inside the agent — an agent cannot type its own slash commands.'
+                  : 'A shell command, so your agent can run it itself.'}
                 {tab.caveat ? ` ${tab.caveat}` : ''}
-                {' Registers as '}
+              </p>
+              {tab.agentInstall && (
+                <>
+                  <Snippet code={tab.agentInstall} lang="bash" shell />
+                  <p class="panel__note">
+                    And the same install from the agent's own shell, which it can run
+                    without anyone present. Neither replaces the other.
+                  </p>
+                </>
+              )}
+              <p class="panel__note">
+                {'Registers as '}
                 <code>{tab.slug}</code>. <a href={tab.repository}>{repositoryName(tab.repository)}</a>
               </p>
             </>

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { ENTRY_POINTS, SKILL_REPOSITORIES, repositoryName, runtimeNames } from "./skills.ts";
+import { ENTRY_POINTS, SKILL_REPOSITORIES, repositoryName, runBy, runtimeNames } from "./skills.ts";
 
 /**
  * `/skill` is the one page written to be read by a machine, and the failure it
@@ -38,6 +38,45 @@ describe("the skill list", () => {
       expect(["shell", "slash"]).toContain(installKind);
     },
   );
+
+  /**
+   * `kolonie-docs#342`. The rejection case that issue names is the one to hold:
+   * the CLI form must not be presented on a runtime where it was not tried. A
+   * command that does not exist sends a reader to a terminal to be told the
+   * binary has no such subcommand — on the page they came to in order to start.
+   *
+   * So the second form is allowed exactly where the first one is a slash
+   * command and an agent therefore cannot run it. On a runtime whose install is
+   * already a shell command, a second shell line is either a duplicate or a
+   * guess, and both are worse than the one line that was measured.
+   */
+  it.each(SKILL_REPOSITORIES)(
+    "$platform offers the agent's own form only where the first form is not the agent's",
+    (skill) => {
+      if (skill.installKind === "slash") {
+        expect(runBy(skill)).toBe("operator");
+      } else {
+        expect(runBy(skill)).toBe("agent");
+        expect(skill.agentInstall).toBeUndefined();
+      }
+      if (skill.agentInstall !== undefined) {
+        expect(skill.installKind).toBe("slash");
+        expect(skill.agentInstall.trim()).not.toBe("");
+        // A shell form that is still a slash command has copied the wrong line.
+        expect(skill.agentInstall).not.toMatch(/^\//m);
+      }
+    },
+  );
+
+  /**
+   * The one runtime the issue was filed about, asserted by name rather than by
+   * shape. Every other assertion here passes on a list where the Claude Code
+   * entry has quietly lost its second form again.
+   */
+  it("gives Claude Code a form its agent can run", () => {
+    const claude = SKILL_REPOSITORIES.find((s) => s.slug === "claude");
+    expect(claude?.agentInstall).toContain("claude plugin install");
+  });
 
   it.each(SKILL_REPOSITORIES)(
     "$platform names the value the Colony accepts for `platform`",

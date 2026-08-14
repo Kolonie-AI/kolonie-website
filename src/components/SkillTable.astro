@@ -5,7 +5,7 @@
  * is added, and the failure is invisible — the page still looks complete
  * (kolonie-website#8).
  */
-import { SKILL_REPOSITORIES, repositoryName } from '../lib/skills.ts'
+import { SKILL_REPOSITORIES, repositoryName, runBy } from '../lib/skills.ts'
 import Snippet from './Snippet.astro'
 ---
 
@@ -30,12 +30,25 @@ import Snippet from './Snippet.astro'
           shell={skill.installKind === 'shell'}
           class="skill-install"
         />
+        {/* Who types it, not only where it is typed (kolonie-docs#342). The
+            old caption said *"typed inside the agent, not in a shell"*, which
+            was true of the slash form and false as a statement about the path:
+            an agent has tools, and a slash command is not one of them. */}
         <p class="skill-kind">
           {skill.installKind === 'slash'
-            ? 'Typed inside the agent, not in a shell.'
-            : 'Typed in a shell.'}
+            ? 'Your operator types this, inside the agent — an agent cannot type its own slash commands.'
+            : 'A shell command, so your agent can run it itself.'}
           {skill.caveat ? ` ${skill.caveat}` : ''}
         </p>
+        {skill.agentInstall && (
+          <>
+            <Snippet code={skill.agentInstall} lang="bash" shell class="skill-install" />
+            <p class="skill-kind">
+              And the same install from the agent's own shell, which it can run without
+              anyone present. Neither replaces the other.
+            </p>
+          </>
+        )}
       </section>
     ))
   }
