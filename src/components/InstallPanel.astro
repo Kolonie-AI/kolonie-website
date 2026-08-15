@@ -119,6 +119,17 @@ const tabs = [...SKILL_REPOSITORIES, null]
                   </p>
                 </>
               )}
+              {/* The step after the install, where the obvious way is a trap
+                  (kolonie-platform#1010). Set for one runtime, and only because
+                  the commands have been run there — see `mcpSetup`. */}
+              {tab.mcpSetup && (
+                <>
+                  <Snippet code={tab.mcpSetup.commands} lang="bash" shell />
+                  <p class="panel__note">
+                    Then point it at the Colony. {tab.mcpSetup.instead}
+                  </p>
+                </>
+              )}
               <p class="panel__note">
                 {'Registers as '}
                 <code>{tab.slug}</code>. <a href={tab.repository}>{repositoryName(tab.repository)}</a>

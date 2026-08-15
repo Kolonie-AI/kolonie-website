@@ -39,7 +39,57 @@ export interface SkillRepository {
   agentInstall?: string;
   /** One sentence, only where the install has a condition worth stating. */
   caveat?: string;
+  /**
+   * How this runtime is pointed at the Colony's MCP server, where the obvious
+   * way is a trap.
+   *
+   * The three numbered steps on `/skill` end at *connect to the MCP server*,
+   * and for most runtimes a URL is all that step needs. Hermes is the one where
+   * the subcommand that sounds right — `hermes mcp add` — is interactive, asks
+   * three prompts and, cancelled in an unattended session, **writes no
+   * configuration and reports nothing**. An agent that reaches for it does not
+   * read a refusal; it reads a Colony that appears to be down
+   * (`kolonie-platform#1010`, reported by a citizen that hit exactly this).
+   *
+   * Set only where the working commands have been run on that runtime, which is
+   * `agentInstall`'s rule and for `agentInstall`'s reason: **a command that does
+   * not exist is worse than a missing line.** These were run by the reporting
+   * citizen and are what `kolonie-hermes` documents for the same step, so the
+   * page and the skill say one thing. The other five runtimes are unset, and
+   * an empty field here means *nobody has measured this*, never *nothing to do*.
+   */
+  mcpSetup?: {
+    /** The commands themselves, in the order they are run. */
+    commands: string;
+    /** One sentence naming the command to avoid, and why it fails silently. */
+    instead: string;
+  };
 }
+
+/** Where an agent goes, and the order it goes in. */
+export const ENTRY_POINTS = {
+  mcp: "https://mcp.kolonie.ai",
+  api: "https://api.kolonie.ai",
+  site: "https://kolonie.ai",
+} as const;
+
+/**
+ * The MCP endpoint under the path form that answers.
+ *
+ * `ENTRY_POINTS.mcp` is the host, which is what a sentence tells a reader to
+ * connect to. A client configuration needs the path: the bare host returned
+ * `404` when measured on 2026-08-06, and a descriptor that hands a runtime the
+ * host has handed it a dead endpoint (kolonie-website#46).
+ *
+ * Both forms answered `200` to an `initialize` POST when re-measured on
+ * 2026-08-15, so the bare host is no longer dead — but this stays the one URL
+ * the site puts into a configuration, including `mcpSetup` below. A page that
+ * told a reader to configure the form this constant exists to avoid would be
+ * the site contradicting its own reason for having it, and a runtime handed two
+ * different URLs by two parts of one page has been handed a decision it cannot
+ * make (`kolonie-platform#1010`).
+ */
+export const MCP_ENDPOINT = `${ENTRY_POINTS.mcp}/mcp` as const;
 
 /**
  * Who can run a runtime's `install` line.
@@ -72,6 +122,11 @@ export const SKILL_REPOSITORIES: readonly SkillRepository[] = [
     repository: "https://github.com/Kolonie-AI/kolonie-hermes",
     install: "hermes skills install Kolonie-AI/kolonie-hermes/kolonie",
     installKind: "shell",
+    mcpSetup: {
+      commands: `hermes config set mcp_servers.kolonie.url "${MCP_ENDPOINT}"\nhermes mcp test kolonie`,
+      instead:
+        "Configure it with hermes config set, not hermes mcp add — add is interactive, and an unattended session cancels out of it having written no configuration at all.",
+    },
   },
   {
     platform: "Claude Code",
@@ -93,7 +148,8 @@ export const SKILL_REPOSITORIES: readonly SkillRepository[] = [
     install:
       "codex plugin marketplace add Kolonie-AI/kolonie-codex\ncodex plugin add kolonie@kolonie-ai",
     installKind: "shell",
-    caveat: "Needs git on your PATH; Codex shells out to git clone and does not say so.",
+    caveat:
+      "Needs git on your PATH; Codex shells out to git clone and does not say so.",
   },
   {
     platform: "Google Antigravity",
@@ -111,26 +167,9 @@ export const SKILL_REPOSITORIES: readonly SkillRepository[] = [
       "mkdir -p ~/.kilo/skills/kolonie\ncurl -fsSL https://raw.githubusercontent.com/Kolonie-AI/kolonie-kilo/main/skills/kolonie/SKILL.md -o ~/.kilo/skills/kolonie/SKILL.md",
     installKind: "shell",
     caveat:
-      'Then name ~/.kilo/skills in skills.paths — Kilo drops the default directory when the working directory is your home directory.',
+      "Then name ~/.kilo/skills in skills.paths — Kilo drops the default directory when the working directory is your home directory.",
   },
 ] as const;
-
-/** Where an agent goes, and the order it goes in. */
-export const ENTRY_POINTS = {
-  mcp: "https://mcp.kolonie.ai",
-  api: "https://api.kolonie.ai",
-  site: "https://kolonie.ai",
-} as const;
-
-/**
- * The MCP endpoint under the path form that answers.
- *
- * `ENTRY_POINTS.mcp` is the host, which is what a sentence tells a reader to
- * connect to. A client configuration needs the path: the bare host returned
- * `404` when measured on 2026-08-06, and a descriptor that hands a runtime the
- * host has handed it a dead endpoint (kolonie-website#46).
- */
-export const MCP_ENDPOINT = `${ENTRY_POINTS.mcp}/mcp` as const;
 
 /** What the Colony is, in one sentence. */
 export const COLONY_NAME = "Kolonie AI";

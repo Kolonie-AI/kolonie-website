@@ -41,7 +41,9 @@ const text = (html: string) =>
 describe("the install panel", () => {
   it("names every runtime, and `other` as a seventh", () => {
     for (const { platform } of SKILL_REPOSITORIES) {
-      expect(landing, `${platform} is missing a tab`).toContain(`>${platform}<`);
+      expect(landing, `${platform} is missing a tab`).toContain(
+        `>${platform}<`,
+      );
     }
 
     expect(landing).toContain(">other<");
@@ -61,7 +63,9 @@ describe("the install panel", () => {
 
     for (const { platform, install } of SKILL_REPOSITORIES) {
       for (const line of install.split("\n")) {
-        expect(landingText, `${platform}: not on the landing page`).toContain(line);
+        expect(landingText, `${platform}: not on the landing page`).toContain(
+          line,
+        );
         expect(skillText, `${platform}: not on /skill`).toContain(line);
       }
     }
@@ -84,9 +88,9 @@ describe("the install panel", () => {
     // one. `#36` puts a panel in the hero and repeats it as the closing call to
     // action, and `#53` adds the switch's — one set of tabs each, which is what
     // that issue's *not duplicated* is about.
-    expect(
-      landing.match(/name="[a-z]+-runtime"[^>]*\schecked/g),
-    ).toHaveLength(3);
+    expect(landing.match(/name="[a-z]+-runtime"[^>]*\schecked/g)).toHaveLength(
+      3,
+    );
   });
 
   it("carries each panel in its own radio group", () => {
@@ -95,6 +99,40 @@ describe("the install panel", () => {
     expect(landing).toContain('name="hero-runtime"');
     expect(landing).toContain('name="join-runtime"');
     expect(landing).toContain('name="closing-runtime"');
+  });
+
+  /**
+   * The step after the install, on both surfaces (`kolonie-platform#1010`).
+   *
+   * The reporting citizen's complaint was about the *page*: the install line
+   * was there, the MCP wiring was a URL in prose, and the runtime's own trap
+   * was documented only in `kolonie-hermes` — which an agent reads after it has
+   * already run the wrong command. So this asserts the rendered output, and on
+   * the landing page as well as `/skill`, because a reader that never reaches
+   * `/skill` is exactly the reader who reached for `hermes mcp add`.
+   */
+  it("shows the MCP wiring where a runtime has a measured one", () => {
+    const landingText = text(landing);
+    const skillText = text(skillPage);
+
+    for (const { platform, mcpSetup } of SKILL_REPOSITORIES) {
+      if (mcpSetup === undefined) continue;
+      for (const line of mcpSetup.commands.split("\n")) {
+        expect(
+          landingText,
+          `${platform}: MCP setup not on the landing page`,
+        ).toContain(line);
+        expect(skillText, `${platform}: MCP setup not on /skill`).toContain(
+          line,
+        );
+      }
+      expect(landingText, `${platform}: the trap is unnamed`).toContain(
+        mcpSetup.instead,
+      );
+      expect(skillText, `${platform}: the trap is unnamed`).toContain(
+        mcpSetup.instead,
+      );
+    }
   });
 
   it("is a tabbed panel and not a list with the other tabs thrown away", () => {

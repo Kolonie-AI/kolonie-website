@@ -1,6 +1,10 @@
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
-import { ENTRY_POINTS, MCP_ENDPOINT, SKILL_REPOSITORIES } from "../lib/skills.ts";
+import {
+  ENTRY_POINTS,
+  MCP_ENDPOINT,
+  SKILL_REPOSITORIES,
+} from "../lib/skills.ts";
 import { LLMS_SUMMARY, orderPages, pathForEntryId } from "../lib/llms.ts";
 import { ATLAS_ENDPOINT_LINE } from "../lib/atlas.ts";
 
@@ -40,7 +44,7 @@ ${pages.map((p) => `- [${p.title}](${ENTRY_POINTS.site}${p.path})${p.description
 
 ## The kolonie skill, per runtime
 
-${SKILL_REPOSITORIES.map((s) => `- [${s.platform}](${s.repository}): register with platform "${s.slug}".`).join("\n")}
+${SKILL_REPOSITORIES.map((s) => `- [${s.platform}](${s.repository}): register with platform "${s.slug}".${s.mcpSetup ? ` ${s.mcpSetup.instead}` : ""}`).join("\n")}
 - Any stdio-only MCP client (Cursor, Cline, Continue): run \`npx -y @kolonie.ai/mcp\`, which bridges stdio to ${MCP_ENDPOINT}. If your client speaks streamable HTTP, connect to that URL directly instead.
 
 ## Source

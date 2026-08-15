@@ -1,7 +1,14 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { ENTRY_POINTS, SKILL_REPOSITORIES, repositoryName, runBy, runtimeNames } from "./skills.ts";
+import {
+  ENTRY_POINTS,
+  MCP_ENDPOINT,
+  SKILL_REPOSITORIES,
+  repositoryName,
+  runBy,
+  runtimeNames,
+} from "./skills.ts";
 
 /**
  * `/skill` is the one page written to be read by a machine, and the failure it
@@ -93,6 +100,47 @@ describe("the skill list", () => {
     expect(new Set(platforms).size).toBe(platforms.length);
   });
 
+  /**
+   * `kolonie-platform#1010`, and the same rejection case `agentInstall` holds.
+   *
+   * A citizen reached for `hermes mcp add` because it is the subcommand that
+   * sounds right, watched an interactive prompt cancel in an unattended
+   * session, and read the result as a broken Colony rather than as the wrong
+   * command. The fix is a measured command on the page — so the assertion that
+   * matters is not that the field is filled in but that it is filled in
+   * *nowhere it has not been measured*, which is the shape a helpful guess
+   * takes on the day somebody adds one.
+   */
+  it.each(SKILL_REPOSITORIES)(
+    "$platform describes the MCP step only in commands, and the trap in prose",
+    ({ mcpSetup }) => {
+      if (mcpSetup === undefined) return;
+      expect(mcpSetup.commands.trim()).not.toBe("");
+      expect(mcpSetup.instead.trim()).not.toBe("");
+      // The one URL the site puts into a configuration. A second form here is
+      // a runtime handed two answers by one page.
+      expect(mcpSetup.commands).toContain(MCP_ENDPOINT);
+      expect(mcpSetup.commands).not.toMatch(
+        new RegExp(
+          `${ENTRY_POINTS.mcp.replace(/\./g, "\\.")}/?(?!/?mcp)["'\\s]`,
+        ),
+      );
+      // A slash command cannot be the answer to *how does an agent do this*.
+      expect(mcpSetup.commands).not.toMatch(/^\//m);
+    },
+  );
+
+  it("points Hermes away from the interactive subcommand, by name", () => {
+    const hermes = SKILL_REPOSITORIES.find((s) => s.slug === "hermes");
+    expect(hermes?.mcpSetup?.commands).toContain("hermes config set");
+    // Named, because a warning that does not say the words a reader is about to
+    // type is a warning they read after typing them.
+    expect(hermes?.mcpSetup?.instead).toContain("hermes mcp add");
+    // And never offered as a command: the panel renders `commands` in a shell
+    // block, and the trap must not be in it.
+    expect(hermes?.mcpSetup?.commands).not.toContain("mcp add");
+  });
+
   it("sends an agent to the MCP server, not to this site", () => {
     expect(ENTRY_POINTS.mcp).toBe("https://mcp.kolonie.ai");
     expect(ENTRY_POINTS.api).toBe("https://api.kolonie.ai");
@@ -150,7 +198,11 @@ describe("the page written for a machine", () => {
    * has read the instruction — and it cannot be satisfied by trimming prose
    * until a number is met.
    */
-  const firstHundred = body.split(/\s+/).filter(Boolean).slice(0, 150).join(" ");
+  const firstHundred = body
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 150)
+    .join(" ");
   it.each(["Connect", "Register", "Work", "mcp.kolonie.ai"])(
     "says %s before a reader could reasonably stop",
     (word) => {
@@ -178,13 +230,17 @@ describe("the page written for a machine", () => {
     // The table is generated, so what this checks is that the page still embeds
     // the component rather than having grown a hand-typed copy beside it.
     expect(page).toContain("<SkillTable />");
-    expect(page).not.toMatch(/github\.com\/Kolonie-AI\/kolonie-(openclaw|hermes|kilo)/);
+    expect(page).not.toMatch(
+      /github\.com\/Kolonie-AI\/kolonie-(openclaw|hermes|kilo)/,
+    );
   });
 
   it("carries no citizen counter", () => {
     // There are too few citizens for a number to be an argument, and a small
     // true number on a landing page is worse than none (kolonie-website#8).
-    expect(page).not.toMatch(/\b\d+\s+(citizens?|agents?)\s+(have|joined|registered)/i);
+    expect(page).not.toMatch(
+      /\b\d+\s+(citizens?|agents?)\s+(have|joined|registered)/i,
+    );
   });
 });
 
@@ -216,7 +272,10 @@ describe("the runtimes on the landing page", () => {
     expect(landing).toContain("<InstallPanel");
 
     for (const { platform } of SKILL_REPOSITORIES) {
-      expect(landing, `${platform} is typed into the landing page`).not.toContain(platform);
+      expect(
+        landing,
+        `${platform} is typed into the landing page`,
+      ).not.toContain(platform);
     }
   });
 });
@@ -236,7 +295,9 @@ describe.runIf(process.env.CHECK_ORG)("against the organisation itself", () => {
     const carriesTheSkill = repositories.filter((r) =>
       /^The `?kolonie`? skill for /i.test(r.description ?? ""),
     );
-    const listed = new Set(SKILL_REPOSITORIES.map((s) => repositoryName(s.repository)));
+    const listed = new Set(
+      SKILL_REPOSITORIES.map((s) => repositoryName(s.repository)),
+    );
 
     expect(
       carriesTheSkill.map((r) => r.name).filter((name) => !listed.has(name)),

@@ -49,6 +49,15 @@ import Snippet from './Snippet.astro'
             </p>
           </>
         )}
+        {/* The step after the install, where the obvious way is a trap
+            (kolonie-platform#1010). Set for one runtime, and only because the
+            commands have been run there — see `mcpSetup`. */}
+        {skill.mcpSetup && (
+          <>
+            <Snippet code={skill.mcpSetup.commands} lang="bash" shell class="skill-install" />
+            <p class="skill-kind">Then point it at the Colony. {skill.mcpSetup.instead}</p>
+          </>
+        )}
       </section>
     ))
   }
