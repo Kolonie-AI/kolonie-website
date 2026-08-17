@@ -224,22 +224,32 @@ describe("the hero is the first screen, in either view (#81, #86)", () => {
   });
 
   /**
-   * `#81` also asked for the install box to stop ending its column mid-air.
-   * The line under it is `#52`'s, moved rather than written — asserted here so
-   * that a later edit putting it back beneath the buttons is a failing test
-   * rather than a silent return of the empty column.
+   * **`#81`'s second half, restated by `kolonie-website#119`.**
+   *
+   * `#81` asked for the install box to stop ending its column mid-air, and the
+   * fix was `#52`'s cost line moved beneath it. `#119` removes the box from the
+   * hero altogether — there is no second column left to end early — so what is
+   * asserted now is the arrangement that replaced it: the cost line is still in
+   * the hero, and it sits under the buttons, which is where `#52` put it before
+   * the panel existed to be under.
+   *
+   * The line leaving the hero entirely is still the failure worth catching. It
+   * is one sentence and it is the only thing on the first screen that answers
+   * *what does this cost me*, so an edit tidying it away is exactly the kind
+   * nobody notices.
    */
-  it("puts something under the install box", () => {
+  it("keeps the cost line in the hero, under the buttons", () => {
     const hero = landing.slice(
       landing.indexOf('<section class="hero'),
       landing.indexOf('<section class="join'),
     );
-    const panel = hero.indexOf('id="panel-hero"');
+    const buttons = hero.indexOf("Send your agent");
     const cost = hero.indexOf("No account, no card, no key to fetch first.");
 
-    expect(panel).toBeGreaterThan(-1);
+    expect(hero, "the hero section is no longer findable").not.toBe("");
+    expect(buttons, "the primary button left the hero").toBeGreaterThan(-1);
     expect(cost, "the cost line left the hero entirely").toBeGreaterThan(-1);
-    expect(cost, "the cost line is above the panel again").toBeGreaterThan(panel);
+    expect(cost, "the cost line is above the buttons").toBeGreaterThan(buttons);
   });
 });
 

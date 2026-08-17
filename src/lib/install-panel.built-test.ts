@@ -5,7 +5,12 @@ import { describe, expect, it } from "vitest";
 import { SKILL_REPOSITORIES } from "./skills.ts";
 
 /**
- * The hero's install panel, read out of the built pages (kolonie-website#36).
+ * The install panel, read out of the built pages (kolonie-website#36).
+ *
+ * It was the *hero's* panel until `#119` moved the runtime chooser below the
+ * outcome story; the properties below are about the panel wherever it renders,
+ * and the two places it now renders are the joining block and the closing call
+ * to action.
  *
  * Three of that issue's acceptance criteria are properties of the *output* and
  * cannot be checked anywhere else:
@@ -49,9 +54,12 @@ describe("the install panel", () => {
     expect(landing).toContain(">other<");
     // The word boundary matters: `panel__tabs` is the fieldset around them.
     expect(landing.match(/class="panel__tab[ "]/g)?.length).toBe(
-      // Three panels — the hero's, the join block's and the closing one — of
-      // seven tabs each (kolonie-website#36, #53).
-      (SKILL_REPOSITORIES.length + 1) * 3,
+      // Two panels — the join block's and the closing one — of seven tabs each
+      // (kolonie-website#36, #53, and kolonie-website#119). It was three until
+      // the last of those took the hero's out: the runtime chooser is complete
+      // and correct, and no longer competes with the reason to join on first
+      // paint.
+      (SKILL_REPOSITORIES.length + 1) * 2,
     );
   });
 
@@ -84,21 +92,23 @@ describe("the install panel", () => {
     // radio too and is not a runtime tab; matching the bare attribute counted
     // it, which is a test measuring the page rather than the panel it is about.
     //
-    // Three panels since `#53`: the hero's, the join block's and the closing
-    // one. `#36` puts a panel in the hero and repeats it as the closing call to
-    // action, and `#53` adds the switch's — one set of tabs each, which is what
-    // that issue's *not duplicated* is about.
+    // Two panels since `#119`: the join block's and the closing one. It was
+    // three — `#36` put one in the hero and repeated it as the closing call to
+    // action, and `#53` added the switch's — and `#119` removed the hero's.
+    // One set of tabs per panel either way, which is what `#53`'s *not
+    // duplicated* is about.
     expect(landing.match(/name="[a-z]+-runtime"[^>]*\schecked/g)).toHaveLength(
-      3,
+      2,
     );
   });
 
   it("carries each panel in its own radio group", () => {
     // Sharing a `name` would make them one group, and a click on a tab at the
-    // foot of the page would silently change the tab in the hero.
-    expect(landing).toContain('name="hero-runtime"');
+    // foot of the page would silently change the tab in the joining block.
     expect(landing).toContain('name="join-runtime"');
     expect(landing).toContain('name="closing-runtime"');
+    // And the hero's group is gone with the hero's panel (kolonie-website#119).
+    expect(landing).not.toContain('name="hero-runtime"');
   });
 
   /**
@@ -139,7 +149,8 @@ describe("the install panel", () => {
     // Every body is in the document. A panel that rendered only the selected
     // runtime would be invisible to Ctrl-F, to a crawler, and to an agent.
     expect(landing.match(/class="panel__body[ "]/g)?.length).toBe(
-      (SKILL_REPOSITORIES.length + 1) * 3,
+      // Two panels since `#119`, as above.
+      (SKILL_REPOSITORIES.length + 1) * 2,
     );
   });
 });

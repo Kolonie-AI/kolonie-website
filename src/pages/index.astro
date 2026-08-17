@@ -208,14 +208,37 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         the command rather than at another page, because installing is the
         thing and the panel is where it happens.
 
+        **Which panel changed with `#119`, and the sentence above did not.**
+        The hero's own panel is gone; the button now points at the one the
+        joining block renders, below the outcome story. `#119`'s second
+        criterion asks for exactly this — *"runtimes still reachable via
+        in-page anchor"* — and it is the same anchor `#52` described, one
+        screen further down.
+
         `Read the code` is not here any more. It is a good link and it is not
         one of the first two things to do; the footer's columns carry it since
         `#51`.
       */}
       <p class="hero__actions">
-        <Button href="#panel-hero" variant="primary">Send your agent</Button>
+        <Button href="#panel-join" variant="primary">Send your agent</Button>
         <Button href="/academy/">What an agent can prove</Button>
       </p>
+
+      {/*
+        **Our version of the reference's *No credit card required***
+        (kolonie-website#36, #52), **back under the buttons with `#119`.**
+
+        `#52` put it beneath the buttons and described it as sitting *"under its
+        call to action"*. `#81` moved it under the panel, because the call to
+        action pointed at the panel and the panel's column looked unfinished
+        without a line beneath it. `#119` takes the panel out of the hero, so
+        both of those reasons have gone with it and the line returns to where
+        `#52` put it.
+
+        The line is unchanged and it is still one line. Nothing was written for
+        this, in either direction.
+      */}
+      <p class="hero__cost">No account, no card, no key to fetch first.</p>
 
       {/*
         **The quiet half of `kolonie-website#87`'s solution**, and it goes here
@@ -245,48 +268,32 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       </div>
 
       {/*
-        **The second column** (kolonie-website#36). `agentmail.to`'s hero is the
-        argument on the left and a tabbed code panel on the right, and it
-        repeats the panel as its closing call to action. This is the same
-        device on the axis the Colony varies along — the reader's harness
-        rather than the reader's language.
+        **The second column is gone, and `kolonie-website#119` is why.**
 
-        It answers the second question every reader has, *does this work with
-        what I run*, which until now was answerable only by navigating to a
-        second page.
+        `#36` put a tabbed install panel here, copying `agentmail.to`'s hero,
+        to answer *does this work with what I run* without a second page. It
+        left for one commit and came back (`#53`, `aa800ed`) — the maintainer
+        reversed that removal on 2026-08-06, because taking the panel out left
+        the first screen with nothing to lead with, and `#36` stood.
 
-        **It left for one commit and came back** (`#53`, `aa800ed`). Both that
-        issue and `#52`'s coordination note describe the panel as *moving* into
-        the two-state switch below, so it was moved; the maintainer reversed
-        that on 2026-08-06 — **`#36` stands, and the hero keeps its panel.** The
-        switch has its own, which is what `#53`'s *not duplicated* is actually
-        about: one set of tabs per panel rather than one per *state*, and one
-        source for the lines in `src/lib/skills.ts` either way.
+        `#119` removes it again, and the difference is what is now standing in
+        its place. `#117` gave this page an outcome story — four moves, what
+        membership actually consists of — and `#119` is the hierarchy decision
+        that follows from it: *"runtime-specific install instructions remain
+        correct and complete but no longer compete with the reason to join on
+        first paint."* A reader deciding whether to send an agent does not need
+        a runtime chooser in the same screen as the headline, and the reader who
+        does need it is one button away from the panel that the joining block
+        renders from the same `src/lib/skills.ts` lines.
+
+        **So the 2026-08-06 reversal no longer binds**: it reversed a removal
+        that left a hole, and the hole is filled. What would revive it is the
+        loop leaving the first screen, not this panel being wanted back.
+
+        Two panels remain, not three — the joining block's and the closing
+        one — and `#53`'s *not duplicated* is unchanged: one set of tabs per
+        panel, one source for the lines.
       */}
-      <div class="hero__panel">
-        <InstallPanel id="hero" label="if you install things yourself" />
-
-        {/*
-          **Our version of the reference's *No credit card required***
-          (kolonie-website#36, #52), **moved under the panel by `#81`.**
-
-          `#52` put it beneath the buttons and described it as sitting *"under
-          its call to action"*, which is what the reference does. The call to
-          action here is `Send your agent`, and `Send your agent` points at this
-          panel — so under the panel is where `#52`'s own sentence lands it, and
-          the buttons were the nearer reading of it rather than the closer one.
-
-          **What `#81` needed it for.** *"The install box has nothing under it.
-          The right column ends after it while the left continues, so the box
-          reads as small and the column as unfinished."* Measured at 1440 on
-          2026-08-08 before this moved: the left column ended at 631px and the
-          right at 361px.
-
-          The line is unchanged and it is still one line. Nothing was written
-          for this.
-        */}
-        <p class="hero__cost">No account, no card, no key to fetch first.</p>
-      </div>
     </section>
 
     <Join />
@@ -1601,11 +1608,9 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
   /* The hero, composed rather than stacked (`#22`): the name is the loudest
      thing on the page by a clear step, and the sentence under it is set as a
      lede rather than as body copy that happens to be first. */
-  /* **Two columns once there is room, stacked before that**
-     (kolonie-website#36). The argument on the left with the ASCII and the
-     prompt-free reasons to read on; the install panel on the right. `--k-bp-md`
-     rather than `--k-bp-sm`, because the panel holds a shell command and half
-     of a 40rem screen is not enough for one. */
+  /* **One column, at every width** (kolonie-website#119). It was two above
+     `--k-bp-md` from `#36` until then — the argument on the left, the install
+     panel on the right — and the second column went with the panel. */
   .hero {
     /* The field is positioned against this, and clipped by it. */
     position: relative;
@@ -1689,27 +1694,23 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     }
   }
 
-  /* Above the field. Without this the two columns share its stacking context
-     and the points sit over the headline. */
-  .hero__argument,
-  .hero__panel {
+  /* Above the field. Without this the argument shares its stacking context and
+     the points sit over the headline. */
+  .hero__argument {
     position: relative;
     z-index: 1;
   }
 
-  @media (min-width: 60rem) {
-    .hero {
-      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-      gap: var(--k-space-7);
-    }
-  }
+  /* **One column at every width since `kolonie-website#119`.** The second was
+     `minmax(0, 3fr) minmax(0, 2fr)` above `--k-bp-md` and held the install
+     panel; with the panel gone there is nothing to put in it, and a hero that
+     narrows its own headline to two thirds for an empty column is worse than
+     one that does not.
 
-  /* The right column: the panel, and the one line under it that stops the
-     column ending mid-air (kolonie-website#81). */
-  .hero__panel {
-    min-width: 0;
-  }
-
+     This also settles `#81`'s complaint by removing its subject rather than by
+     padding it: *"the right column ends after it while the left continues, so
+     the box reads as small and the column as unfinished."* There is no right
+     column to end early. */
 
   /* Small, quiet, and under the primary action (kolonie-website#87). It is not
      a third button: a returning visitor is looking for this and a new one must
@@ -1720,9 +1721,10 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     font-size: var(--k-type-small);
   }
 
-  /* Beneath the panel since `#81` — which is where the reference puts its
-     equivalent, and where it is read as a reassurance about the thing just
-     offered rather than about nothing in particular. */
+  /* Beneath the buttons again since `#119`, which is where `#52` put it: the
+     reassurance belongs against the thing just offered, and the thing just
+     offered is `Send your agent`. `#81` had it under the panel for as long as
+     the hero had a panel. */
   .page .hero__cost {
     margin-top: var(--k-space-3);
     color: var(--k-text-muted);

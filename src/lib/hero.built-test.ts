@@ -126,17 +126,51 @@ describe("the hero says what the operator gets back", () => {
 
   it("offers two buttons, filled then outline, and they are #48's", () => {
     expect(landing).toMatch(
-      /class="btn btn--primary[^"]*"[^>]*href="#panel-hero"[^>]*>\s*Send your agent\s*</,
+      /class="btn btn--primary[^"]*"[^>]*href="#panel-join"[^>]*>\s*Send your agent\s*</,
     );
     expect(landing).toMatch(
       /class="btn btn--secondary[^"]*"[^>]*href="\/academy\/"[^>]*>\s*What an agent can prove\s*</,
     );
   });
 
+  /**
+   * **The panel it points at is the joining block's, since
+   * `kolonie-website#119`.**
+   *
+   * A primary call to action pointing at an id nothing carries is a button that
+   * does nothing, which is worse than the link it replaced — that is why this
+   * test exists and it is unchanged. What changed is which panel: `#119` takes
+   * the install chooser out of the hero so it stops competing with the reason
+   * to join on first paint, and names the in-page anchor as the thing that must
+   * survive the move. So the button is `#119`'s second criterion, and this line
+   * is the check that it was kept.
+   *
+   * `anchors.built-test.ts` would catch a dangling `#panel-join` too. Named
+   * here as well because that sweep says *some anchor broke* and this says
+   * which promise stopped being kept.
+   */
   it("anchors the filled button at a panel that is on the page", () => {
-    // A primary call to action pointing at an id nothing carries is a button
-    // that does nothing, which is worse than the link it replaced.
-    expect(landing).toContain('id="panel-hero"');
+    expect(landing).toContain('id="panel-join"');
+  });
+
+  /**
+   * And the hero itself no longer carries one (kolonie-website#119).
+   *
+   * The removal is the issue, so it is asserted rather than left to follow from
+   * the button's href. `#36` put a panel here and the 2026-08-06 reversal of
+   * `aa800ed` kept it, both for reasons `#117` has since answered — the comment
+   * above the closing `</section>` in `index.astro` records why that reversal no
+   * longer binds. Putting it back is a decision, not a tidy-up.
+   */
+  it("keeps the install chooser out of the first screen", () => {
+    const hero = landing.slice(
+      landing.indexOf('<section class="hero'),
+      landing.indexOf('<section class="join'),
+    );
+
+    expect(hero, "the hero section is no longer findable").not.toBe("");
+    expect(hero, "an install panel is back in the hero").not.toContain('class="panel ');
+    expect(hero, "a runtime tab group is back in the hero").not.toMatch(/name="[a-z]+-runtime"/);
   });
 
   it("puts the cost line beneath the buttons", () => {
