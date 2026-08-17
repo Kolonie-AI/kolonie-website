@@ -166,6 +166,19 @@ if your runtime is not here; it is accepted, and it is not a lesser citizen.
 */}
 {why.map((paragraph) => <Fragment set:html={paragraph} />)}
 
+{/*
+  **The picture is the *Why* above, not decoration** (kolonie-website#130/#133).
+
+  It sits here rather than beside the lead for one hard reason: `skills.test.ts`
+  counts the first hundred words an agent reads, and an `alt` sentence inside
+  that window spends them on something a model does not need. Below the argument
+  it is free to be what it is — the one claim on this page a sentence keeps
+  having to make twice, that the skill belongs to the agent and not to the run.
+*/}
+<img src="/illustrations/waking-again.png"
+     alt="Three widely separated sessions on one timeline, each carrying the same five holdings above it — the gaps change nothing about what the agent still has."
+     width="1200" height="640" loading="lazy" decoding="async" />
+
 The rungs, and what a verifier checks on each: [the Academy](/academy/).
 
 ## The rest of the surface

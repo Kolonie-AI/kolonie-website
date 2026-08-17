@@ -1,9 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { LANDING_ILLUSTRATIONS } from "./illustrations.ts";
+import { ILLUSTRATIONS as COMMITTED, LANDING_ILLUSTRATIONS } from "./illustrations.ts";
 
 /**
  * The illustrations, and the three things `kolonie-website#65` asks be checked
@@ -32,7 +32,30 @@ const dist = join(root, "dist");
  */
 const ILLUSTRATIONS = LANDING_ILLUSTRATIONS.map((i) => i.src);
 
+/**
+ * Every committed illustration, landing or not (kolonie-website#130).
+ *
+ * The distinction matters for exactly one thing — the weight budget, which is a
+ * property of the landing page. **The palette and the alt text are properties of
+ * the file and of the reader**, and both were being checked only on the three
+ * `#65` shipped, so `#130`'s subpage images would have drifted off-token in CI
+ * without anything going red. Splitting them here rather than widening
+ * `LANDING_ILLUSTRATIONS` keeps the budget measuring what it was written to.
+ */
+const ALL_ILLUSTRATIONS = COMMITTED.map((i) => i.src);
+const SUBPAGE_ILLUSTRATIONS = COMMITTED.filter((i) => i.where === "subpage").map((i) => i.src);
+
 const landing = readFileSync(join(dist, "index.html"), "utf8");
+
+const pagesUnder = (directory: string): string[] =>
+  readdirSync(directory).flatMap((entry) => {
+    const path = join(directory, entry);
+    if (statSync(path).isDirectory()) return pagesUnder(path);
+    return entry.endsWith(".html") ? [path] : [];
+  });
+
+/** Every built page except the visual reference, which draws all of them. */
+const readerPages = pagesUnder(dist).filter((p) => !p.startsWith(join(dist, "visuals")));
 
 describe("the illustrations #65 asked for", () => {
   it.each(ILLUSTRATIONS)("%s is on the landing page with a real alt", (src) => {
@@ -53,8 +76,37 @@ describe("the illustrations #65 asked for", () => {
     expect(tag).toMatch(/\bheight="\d+"/);
   });
 
-  it.each(ILLUSTRATIONS)("%s was actually emitted into dist", (src) => {
+  it.each(ALL_ILLUSTRATIONS)("%s was actually emitted into dist", (src) => {
     expect(statSync(join(dist, src)).size).toBeGreaterThan(0);
+  });
+
+  /**
+   * **A subpage illustration reaches a page a reader arrives on** (`#130`,
+   * `#133`). `/visuals/` is excluded on purpose: it draws every entry in the
+   * list by iterating it, so counting it here would make the assertion tautological
+   * — the gallery would keep this green for a picture no page ever uses.
+   *
+   * The rest of the assertion is the landing page's, restated: a real alt, and a
+   * box reserved before the bytes land. `loading="lazy"` is required here and not
+   * above because none of these is above the fold on its page, and all three are
+   * the largest thing on it.
+   */
+  it.each(SUBPAGE_ILLUSTRATIONS)("%s is on a page and not only in the gallery", (src) => {
+    const tags = readerPages.flatMap(
+      (page) => readFileSync(page, "utf8").match(new RegExp(`<img[^>]*src="${src}"[^>]*>`, "g")) ?? [],
+    );
+
+    expect(tags.length, `no page outside /visuals/ draws ${src}`).toBeGreaterThan(0);
+
+    for (const tag of tags) {
+      const alt = tag.match(/\balt="([^"]*)"/s)?.[1]?.trim();
+      expect(alt, `${src} has no alt`).toBeTruthy();
+      expect(alt!.length).toBeGreaterThan(40);
+      expect(alt!.split(/\s+/).length).toBeGreaterThan(8);
+      expect(tag).toMatch(/\bwidth="\d+"/);
+      expect(tag).toMatch(/\bheight="\d+"/);
+      expect(tag).toContain('loading="lazy"');
+    }
   });
 
   /**
@@ -75,7 +127,7 @@ describe("the illustrations #65 asked for", () => {
    * a dependency of this repository.
    */
   it("every illustration is drawn from the theme tokens", () => {
-    const files = ILLUSTRATIONS.map((src) => join(root, "public", src));
+    const files = ALL_ILLUSTRATIONS.map((src) => join(root, "public", src));
 
     // Throws on a non-zero exit, which is the failure. stdio is captured so a
     // pass is quiet and a failure prints which colour and how far off it was.

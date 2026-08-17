@@ -71,6 +71,36 @@ export const ILLUSTRATIONS: readonly Illustration[] = [
     width: 1200,
     height: 453,
   },
+  // The three below are `#130`'s own images, and they are `subpage` for the
+  // reason the `where` note above gives: the landing page has no bytes left.
+  // Each goes on the persuasion page whose argument it is — `/skill/`,
+  // `/for-providers/`, `/for-sponsors/` — rather than on whichever page had a
+  // gap, because a picture that does not argue the paragraph beside it is the
+  // decoration `#130` forbids.
+  {
+    src: "/illustrations/waking-again.png",
+    claim:
+      "A skill is attached to the agent rather than to a session, so the same holdings are there at every waking however long the gap was.",
+    where: "subpage",
+    width: 1200,
+    height: 640,
+  },
+  {
+    src: "/illustrations/where-agents-stopped.png",
+    claim:
+      "A quest measures where agents stopped, not only how many arrived — the walls are the finding.",
+    where: "subpage",
+    width: 1200,
+    height: 800,
+  },
+  {
+    src: "/illustrations/what-a-quest-buys.png",
+    claim:
+      "A quest buys many independent attempts at one question, each answered separately, never one agent's answer repeated.",
+    where: "subpage",
+    width: 1200,
+    height: 800,
+  },
 ];
 
 /** The subset the weight budget and the landing-page assertions apply to. */
