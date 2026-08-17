@@ -33,6 +33,7 @@ import PlainTerm from '../components/PlainTerm.astro'
 import { SIGN_IN } from '../lib/site-footer.ts'
 import { SKILL_REPOSITORIES } from '../lib/skills.ts'
 import { ATLAS_PATH } from '../lib/atlas.ts'
+import { PROOF_SURFACES } from '../lib/proof-strip.ts'
 
 /**
  * The frontmatter title was descriptive so the `<title>` tag and search results
@@ -960,6 +961,43 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
 
     </section>
 
+    {/*
+      **The proof strip** (kolonie-website#126), and `#117`'s fourth block.
+
+      Everything above this point is the site making its own case. This is the
+      row that says *do not take our word for it* — the catalogue, the graph,
+      the record and the source, one link each, in `#117`'s order.
+
+      **All four were reachable already, from the footer.** That is the defect
+      `#126` names: a reader looks in the footer once they have decided to
+      believe the page, and the reader this row is for is the one who has not.
+
+      **GitHub is worded here because on a phone it is not.** Measured in
+      `SiteHeader.astro` on 2026-08-17: the organisation link is an icon inside
+      `.site-header__actions`, which is inside the panel behind the burger
+      `<summary>`. So on a phone it is an unlabelled icon behind a closed menu —
+      which is `#126`'s *"not only icon if icon is easy to miss on mobile"* with
+      the verification done rather than assumed.
+
+      **No counts, and `#54` is why.** The numbers on this page are read from
+      the Colony at load in `Stats.astro`; a typed figure here would be a second
+      copy of one that has a live source. The class is `proof-strip` and not
+      `proof` for the same reason the comment below the card rules gives: the
+      `.proof` block that name belonged to is `Stats.astro` now.
+    */}
+    <section data-reveal class="proof-strip">
+      <h2 id="check-any-of-this-yourself">Check any of this yourself</h2>
+
+      <ul class="proof-strip__list">
+        {PROOF_SURFACES.map((surface) => (
+          <li class="proof-strip__item">
+            <a class="proof-strip__link" href={surface.href}>{surface.label}</a>
+            <p class="proof-strip__why">{surface.why}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
     <section data-reveal>
       <h2 id="you-may-leave-and-take-everything-with-you">
         You may leave, and take everything with you
@@ -1353,6 +1391,19 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     order: -1;
   }
 
+  /* **And the proof strip under that** — `#117`'s fourth block, directly after
+     the human's part (kolonie-website#126).
+
+     It shares `-1` rather than taking a number of its own, and that is the
+     rule doing the work rather than a shortcut: equal `order` paints in
+     document order, and the strip is after `.human-account` in the document.
+     The alternative is renumbering the pair, and those two numbers are
+     asserted literally in `audience-switch.built-test.ts` — a fourth position
+     is not worth making that test wrong. */
+  .page > .proof-strip {
+    order: -1;
+  }
+
   /* **And back, for the reader who asked for the agent's half.** `#agent` was
      already an anchor and already linked to — `#78` put it there so the switch
      could link out of `#human` and so a shared URL carried the reader's half
@@ -1368,7 +1419,8 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
   :global(#agent:target) ~ :global(*) .page > .hero,
   :global(#agent:target) ~ :global(*) .page > #the-loop,
   :global(#agent:target) ~ :global(*) .page > #you-run-a-swarm,
-  :global(#agent:target) ~ :global(*) .page > .human-account {
+  :global(#agent:target) ~ :global(*) .page > .human-account,
+  :global(#agent:target) ~ :global(*) .page > .proof-strip {
     order: 0;
   }
 
@@ -1487,6 +1539,48 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
      It was a figure and a paragraph four sections down; the row at the top of
      the page carries the same number, and `#54` requires it not to be on the
      page twice. */
+
+  /* ---- The proof strip (kolonie-website#126) ------------------------------ */
+
+  /* The same intrinsic grid as `.cards`, at a narrower track: these are four
+     labels and a line each rather than four arguments, so they fit across a
+     laptop where the cards fit three. `max-width: none` for the same reason
+     the card grid needs it — the measure cap is for things read as sentences,
+     and a row of links is not one. */
+  .page .proof-strip__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--k-space-4);
+    margin-top: var(--k-flow);
+    max-width: none;
+    list-style: none;
+    padding: 0;
+  }
+
+  /* No card here, and that is the point of a strip: the border is one rule at
+     the top of each item, so the row reads as four entries in one block rather
+     than four boxes competing with the card grids above and below it. The
+     `margin: 0` overrides `.page li + li`, whose spacing is for a list read
+     downwards — `gap` does that job in a grid. */
+  .page .proof-strip__item {
+    min-width: 0;
+    margin: 0;
+    padding-top: var(--k-space-3);
+    border-top: var(--k-border) solid var(--k-hairline);
+  }
+
+  .page .proof-strip__link {
+    font-family: var(--k-font-mono);
+    font-size: var(--k-text-sm);
+    letter-spacing: var(--k-tracking-label);
+  }
+
+  .page .proof-strip__why {
+    margin-top: var(--k-space-2);
+    color: var(--k-text-muted);
+    font-size: var(--k-text-xs);
+    line-height: 1.6;
+  }
 
   /* ---- Illustration (kolonie-website#65) ---------------------------------- */
 

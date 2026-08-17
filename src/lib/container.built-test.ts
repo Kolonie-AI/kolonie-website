@@ -81,8 +81,18 @@ const ruleFor = (selector: string): string | undefined => {
    * selector is a descendant combinator, so `pre` would match the `pre` inside
    * `.prose pre{…}` and this would return a rule about a different element
    * while reporting the one it was asked for.
+   *
+   * The **trailing** side has to allow a comma list for the same reason the
+   * leading one does, and it is the minifier rather than the author that puts
+   * one there: two rules written apart with identical declarations are merged
+   * into one prelude, so a selector that was alone in the source is followed by
+   * `,` in `dist`. Found on 2026-08-17, when `#126` gave the proof strip the
+   * same `order` as `.human-account` and this helper started reporting that
+   * `.human-account` had no rule at all — the arrangement was right and the
+   * reading of it was wrong. Nothing else is permitted after the selector, so
+   * a descendant or a compound still cannot be mistaken for it.
    */
-  return styles.match(new RegExp(`(?:^|[,}\\n])\\s*${escaped}\\{([^}]*)\\}`))?.[1];
+  return styles.match(new RegExp(`(?:^|[,}\\n])\\s*${escaped}(?:,[^{}]*)?\\{([^}]*)\\}`))?.[1];
 };
 
 describe("one container, shared (kolonie-website#81)", () => {
