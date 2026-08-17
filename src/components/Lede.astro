@@ -11,6 +11,16 @@
  * sits before either page's detail. Written five times, that is five ledes that
  * drift apart by January.
  *
+ * **It landed on four of them, and `/quests/` is the one it should not be on**
+ * (`#128`). That page is documentation and is read by somebody who has already
+ * decided; a first screen written to convince them is aimed at a reader who is
+ * not there. `#128`'s bridge is a paragraph of reference at the top of it
+ * instead. The count is worth recording because it is the answer to *why not
+ * simply every page*: a lede is what a page needs when a stranger lands on it,
+ * which is a property of the page rather than of the site. `LEDE_PAGES` in
+ * `lede.built-test.ts` is the list, and appending to it is the whole of
+ * deciding a page has one.
+ *
  * **What it enforces is placement, not wording.** The rules it exists to serve
  * are `AGENTS.md` §3 — an outcome for the human first, a Colony term never
  * standing on its own, install mechanics never outranking the reason. Those are
@@ -22,12 +32,15 @@
  *
  * ## What it deliberately does not carry
  *
- * **No button.** Two of the five pages are documentation — `/quests/` by
- * `chrome.ts`'s exception list — and `layers.built-test.ts` enforces that a
- * documentation page carries no call to action. A component with an `action`
- * prop would either break that rule on two pages or grow a flag for which pages
- * are allowed to use it, and the flag is the classification `chrome.ts` already
- * owns. The link onward is written into the prose at the call site, where the
+ * **No button.** `layers.built-test.ts` enforces that a documentation page
+ * carries no call to action, and `/quests/` is documentation by `chrome.ts`'s
+ * exception list. A component with an `action` prop would either break that
+ * rule wherever it reached such a page or grow a flag for which pages are
+ * allowed to use it, and the flag is the classification `chrome.ts` already
+ * owns. `#128` then decided `/quests/` gets prose rather than this block, so
+ * today's four routes are all persuasion — but that is where the list happens
+ * to stand, not a property of the component, and a button would make the next
+ * documentation lede impossible rather than merely awkward. The link onward is written into the prose at the call site, where the
  * sentence around it can say why a reader would follow it.
  *
  * **No title, no icon, no eyebrow.** The frontmatter `title` is already the

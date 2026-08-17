@@ -42,6 +42,12 @@ const LEDE_PAGES: readonly { readonly route: string; readonly issue: string }[] 
   // below the fold (`#123`).
   { route: "/the-register/", issue: "kolonie-website#123" },
   { route: "/run-a-swarm/", issue: "kolonie-website#123" },
+  // `#128` names `/pricing/` and `/quests/` together and only one of them is
+  // here. `/quests/` is documentation — `chrome.ts` holds the exception — and a
+  // lede is written for somebody deciding, which is not who reads it. It got a
+  // paragraph of reference instead, which is why this list is four pages rather
+  // than the five `Lede.astro` anticipated.
+  { route: "/pricing/", issue: "kolonie-website#128" },
 ];
 
 describe.each(LEDE_PAGES)("$route", ({ route }) => {
