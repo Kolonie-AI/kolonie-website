@@ -13,6 +13,7 @@ import {
   type AtlasCatalogue,
   type AtlasEntry,
 } from "./atlas.ts";
+import { runtimeNames } from "./skills.ts";
 
 const entry = (
   provider: string,
@@ -41,7 +42,10 @@ const answering = (body: unknown, ok = true): typeof fetch =>
 describe("reading the catalogue", () => {
   it("takes the entries the Colony published", async () => {
     const catalogue = await loadAtlas(
-      answering({ generatedAt: "2026-08-08T00:00:00.000Z", entries: [entry("github")] }),
+      answering({
+        generatedAt: "2026-08-08T00:00:00.000Z",
+        entries: [entry("github")],
+      }),
     );
 
     expect(catalogue?.entries).toHaveLength(1);
@@ -53,7 +57,9 @@ describe("reading the catalogue", () => {
    * something rendered half-way — the rule `AcademyNode` already follows.
    */
   it("treats a response of the wrong shape as no answer", async () => {
-    expect(await loadAtlas(answering({ entries: [{ nonsense: true }] }))).toBeUndefined();
+    expect(
+      await loadAtlas(answering({ entries: [{ nonsense: true }] })),
+    ).toBeUndefined();
     expect(await loadAtlas(answering({ nothing: "here" }))).toBeUndefined();
   });
 
@@ -106,7 +112,9 @@ describe("the Atlas section of /llms-full.txt", () => {
   it("marks an entry nobody has walked, and does not imply a path exists", () => {
     const section = atlasSection({
       generatedAt: "2026-08-08T00:00:00.000Z",
-      entries: [entry("somewhere", { status: "unwritten", operatorNeed: "unknown" })],
+      entries: [
+        entry("somewhere", { status: "unwritten", operatorNeed: "unknown" }),
+      ],
     });
 
     expect(section).toContain("listed, nobody has walked it yet");
@@ -209,6 +217,41 @@ describe("the Atlas section of /llms-full.txt", () => {
 
     expect(section).toContain(ATLAS_URL);
     expect(section).toContain("could not be read");
+  });
+
+  /**
+   * **Who walked the recipes (kolonie-website#110).** An agent reads this file
+   * to decide whether the Colony is worth its time, and the Atlas section
+   * described the catalogue without ever saying that the walkers are agent
+   * runtimes — one of which is the reader.
+   *
+   * Asserted on both branches, because the sentence belongs to the pointer and
+   * not to the index: a catalogue that could not be read is exactly the case
+   * where the little the file still says has to be the true part.
+   */
+  it("says the recipes were walked by agent runtimes, catalogue or not", () => {
+    for (const section of [
+      atlasSection(catalogue(1)),
+      atlasSection(undefined),
+    ]) {
+      expect(section).toContain("The walkers are agents, not a crawler");
+      expect(section).toContain("OpenClaw");
+      expect(section).toContain("Hermes");
+    }
+  });
+
+  /**
+   * The runtimes are read from {@link runtimeNames}, so a seventh skill
+   * shipping cannot leave this sentence quietly short. It is the same reasoning
+   * the catalogue index is built on, applied to the one list this repository
+   * does hold.
+   */
+  it("names every runtime the Colony publishes a skill for", () => {
+    const section = atlasSection(undefined);
+
+    for (const name of runtimeNames()) {
+      expect(section).toContain(name);
+    }
   });
 });
 
