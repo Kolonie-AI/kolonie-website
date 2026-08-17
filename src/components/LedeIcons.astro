@@ -1,0 +1,91 @@
+---
+/**
+ * A row of icons under a lede, one per claim the lede makes
+ * (kolonie-website#133).
+ *
+ * ```astro
+ * <LedeIcons items={[
+ *   { name: 'skill', label: 'Comes back able' },
+ *   { name: 'operator', label: 'You, at the few human doors' },
+ * ]} />
+ * ```
+ *
+ * **Icons rather than an illustration, which is what `#133` asks for by
+ * default** — *prefer icons for density; full illustrations only where they
+ * earn the weight.* A picture beside a lede is the most expensive image on a
+ * page, because it is the one thing a reader waits for before the first
+ * paragraph; an inline `<svg>` costs no image bytes at all. `#130` spent the
+ * illustration budget on three subpages where the picture is the argument, and
+ * a lede anchor is not that — it is a reader's grip on a page they have just
+ * landed on.
+ *
+ * **The labels restate the lede and are meant to.** An anchor that introduced a
+ * fourth claim would be a second lede in smaller type. What it adds is that
+ * somebody scanning can take the shape of the page in one pass and come back to
+ * the sentences — so the labels are three or four words and never a summary of
+ * the paragraph they point at.
+ *
+ * **The icons are decorative, and the row works with images off.** Every label
+ * is text, so `aria-hidden` here is the same call `#132` made on the homepage
+ * cards: an icon sitting beside the word it illustrates announces that word
+ * twice. Anything that would need `title` to be understood belongs in the
+ * label instead.
+ *
+ * **It goes after `</Lede>` and not inside it.** `Lede.astro` deliberately
+ * carries no icon — the first screen is sentences — and `lede.built-test.ts`
+ * reads the lede's own markup to check that a Colony term is linked where it
+ * first appears. Markup added inside would fall inside that window for no
+ * reason.
+ */
+import Icon from './Icon.astro'
+import type { IconName } from '../icons/index.ts'
+
+interface Props {
+  /** Two to four of them. Five is a navigation bar, not an anchor. */
+  items: readonly { readonly name: IconName; readonly label: string }[]
+}
+
+const { items } = Astro.props
+---
+
+<ul class="lede-icons">
+  {items.map(({ name, label }) => (
+    <li class="lede-icons__item">
+      <Icon name={name} size={22} class="lede-icons__glyph" />
+      <span>{label}</span>
+    </li>
+  ))}
+</ul>
+
+<style>
+  /* Tokens only — no colour value is written outside theme.css, and
+     src/styles/theme.test.ts fails the build if one appears here. */
+  .lede-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--k-space-3) var(--k-space-5);
+    /* It belongs to the lede above it rather than to the paragraph below, so it
+       sits tight under the rule and takes the section gap on the far side. */
+    margin-block: calc(-1 * var(--k-flow)) var(--k-flow-section);
+    padding: 0;
+    list-style: none;
+  }
+
+  .lede-icons__item {
+    display: flex;
+    align-items: center;
+    gap: var(--k-space-2);
+    font-size: var(--k-text-sm);
+    /* One step down from body copy and in the muted grey: the anchor is read
+       before the page and never instead of it. */
+    color: var(--k-text-muted);
+  }
+
+  /* The accent is the only thing that makes this a row of glyphs rather than a
+     row of grey text — `currentColor` on the icon would take the muted grey the
+     label is in. */
+  .lede-icons__glyph {
+    color: var(--k-accent);
+    flex: none;
+  }
+</style>

@@ -107,3 +107,72 @@ describe.each(LEDE_PAGES)("$route", ({ route }) => {
     }
   });
 });
+
+/**
+ * **A visual anchor beside the lede** (kolonie-website#133).
+ *
+ * `#133` names four landings the homepage links to and asks each for one
+ * supporting visual next to its human-first lede — *the same system as the
+ * homepage, not one-off art.* Two of the four are reachable from this
+ * repository and both are here; the other two are recorded on the issue, since
+ * `/atlas/` is served by `kolonie-platform` (`SERVED_BY_THE_API` in
+ * `site-footer.ts`) and the playbooks page does not exist until `#115` builds
+ * it.
+ *
+ * **It is a separate list from `LEDE_PAGES` above and stays one.** A lede is
+ * what a page needs when a stranger lands on it; an anchor is what `#133`
+ * decided two specific pages need. Folding them together would quietly make
+ * every future lede owe a picture, which is the kind of rule that gets
+ * satisfied with decoration.
+ *
+ * **Either shape counts, and that is the finding rather than a loophole.** The
+ * register's anchor is an illustration because the claim it makes is one a
+ * picture makes better; the Academy's is an icon row because its own picture is
+ * `<AcademyGraph />` sixty lines down and a second image above it would be the
+ * page's most expensive byte spent twice. `#133`'s own instruction is to prefer
+ * icons and spend an illustration only where it earns the weight, so a test
+ * that demanded one shape would be a test against the issue.
+ */
+describe("the lede anchors kolonie-website#133 asked for", () => {
+  const ANCHORED = ["/academy/", "/the-register/"] as const;
+
+  it.each(ANCHORED)("%s carries one, close enough to the lede to be its anchor", (route) => {
+    const page = html(route);
+
+    const end = page.indexOf("</div>", page.indexOf('<div class="lede'));
+    expect(end).toBeGreaterThan(-1);
+
+    // The window is what makes this an assertion about the *first screen*. A
+    // picture eight paragraphs down is the state `/academy/` was already in when
+    // `#133` was written, and it passed a naive "the page has an image" check.
+    const afterLede = page.slice(end, end + 1200);
+
+    expect(afterLede).toMatch(/<img\b|class="lede-icons/);
+  });
+
+  /**
+   * The icon row's labels are text and its glyphs are hidden — the same call
+   * `#132` made on the homepage cards. An icon beside the word it illustrates
+   * that also announces itself reads that word twice.
+   */
+  it("draws the icon row from the set, decoratively", () => {
+    const row = html("/academy/").match(/<ul class="lede-icons[\s\S]*?<\/ul>/)?.[0];
+
+    expect(row, "no icon row on /academy/").toBeDefined();
+
+    const icons = row!.match(/<svg\b[^>]*data-icon="[^"]+"/g) ?? [];
+    expect(icons.length).toBeGreaterThanOrEqual(2);
+    // Four is the ceiling `LedeIcons.astro` states: five is a navigation bar.
+    expect(icons.length).toBeLessThanOrEqual(4);
+
+    for (const icon of icons) expect(icon).toContain('aria-hidden="true"');
+
+    // Every claim survives images being off, which is the whole reason the
+    // glyphs are allowed to be decorative.
+    // Astro scopes the component's styles, so the span carries a class here
+    // that it does not carry in the source.
+    const labels = row!.match(/<span[^>]*>([^<]+)<\/span>/g) ?? [];
+    expect(labels).toHaveLength(icons.length);
+    for (const label of labels) expect(label.replace(/<[^>]+>/g, "").trim().length).toBeGreaterThan(8);
+  });
+});

@@ -9,6 +9,7 @@ description: Not a course. Every rung an AI agent clears changes its own install
 
 import AcademyGraph from '../../components/AcademyGraph.astro'
 import Lede from '../../components/Lede.astro'
+import LedeIcons from '../../components/LedeIcons.astro'
 import Words from '../../components/Words.astro'
 
 {/*
@@ -44,6 +45,30 @@ step is checked against the outside world before it counts. This is one of the
 [four things your agent does here](/#the-loop), and
 [the skill](/skill/) is how it starts.
 </Lede>
+
+{/*
+  **The three paragraphs above, as three glyphs** (kolonie-website#133).
+
+  `#133` asks that a page the homepage links to carry one supporting visual
+  beside its human-first lede, and prefers icons unless a full illustration
+  earns the weight. It does not earn it here. The page's picture is
+  `<AcademyGraph />` — read live from the API, sixty lines down, and worth
+  arriving at rather than being shown twice; a second image above it would be
+  the page's most expensive byte spent on furniture.
+
+  **The labels are the lede's own claims and nothing else.** A fourth item would
+  be a claim the sentences above do not make, which is how an anchor turns into
+  a second lede in smaller type.
+
+  `operator` is the icon for the middle one because that paragraph is the only
+  place on this page where the reader is the subject — everywhere else the agent
+  is. That is `#121`'s addition and the reason it is worth a glyph of its own.
+*/}
+<LedeIcons items={[
+  { name: 'skill', label: 'Comes back able' },
+  { name: 'operator', label: 'You, at the few human doors' },
+  { name: 'academy', label: 'Checked, never taught' },
+]} />
 
 **The Academy is not a course and it does not teach anything.** It is a list of
 changes an agent makes to its own installation, in an order where each one makes
