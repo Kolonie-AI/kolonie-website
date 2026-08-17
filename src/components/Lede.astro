@@ -1,0 +1,78 @@
+---
+/**
+ * The first screen of a page a stranger arrives on (kolonie-website#121,
+ * `#123`, `#128`).
+ *
+ * **Three issues asked for the same thing on five pages**, which is why this is
+ * a component rather than five paragraphs. `#121` wants `/academy/` to say what
+ * an operator's agent gains before the graph; `#123` wants `/the-register/` and
+ * `/run-a-swarm/` to open in the homepage's story rather than in the Colony's
+ * vocabulary; `#128` wants `/pricing/` and `/quests/` to say where the money
+ * sits before either page's detail. Written five times, that is five ledes that
+ * drift apart by January.
+ *
+ * **What it enforces is placement, not wording.** The rules it exists to serve
+ * are `AGENTS.md` §3 — an outcome for the human first, a Colony term never
+ * standing on its own, install mechanics never outranking the reason. Those are
+ * properties of sentences and no component can check them. What a component can
+ * do is give the first screen a name in the markup, so `lede.built-test.ts` can
+ * assert that every persuasion page has one and that it comes before the page's
+ * first Colony word. That test is the thing `#125` was written to make
+ * possible, and it is what this class name is for.
+ *
+ * ## What it deliberately does not carry
+ *
+ * **No button.** Two of the five pages are documentation — `/quests/` by
+ * `chrome.ts`'s exception list — and `layers.built-test.ts` enforces that a
+ * documentation page carries no call to action. A component with an `action`
+ * prop would either break that rule on two pages or grow a flag for which pages
+ * are allowed to use it, and the flag is the classification `chrome.ts` already
+ * owns. The link onward is written into the prose at the call site, where the
+ * sentence around it can say why a reader would follow it.
+ *
+ * **No title, no icon, no eyebrow.** The frontmatter `title` is already the
+ * page's `h1`, rendered by `[...slug].astro`, and a heading between the two
+ * would be the page announcing itself twice.
+ *
+ * **Not `PlainTerm`, and the two do not compete.** That component is one
+ * sentence carrying one term at the point the term is unavoidable. This one is
+ * the block a page opens with, and the ordinary case is that it contains no
+ * term at all — a lede needing three glosses is a lede written in the wrong
+ * language.
+ */
+---
+
+<div class="lede">
+  <slot />
+</div>
+
+<style>
+  /* Tokens only — no colour value is written outside theme.css, and
+     src/styles/theme.test.ts fails the build if one appears here. */
+  .lede {
+    /* `--k-measure-lede` is narrower than the body measure and was already the
+       landing page's answer to the same question (`index.astro`). A first screen
+       is read at a glance rather than settled into, and a short line is what
+       makes that possible. */
+    max-width: var(--k-measure-lede);
+    margin-block-end: var(--k-flow-section);
+    padding-block-end: var(--k-flow);
+    border-block-end: 1px solid var(--k-hairline);
+  }
+
+  /* One step up from body copy and no more. The lede is distinguished by being
+     first and by being short; setting it two steps up turns it into a pull quote
+     and pushes the page it introduces off the phone screen it was written for. */
+  .lede :global(p) {
+    font-size: var(--k-text-lg);
+    line-height: var(--k-leading);
+  }
+
+  .lede :global(p + p) {
+    margin-block-start: var(--k-flow-tight);
+  }
+
+  .lede :global(p:last-child) {
+    margin-block-end: 0;
+  }
+</style>
