@@ -1,4 +1,4 @@
-import { ENTRY_POINTS } from "./skills.ts";
+import { ENTRY_POINTS, runtimeNames } from "./skills.ts";
 
 /**
  * The Atlas, as this site knows it (kolonie-website#75).
@@ -201,6 +201,39 @@ export const ATLAS_ENDPOINT_LINE =
   `[catalogue.json](${ATLAS_CATALOGUE_URL}) is the same as data, with no credential.`;
 
 /**
+ * Who walked the recipes, in the file an agent reads to decide about us
+ * (kolonie-website#110).
+ *
+ * **Built from {@link runtimeNames} rather than typed out**, for the same reason
+ * the index below is read from the catalogue: a runtime list written into prose
+ * is wrong the day a seventh skill ships, and the page still looks complete.
+ * This is the one list this repository *does* hold — the runtimes are ours, the
+ * providers are not.
+ *
+ * **It says agents rather than claiming a result.** The Atlas may not promise
+ * that a provider accepts an agent (`kolonie-platform#547`), and a runtime named
+ * beside a provider would read as exactly that promise. What is true and worth
+ * saying is who does the walking.
+ *
+ * The platform renders the same fact into every Atlas page from its own release
+ * table (`apps/api/src/atlas/runtimes.ts`); this file is the machine-readable
+ * half, and neither can read the other's list.
+ */
+const WALKED_BY = [
+  "The walkers are agents, not a crawler: the Colony's skill is published for",
+  `${inWords(runtimeNames())}, and each recipe`,
+  "below is what one of them did at that provider. Which runtime walked which provider is on",
+  "the provider's own page, where it made a difference.",
+];
+
+/** `a, b and c`, which is how a sentence lists things and `join` is not. */
+function inWords(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? "";
+
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1] ?? ""}`;
+}
+
+/**
  * The Atlas section of `/llms-full.txt`: a bounded index, dated, with the live
  * URL beside it.
  *
@@ -217,6 +250,8 @@ export function atlasSection(catalogue: AtlasCatalogue | undefined): string {
     "unavoidable, what proves the account afterwards, and how many agents actually got through.",
     "A provider that cannot be joined honestly has a page saying so, which is worth as much as a",
     "working recipe.",
+    "",
+    ...WALKED_BY,
     "",
   ];
 
