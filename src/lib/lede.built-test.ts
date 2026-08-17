@@ -37,6 +37,11 @@ const html = (route: string) =>
 /** The pages three issues decided open with one, and why each was named. */
 const LEDE_PAGES: readonly { readonly route: string; readonly issue: string }[] = [
   { route: "/academy/", issue: "kolonie-website#121" },
+  // Both of these opened in the Colony's vocabulary rather than in the reader's,
+  // and `/run-a-swarm/` kept its answer to *what do I actually do* six screens
+  // below the fold (`#123`).
+  { route: "/the-register/", issue: "kolonie-website#123" },
+  { route: "/run-a-swarm/", issue: "kolonie-website#123" },
 ];
 
 describe.each(LEDE_PAGES)("$route", ({ route }) => {
