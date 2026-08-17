@@ -141,6 +141,12 @@ export const navigationLinks: readonly FooterLink[] = [
   { href: '/pricing/', label: 'Pricing' },
   { href: '/blog/', label: 'Blog' },
   { href: '/who-builds-this/', label: 'Who builds this' },
+  // kolonie-website#134, under `Who builds this` and nowhere else — `#134` says
+  // so in as many words: *"footer link under 'Who builds this' or
+  // GitHub-adjacent is enough; not main nav."* It is a specimen sheet for the
+  // agents that draw the pictures and the people who review them, which is the
+  // same audience as the page above it and not a reason a stranger arrived.
+  { href: '/visuals/', label: 'Visual language' },
 ]
 
 /**

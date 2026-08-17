@@ -1,0 +1,74 @@
+---
+/**
+ * The mark, shown at the sizes it is actually used at (kolonie-website#134).
+ *
+ * **It draws the same file the header draws, through the same function.**
+ * `inlineMark` reads `public/mark.svg` and puts its two baked-in colours back as
+ * the tokens they were generated from, so this specimen cannot become a third
+ * copy of the crest that goes stale after a palette change — which is
+ * `kolonie-docs/brand/README.md` §4's first prohibition, and the exact failure a
+ * reference page is most likely to introduce, because a reference page is where
+ * somebody is tempted to paste a picture of the thing rather than the thing.
+ *
+ * **Three sizes and no lockup.** §4 also forbids new arrangements of the mark
+ * with the wordmark; a row of the same crest at 24, 48 and 96 pixels is a
+ * specimen, not a pairing. The sizes are the ones that exist: the header's, the
+ * favicon's neighbours, and roughly what `mark-192.png` is scaled from.
+ */
+import themeCss from '../styles/theme.css?raw'
+import { inlineMark } from '../lib/mark.ts'
+
+const MARK = inlineMark(themeCss)
+
+const SIZES = [24, 48, 96] as const
+---
+
+<ul class="mark-specimen" data-mark-specimen>
+  {SIZES.map((size) => (
+    <li class="mark-specimen__item">
+      <span class="mark-specimen__frame" style={`--mark-size: ${size}px`} set:html={MARK} />
+      <code class="mark-specimen__size">{size}px</code>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .mark-specimen {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--k-space-6);
+    margin-top: var(--k-flow);
+    max-width: none;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* `margin: 0` for the reason every list in this repository sets it — the
+     page's `li + li` rule spaces sentences, and this is a row of specimens. */
+  .mark-specimen__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--k-space-2);
+    margin: 0;
+  }
+
+  /* The size is set on the wrapper rather than on the SVG, because the SVG is
+     the generated file and this component does not edit its attributes. */
+  .mark-specimen__frame {
+    display: block;
+    width: var(--mark-size);
+    height: var(--mark-size);
+  }
+
+  .mark-specimen__frame :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mark-specimen__size {
+    font-size: var(--k-text-xs);
+    color: var(--k-text-muted);
+  }
+</style>

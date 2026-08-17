@@ -1,0 +1,97 @@
+---
+/**
+ * One of the Colony's icons, inline (kolonie-website#131).
+ *
+ * ```astro
+ * <Icon name="wake" />
+ * <Icon name="atlas" size={20} />
+ * <Icon name="send" title="Send a report" />
+ * ```
+ *
+ * **Inline, not `<img>` or a sprite sheet.** `currentColor` is the whole point
+ * of the set — an icon takes the colour of the text it sits beside, including
+ * the accent a card heading is already in and the muted grey a footnote is
+ * already in. An `<img>` cannot do that, and a sprite sheet can only do it at
+ * the cost of a second request for four hundred bytes of geometry. The cost of
+ * inlining is that an icon used on twelve pages is in twelve documents; at this
+ * size that is smaller than the request it saves.
+ *
+ * **`name` is a union and not a string** (`src/icons/index.ts`). A typo is an
+ * `astro check` failure, which is the reason the list is hand-written.
+ *
+ * ## Decorative by default
+ *
+ * `aria-hidden="true"` unless a `title` is given, and that is the accessible
+ * default rather than the lazy one: almost every icon on this site sits next to
+ * the word it illustrates, and announcing "graphic, atlas — Atlas" is a reader
+ * being told the same thing twice by a picture that was meant to help. An icon
+ * that is the *whole* label takes `title`, gets `role="img"` and a `<title>`
+ * element, and stops being hidden. If that case comes up often, the honest fix
+ * is usually a visible label rather than a better icon.
+ *
+ * **`focusable="false"` regardless.** Internet Explorer is not the reason —
+ * some assistive tooling still lands on an inline `<svg>` in the tab order, and
+ * a decorative shape in the tab order is a stop that leads nowhere.
+ */
+import { iconBody, type IconName } from '../icons/index.ts'
+
+interface Props {
+  /** Which icon. One of the twelve in `src/icons/`. */
+  name: IconName
+  /** Rendered size in pixels, square. The grid is 24; 16–32 all read well. */
+  size?: number
+  /** An accessible name. Supplying it makes the icon meaningful, not decorative. */
+  title?: string
+  /** Extra classes for the caller's own layout. */
+  class?: string
+}
+
+const { name, size = 24, title, class: className } = Astro.props
+
+const body = iconBody(name)
+
+/**
+ * A title needs an id to be referenced, and two icons on one page must not
+ * share one. The name is not enough — the same icon may legitimately appear
+ * twice with two different labels — so the id carries a counter that is unique
+ * within the rendered document.
+ */
+const labelled = title !== undefined
+const titleId = labelled ? `icon-${name}-${crypto.randomUUID().slice(0, 8)}` : undefined
+---
+
+<svg
+  class:list={['icon', className]}
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  focusable="false"
+  role={labelled ? 'img' : undefined}
+  aria-hidden={labelled ? undefined : 'true'}
+  aria-labelledby={titleId}
+  data-icon={name}
+>
+  {labelled && <title id={titleId}>{title}</title>}
+  <Fragment set:html={body} />
+</svg>
+
+<style>
+  /* No colour here, deliberately — `stroke="currentColor"` above is the whole
+     colour behaviour, and a token named in this file would be a second place
+     the palette lives (#11).
+
+     `flex: none` because an icon in a flex row must not be squeezed into an
+     ellipse by a long label next to it, and the vertical alignment is the one
+     property that makes an inline `<svg>` sit on the text baseline instead of
+     hanging a pixel below it. */
+  .icon {
+    flex: none;
+    display: inline-block;
+    vertical-align: -0.125em;
+  }
+</style>

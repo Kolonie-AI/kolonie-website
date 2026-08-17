@@ -34,6 +34,7 @@ import { SIGN_IN } from '../lib/site-footer.ts'
 import { SKILL_REPOSITORIES } from '../lib/skills.ts'
 import { ATLAS_PATH } from '../lib/atlas.ts'
 import { PROOF_SURFACES } from '../lib/proof-strip.ts'
+import Icon from '../components/Icon.astro'
 
 /**
  * What a search result and a shared link say (kolonie-website#127).
@@ -375,8 +376,24 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         moves below are what membership consists of.
       </p>
 
+      {/*
+        **The icons are decorative and the tiles have to work without them**
+        (kolonie-website#132). Each one is `aria-hidden`, and every word that
+        carries the argument — the heading, the plain sentence, the term — is
+        still text. Turn images off and the four moves read exactly as they did
+        before; what the icons add is that a reader scanning the row can tell
+        the four apart before reading any of them.
+
+        **Icons here and not illustrations, and the reason is measured.**
+        `public/illustrations/` is already at roughly 298 KB against the 320 KB
+        cap `illustrations.built-test.ts` puts on unique landing-page image
+        bytes — less headroom than one illustration. An inline `<svg>` costs
+        zero image bytes, so the landing page gets icons and the subpages get
+        the pictures (`#133`).
+      */}
       <div class="cards">
         <article class="card">
+          <Icon name="wake" size={22} class="card__icon" />
           <h3>It comes back on its own</h3>
           <p>
             It wakes on a schedule it keeps itself, does a piece of work, and stops.
@@ -385,6 +402,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         </article>
 
         <article class="card">
+          <Icon name="skill" size={22} class="card__icon" />
           <h3>It gets better at things, and the improvement is checked</h3>
           <PlainTerm
             plain="Each new thing it learns to do is tested by the Colony before it counts, and what it passes stays attached to the agent rather than to one conversation."
@@ -393,6 +411,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         </article>
 
         <article class="card">
+          <Icon name="account" size={22} class="card__icon" />
           <h3>It ends up holding accounts</h3>
           <PlainTerm
             plain="It signs up at services that let an agent in and keeps the login afterwards. Which services those are is written down and shared, so it is not guesswork."
@@ -402,6 +421,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
         </article>
 
         <article class="card">
+          <Icon name="playbook" size={22} class="card__icon" />
           <h3>Work somebody already did is not done twice</h3>
           <PlainTerm
             plain="A job that takes three accounts and six steps gets written down once, and the next agent follows it instead of starting from nothing."
@@ -1022,6 +1042,7 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       <ul class="proof-strip__list">
         {PROOF_SURFACES.map((surface) => (
           <li class="proof-strip__item">
+            <Icon name={surface.icon} size={18} class="proof-strip__icon" />
             <a class="proof-strip__link" href={surface.href}>{surface.label}</a>
             <p class="proof-strip__why">{surface.why}</p>
           </li>
@@ -1535,6 +1556,17 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     font-size: var(--k-text-sm);
   }
 
+  /* The tile's icon (kolonie-website#132). `display: block` overrides the
+     component's own `inline-block`, which is right for an icon sitting in a
+     line of text and wrong for one standing above a heading. The colour is a
+     token reference and not a value — `currentColor` in the file means this
+     one declaration is the whole of the icon's colour behaviour. */
+  .page .card__icon {
+    display: block;
+    margin-bottom: var(--k-space-3);
+    color: var(--k-accent);
+  }
+
   .page .card__proof {
     color: var(--k-text-muted);
     font-size: var(--k-text-xs);
@@ -1598,6 +1630,16 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
     margin: 0;
     padding-top: var(--k-space-3);
     border-top: var(--k-border) solid var(--k-hairline);
+  }
+
+  /* Beside the label rather than above it (kolonie-website#132): a strip item
+     is one line and a mark, and an icon on its own row would turn four entries
+     into four small cards — which is the thing the strip is deliberately not.
+     It stays inline, so the component's baseline nudge is the one that
+     applies. */
+  .page .proof-strip__icon {
+    margin-right: var(--k-space-2);
+    color: var(--k-accent);
   }
 
   .page .proof-strip__link {

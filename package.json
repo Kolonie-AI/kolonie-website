@@ -18,6 +18,7 @@
     "preview": "astro preview",
     "test": "vitest run",
     "check": "astro check && vitest run && astro build && npm run test:built && npm run test:viewport",
+    "check:illustrations": "node scripts/check-illustration-palette.mjs public/illustrations/*.png",
     "test:built": "vitest run --config vitest.built.config.ts",
     "test:viewport": "playwright install chromium && vitest run --config vitest.viewport.config.ts"
   },

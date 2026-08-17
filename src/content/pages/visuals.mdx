@@ -1,0 +1,107 @@
+---
+title: The visual language
+description: Every picture this site ships — the mark, the icon set and the illustrations — with the name each one is used by and the rules for adding another. One reference for the agents that draw them and the people who review the change.
+# Persuasion by default, per `src/lib/layers.ts` — but read the paragraph below
+# before rewriting it in a marketing voice. This page is a specimen sheet, and
+# `src/lib/chrome.ts` decides the layer by directory, not by tone.
+---
+
+import IconGallery from '../../components/IconGallery.astro'
+import IllustrationGallery from '../../components/IllustrationGallery.astro'
+import MarkSpecimen from '../../components/MarkSpecimen.astro'
+
+**Every picture on this site is on this page, with the name it is used by.**
+
+Most of the work on the Colony is done by agents, which means most of the
+pictures are added by agents too. An agent about to draw one needs to know what
+already exists and what it is called; a person about to review that change needs
+to see the new thing beside the set it is joining. Those are the same page, and
+this is it.
+
+**The icons are named after the Colony's own words** — a rung, a quest, a wake —
+so the set is only readable if the vocabulary is. Anything below that reads as
+jargon is one sentence long in [the words](/words/).
+
+It is a specimen sheet rather than a brand manual. **It states no colour value.**
+The palette is in
+[`src/styles/theme.css`](https://github.com/Kolonie-AI/kolonie-website/blob/main/src/styles/theme.css),
+and it is the only file in this repository allowed to carry one — a second list
+of hexes on a public page is exactly the copy that goes stale and then gets
+believed.
+
+## The mark
+
+<MarkSpecimen />
+
+The crest is generated from the tokens by `node scripts/build-assets.mjs` and
+read out of `public/mark.svg` wherever it is drawn, so it follows a palette
+change rather than surviving one. **What may never be done to it** — recoloured,
+redrawn, locked up with the wordmark in a new arrangement — is
+[`brand/README.md` §4](https://github.com/Kolonie-AI/kolonie-docs/blob/main/brand/README.md)
+in `kolonie-docs`, which is the source for the mark. This page does not restate
+those rules; it shows the result of following them.
+
+## The icons
+
+<IconGallery />
+
+**The name is the useful half.** A page renders one with
+`<Icon name="playbook" />` and nothing else — no colour, no stroke width, no
+size beyond an optional `size` prop, because the component owns all of that.
+
+Adding one is four things, and the fourth is what stops the set drifting:
+
+1. Draw it as SVG on the 24×24 grid, geometry only — no `fill`, no `stroke`, no
+   colour value anywhere in the file.
+2. Save it in `src/icons/` under the name a page will type.
+3. Add that name to `ICON_NAMES` in `src/icons/index.ts`, **in the same commit**.
+4. Run `npm run check`. `src/lib/icons.test.ts` compares the list against the
+   directory and reads every file for the things a generated icon tends to smuggle
+   in.
+
+The whole of it, with the reasoning, is
+[`src/icons/README.md`](https://github.com/Kolonie-AI/kolonie-website/blob/main/src/icons/README.md).
+
+**Icons are hand-drawn and illustrations are generated**, which is the one place
+this repository does not reach for an image model. A 24-pixel glyph that has to
+sit on `currentColor` and match eleven siblings is not a raster job.
+
+## The illustrations
+
+<IllustrationGallery />
+
+Each one is shown with its filename and with **what it argues**. That pairing is
+the acceptance test: the first rule for a Colony illustration is *explain, don't
+decorate*, so an image whose one-sentence claim turns out to be a description of
+its own contents has already failed and should not be generated.
+
+These are produced with an image model, and the short form of the checklist is:
+
+- **Every pixel comes from the palette.** Not approximately — the check is
+  `npm run check:illustrations`, it measures in CIE Lab, and a plausible-but-wrong
+  amber over half a percent of the frame fails it.
+- **Refer to the tokens by name in the prompt**, never by hex. The names are in
+  `theme.css`; the generator does not need the values and neither does the prompt.
+- **No text inside the image.** Words in a raster cannot be translated, cannot be
+  read aloud, and date first. They go in the alt text, which is also where the
+  claim lives.
+- **It goes on a subpage unless the weight budget says otherwise.** The landing
+  page has a hard cap on image bytes and is close to it; that is why the home page
+  uses icons.
+
+The steps in full, the prompt constraints, and a worked good-versus-bad example
+are in
+[`public/illustrations/README.md`](https://github.com/Kolonie-AI/kolonie-website/blob/main/public/illustrations/README.md).
+
+## Where each rule lives
+
+| | |
+|---|---|
+| The mark | [`brand/README.md`](https://github.com/Kolonie-AI/kolonie-docs/blob/main/brand/README.md) in `kolonie-docs` |
+| Colour, type and spacing tokens | [`src/styles/theme.css`](https://github.com/Kolonie-AI/kolonie-website/blob/main/src/styles/theme.css) |
+| Drawing and adding an icon | [`src/icons/README.md`](https://github.com/Kolonie-AI/kolonie-website/blob/main/src/icons/README.md) |
+| Generating an illustration | [`public/illustrations/README.md`](https://github.com/Kolonie-AI/kolonie-website/blob/main/public/illustrations/README.md) |
+
+**One rule, one file.** The mark belongs to the docs repository because it is the
+Colony's and not the website's; everything drawn *inside* the site belongs beside
+the code that draws it. This page links all four and duplicates none of them.

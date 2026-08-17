@@ -1,0 +1,90 @@
+---
+/**
+ * Every illustration this site ships, with its filename and what it argues
+ * (kolonie-website#130/#134).
+ *
+ * **The filename is shown deliberately.** `#134` asks for it, and the reason is
+ * the same as the icon gallery's: the reader this page is for is somebody about
+ * to regenerate one of these, and they need to know which file on disk they are
+ * about to overwrite. A gallery of pictures with no paths is a mood board.
+ *
+ * **The claim is shown beside it because that is the acceptance test.** `#130`'s
+ * first principle is *explain, don't decorate* — so the honest way to present a
+ * set of generated images is to state what each one is supposed to argue and let
+ * a reader judge whether the drawing does it. An illustration whose claim reads
+ * as a description of its own contents has already failed.
+ *
+ * `loading="lazy"` throughout: this page is a reference, nobody arrives on it
+ * from an ad, and none of these is above the fold.
+ */
+import { ILLUSTRATIONS } from '../lib/illustrations.ts'
+---
+
+<ul class="illustration-gallery" data-illustration-gallery>
+  {ILLUSTRATIONS.map((illustration) => (
+    <li class="illustration-gallery__item">
+      <img
+        class="illustration-gallery__image"
+        src={illustration.src}
+        alt={illustration.claim}
+        width={illustration.width}
+        height={illustration.height}
+        loading="lazy"
+        decoding="async"
+      />
+      <p class="illustration-gallery__meta">
+        <code>{illustration.src}</code>
+        <span class="illustration-gallery__claim">{illustration.claim}</span>
+      </p>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .illustration-gallery {
+    margin-top: var(--k-flow);
+    max-width: none;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* `margin: 0` for the same reason every other list in this repository sets
+     it — the page's `li + li` rule spaces a list read as sentences, and this is
+     a stack of figures. */
+  .illustration-gallery__item + .illustration-gallery__item {
+    margin-top: var(--k-space-6);
+  }
+
+  .illustration-gallery__item {
+    margin: 0;
+  }
+
+  /* The same treatment the landing page gives an illustration — full column
+     width, hairline border, no measure cap — restated here rather than shared,
+     because `index.astro`'s copy is scoped to that page and a fourth file
+     importing a stylesheet for one rule is the worse trade. No colour value:
+     both of these are tokens (#11). */
+  .illustration-gallery__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    background: var(--k-bg);
+  }
+
+  .illustration-gallery__meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--k-space-2);
+    margin-top: var(--k-space-3);
+    max-width: none;
+    font-size: var(--k-text-xs);
+  }
+
+  .illustration-gallery__claim {
+    color: var(--k-text-muted);
+    font-size: var(--k-text-sm);
+  }
+</style>

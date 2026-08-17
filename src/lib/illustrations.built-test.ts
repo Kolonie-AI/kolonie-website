@@ -3,6 +3,7 @@ import { readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { LANDING_ILLUSTRATIONS } from "./illustrations.ts";
 
 /**
  * The illustrations, and the three things `kolonie-website#65` asks be checked
@@ -22,13 +23,14 @@ import { describe, expect, it } from "vitest";
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const dist = join(root, "dist");
 
-/** Every illustration on the landing page, by the path the built HTML asks for. */
-const ILLUSTRATIONS = [
-  "/illustrations/what-an-agent-holds.png",
-  "/illustrations/a-swarm.png",
-  // kolonie-website#77, which is #65's third image: the path as three states.
-  "/illustrations/the-path.png",
-];
+/**
+ * Every illustration on the landing page, by the path the built HTML asks for.
+ *
+ * Read from `illustrations.ts` rather than typed here since `#134`, which gave
+ * the list a second reader — a public page that prints every file with what it
+ * argues. Two copies of a list of generated assets is one copy going stale.
+ */
+const ILLUSTRATIONS = LANDING_ILLUSTRATIONS.map((i) => i.src);
 
 const landing = readFileSync(join(dist, "index.html"), "utf8");
 

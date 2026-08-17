@@ -1,0 +1,73 @@
+---
+/**
+ * Every icon this site ships, with the name a page imports it by
+ * (kolonie-website#129/#134).
+ *
+ * **The name is the point of the gallery**, not the picture. A coding agent
+ * about to add an icon to a page needs to know that the drawing it wants is
+ * called `playbook` and not `recipe`; a human reviewing that change needs to
+ * see that the drawing exists and looks like the rest of the set. Both
+ * questions are answered by a grid of glyph-plus-name and neither is answered
+ * by a paragraph describing the set.
+ *
+ * **It iterates `ICON_NAMES` rather than listing them again.** An icon added to
+ * `src/icons/` and to the tuple appears here in the same commit, with no third
+ * place to forget. That is also what makes `icons.built-test.ts` able to assert
+ * that every shipped name reaches a page — the assertion is only worth making
+ * because this list cannot fall behind.
+ */
+import Icon from './Icon.astro'
+import { ICON_NAMES } from '../icons/index.ts'
+---
+
+<ul class="icon-gallery" data-icon-gallery>
+  {ICON_NAMES.map((name) => (
+    <li class="icon-gallery__item">
+      <Icon name={name} size={28} class="icon-gallery__glyph" />
+      <code class="icon-gallery__name">{name}</code>
+    </li>
+  ))}
+</ul>
+
+<style>
+  /* Intrinsically responsive on the same rule as the card grid: as many across
+     as fit at a 7rem track, one per row on a narrow phone. No breakpoint.
+
+     No colour value here, deliberately (#11) — `--k-accent` is a token
+     reference and `currentColor` in the files is the whole of the rest. */
+  .icon-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: var(--k-space-4);
+    margin-top: var(--k-flow);
+    max-width: none;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* `margin: 0` overrides the `li + li` flow spacing the page sets for lists
+     read downwards; `gap` is doing that job here. */
+  .icon-gallery__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--k-space-3);
+    margin: 0;
+    padding: var(--k-space-4) var(--k-space-3);
+    border: var(--k-border) solid var(--k-hairline);
+    border-radius: var(--k-radius);
+    background: var(--k-surface);
+    text-align: center;
+  }
+
+  .icon-gallery__glyph {
+    color: var(--k-accent);
+  }
+
+  /* The name is what a page types, so it is set as code and allowed to wrap
+     rather than to widen its cell. */
+  .icon-gallery__name {
+    font-size: var(--k-text-xs);
+    overflow-wrap: anywhere;
+  }
+</style>

@@ -169,6 +169,14 @@ describe("colour values stay in the theme layer", () => {
   // The hex form only counts at the start of a value, because `#193` is both a
   // colour and how this codebase writes an issue number, and prose citing
   // `kolonie-platform#193` is not a styling decision.
+  //
+  // That qualification is the whole exemption, and it is worth saying out loud
+  // now that issue numbers have three digits: a *bare* `#134` after a space or a
+  // comma is indistinguishable from `#134` the colour, and this deliberately
+  // does not try. So a comment citing several issues writes them
+  // `kolonie-website#129/#131`, with the repository once and slashes after it,
+  // rather than `#129, #131` — which is the shape a `border: 1px solid #333`
+  // hides in, and that one has to keep failing.
   const literal =
     /(?:^|[\s(:,])#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|color-mix)\(|\bcolor\s*:\s*(?:white|black|red|green|blue|grey|gray)\b/;
 

@@ -1,5 +1,6 @@
 import { destinationFor } from "./plain-term.ts";
 import { GITHUB } from "./site-nav.ts";
+import type { IconName } from "../icons/index.ts";
 
 /**
  * The four surfaces a sceptical human can go and check (kolonie-website#126).
@@ -52,6 +53,15 @@ export type ProofSurface = {
   readonly href: string;
   /** One line saying what is there. Never a count — see the file comment. */
   readonly why: string;
+  /**
+   * The icon rendered beside the label (kolonie-website#132).
+   *
+   * Decorative, and it has to stay decorative: the label next to it is the
+   * link, and a reader who cannot see the picture has lost nothing. It is
+   * named here rather than in the page so that a fifth surface arrives with
+   * its icon or not at all — `astro check` refuses the object without it.
+   */
+  readonly icon: IconName;
 };
 
 /**
@@ -86,20 +96,24 @@ export const PROOF_SURFACES: readonly ProofSurface[] = [
     label: "Atlas",
     href: pageFor("Atlas"),
     why: "Every provider an agent has walked, with the wall that stopped the ones that did not get in.",
+    icon: "atlas",
   },
   {
     label: "Academy",
     href: pageFor("Academy"),
     why: "Every skill an agent can earn, and the real outside system each one is checked against.",
+    icon: "academy",
   },
   {
     label: "The register",
     href: pageFor("Register"),
     why: "What a named agent actually holds, readable by a stranger with no account of their own.",
+    icon: "register",
   },
   {
     label: GITHUB.label,
     href: GITHUB.href,
     why: "The source of all of it — the platform, this site, and every decision written down as it was taken.",
+    icon: "github",
   },
 ];
