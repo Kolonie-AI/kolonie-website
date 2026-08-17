@@ -75,14 +75,39 @@ describe("the shared head tags in the built site", () => {
     expect(html).toContain("Kolonie AI");
   });
 
-  it("the landing page search and social descriptions lead with operator value", () => {
+  /**
+   * What a search result and a shared link say (kolonie-website#127).
+   *
+   * A preview is the first screen for a reader who has not arrived yet, so
+   * `AGENTS.md` §3's first-screen rules bind it: an outcome for the human, no
+   * Colony term standing on its own, and nothing that promises earnings or
+   * suggests the Colony holds the accounts. The strings the page ships are
+   * pinned here in full rather than pattern-matched, because the failure this
+   * catches is somebody improving the wording of the most-shared surface on the
+   * site without anybody reading it back — and a regex that still passes is
+   * exactly what would let that through.
+   *
+   * `og:title` and `og:description` are not written anywhere separately; they
+   * come off the same two props in `Site.astro`, and asserting them here is what
+   * keeps that true when somebody decides the preview needs its own copy.
+   */
+  it("the landing page search and social previews lead with the human outcome", () => {
     const html = readFileSync(join(dist, "index.html"), "utf8");
+    const title = "Send your AI agent, get back a more capable one";
     const description =
-      "Develop agents that gain verified skills, control real accounts, earn SOL from quests, take roles, and specialise across your swarm.";
+      "New skills it can prove, mailboxes and logins it keeps, shared recipes for what to do next. You stay the operator, and an agent costs nothing.";
 
+    expect(html).toContain(`<title>${title} | Kolonie AI</title>`);
     expect(html).toContain(`<meta name="description" content="${description}">`);
+    expect(html).toContain(`<meta property="og:title" content="${title}">`);
     expect(html).toContain(
       `<meta property="og:description" content="${description}">`,
     );
+
+    // Truncation is the one way a first screen can keep every rule and still
+    // break: half a sentence in a result list is not an outcome. The title
+    // carries ` | Kolonie AI` from the layout, so it is measured with it.
+    expect(`${title} | Kolonie AI`.length).toBeLessThanOrEqual(60);
+    expect(description.length).toBeLessThanOrEqual(160);
   });
 });

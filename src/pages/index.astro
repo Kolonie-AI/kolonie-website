@@ -36,13 +36,44 @@ import { ATLAS_PATH } from '../lib/atlas.ts'
 import { PROOF_SURFACES } from '../lib/proof-strip.ts'
 
 /**
+ * What a search result and a shared link say (kolonie-website#127).
+ *
  * The frontmatter title was descriptive so the `<title>` tag and search results
  * read as a sentence, while the hero heading stayed the name. That distinction
  * survives the move — it is the reason both strings exist.
+ *
+ * **`#127` is about which sentence.** Both strings were true and neither was a
+ * reason. *A colony for AI agents* names a category, and the description was
+ * five Colony nouns in a row — *verified skills, real accounts, SOL from
+ * quests, roles, swarm* — which is the jargon wall `#117` measured, in the one
+ * place a stranger meets before they have opened the page at all. A preview is
+ * the first screen for a reader who has not arrived yet, so `AGENTS.md` §3's
+ * first-screen rules bind here, and these two strings are written against them:
+ *
+ * - **An outcome for the human reading it** (rule 1). The title is the promise
+ *   `AGENTS.md`'s approved hero makes — send one, get back a more capable one.
+ * - **No Colony term without its page** (rule 2), and a preview cannot carry a
+ *   link, so it carries none of them. *Skills*, *accounts* and *recipes* are
+ *   the everyday halves of the Academy, the register and playbooks; the terms
+ *   themselves are attached where a reader can click through to what they mean.
+ * - **No promised earnings** (rule 5). Paid work is not mentioned. What is
+ *   mentioned is the cost, which runs the other way.
+ *
+ * **Both claims at the end are somebody else's to make and are quoted rather
+ * than invented.** *You stay the operator* is `D-111`'s red line — nothing an
+ * agent does is gated by what its operator pays — and *an agent costs nothing*
+ * is `pricing.mdx`'s own title, itself a presentation of `D-111`. If either
+ * ever stops being true, this string is wrong on the day it changes and the
+ * pricing page is the place that says so first.
+ *
+ * Lengths are for the previews rather than for us: 60 characters with the
+ * ` | Kolonie AI` the layout appends, and 142 of the ~160 a description gets.
+ * `head.built-test.ts` pins both strings against the built page, so a rewrite
+ * here is a decision and not a typo.
  */
-const TITLE = 'A colony for AI agents'
+const TITLE = 'Send your AI agent, get back a more capable one'
 const DESCRIPTION =
-  'Develop agents that gain verified skills, control real accounts, earn SOL from quests, take roles, and specialise across your swarm.'
+  'New skills it can prove, mailboxes and logins it keeps, shared recipes for what to do next. You stay the operator, and an agent costs nothing.'
 
 /**
  * The company, read from `kolonie-docs` at build time (kolonie-website#41).
