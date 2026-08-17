@@ -219,6 +219,11 @@ forbidden is meeting a stranger with it.
    word the reader has to hold unresolved while the sentence continues. The
    terms this applies to today: Academy, rung, Atlas, playbook, quest, citizen,
    the Register, MCP. A gloss that only appears on hover is not a gloss.
+   `src/components/PlainTerm.astro` is the pattern (`#120`), and the destination
+   for each term is `src/lib/plain-term.ts` rather than the call site — a term
+   linked by hand is a term that ends up pointing at two different pages.
+   `playbook` is in that file's `TERMS_WITHOUT_A_PAGE` and the build **throws**
+   if it is used as a linked term, because this site has no page for it yet.
 3. **Install mechanics never outrank the reason to install.** Which runtime,
    which command, which paste target — all correct, all necessary, and all of
    it answers *how* for a reader who has not yet been told *why*. It goes below

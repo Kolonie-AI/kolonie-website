@@ -1,0 +1,115 @@
+---
+/**
+ * One everyday sentence, then the Colony's word for it, then the page that
+ * explains it (kolonie-website#120).
+ *
+ * `#120`'s finding is that jargon is the main human friction on this site, and
+ * its fix is an order rather than a deletion: **the meaning arrives before the
+ * word.** A reader who has been told *skills that change what your agent can do
+ * on its own machine* can then be handed *Academy* and has somewhere to put it. A
+ * reader handed *Academy* first is holding an unresolved word while the sentence
+ * continues, and the sentence is what they came for.
+ *
+ * ## Three things this deliberately is not
+ *
+ * **Not a tooltip.** `#120`: *"Accessible (not hover-only meaning)."* Every word
+ * here is in the text, in reading order, for a screen reader and for a reader on
+ * a phone who has no hover to give. There is no `title`, no `abbr`, and nothing
+ * that appears on a pointer event.
+ *
+ * **Not a link whose text is the sentence.** The plain phrase stays plain text
+ * and only the term is a link, so a reader scanning for something to click sees
+ * one word rather than a paragraph-sized target, and the link's text says where
+ * it goes — the rule `LayerLink.astro` states for the same reason.
+ *
+ * **Not a replacement for `/words/`.** That page is the glossary of record and
+ * keeps being linked from every persuasion page by `Words.astro`. This is the
+ * other half of `#120`: a reader should not have to visit the glossary to parse
+ * the homepage. The glossary is for the reader who wants the definitions
+ * collected; this is for the reader who never asked for a glossary.
+ *
+ * ## The destination is not a prop unless it has to be
+ *
+ * Pass `term` and the href comes from `plain-term.ts`. That is the whole reason
+ * that file exists: a term glossed on the first screen and linked at the call
+ * site is a term that will one day be linked to two different pages by two
+ * different tiles. `href` overrides it for the case the map cannot know about,
+ * and an unmapped term with no `href` **fails the build** rather than rendering a
+ * word with nothing behind it.
+ */
+
+import { destinationFor } from '../lib/plain-term.ts'
+
+interface Props {
+  /**
+   * The everyday phrase, with no Colony word in it. This is the sentence the
+   * reader is actually being told; the term is a label attached to it afterwards.
+   */
+  plain: string
+  /** The Colony's word for it. Omit it and only the plain phrase renders. */
+  term?: string
+  /** Overrides the destination from `plain-term.ts`. Rarely needed. */
+  href?: string
+  /**
+   * The words that join the two halves. A prop because four tiles in a row all
+   * saying the same three words reads like a template rather than like prose.
+   */
+  connector?: string
+}
+
+const { plain, term, href, connector = 'our word for it:' } = Astro.props
+
+const destination = href ?? (term ? destinationFor(term)?.href : undefined)
+
+// Loud rather than quiet. A term with no page behind it is the one failure this
+// component was written to prevent, and a build that keeps going would ship it.
+if (term && !destination) {
+  throw new Error(
+    `PlainTerm: no page on this site for the term "${term}". ` +
+      `Add it to TERM_DESTINATIONS in src/lib/plain-term.ts, pass an explicit href, ` +
+      `or write the plain phrase without the term — see TERMS_WITHOUT_A_PAGE.`,
+  )
+}
+---
+
+<p class="plain-term">
+  <span class="plain-term__plain">{plain}</span>{
+    term && destination && (
+      <span class="plain-term__gloss">
+        {' '}
+        <span class="plain-term__connector">{connector}</span>{' '}
+        <a href={destination}>{term}</a>
+      </span>
+    )
+  }
+</p>
+
+<style>
+  /* Tokens only — no colour value is written outside theme.css, and
+     src/styles/theme.test.ts fails the build if one appears here. */
+  .plain-term {
+    margin: 0;
+  }
+
+  /* The gloss is quieter than the sentence it is attached to, which is the whole
+     hierarchy: the plain phrase is what the reader needs, the term is what the
+     site will call it later. Not smaller, though — a term set two steps down
+     becomes decoration, and this one is meant to be read and clicked. */
+  .plain-term__connector {
+    color: var(--k-text-muted);
+    font-size: var(--k-text-sm);
+  }
+
+  .plain-term__gloss a {
+    color: var(--k-text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--k-hairline-strong);
+    padding-bottom: 0.1rem;
+  }
+
+  .plain-term__gloss a:hover,
+  .plain-term__gloss a:focus-visible {
+    color: var(--k-accent-strong);
+    border-bottom-color: var(--k-accent-strong);
+  }
+</style>
