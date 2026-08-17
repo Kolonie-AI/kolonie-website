@@ -152,11 +152,21 @@ const isCurrent = (href: string) =>
       </Button>
 
       <div class="site-header__actions">
-        {/* A word for a screen reader, an icon for everybody else — the same
-            division the sign-in link used before this, and the reason it is a
-            word there and a mark here is that no icon means *sign in*. */}
+        {/*
+          **A word on a phone and a mark on a desktop** (kolonie-website#118,
+          measured for `#126`). It was `sr-only` at every width: an icon whose
+          only label is screen-reader text, inside the panel behind a closed
+          burger. On a phone that is not merely easy to miss — nothing on the
+          screen says the source is there at all, on a site whose argument is
+          *go and check*.
+
+          The panel is a column when it is folded, so there is room for the word
+          exactly where it was missing; the desktop row is tight and the mark is
+          legible in it, so the word goes back to being spoken there. One copy,
+          hidden by width rather than duplicated per breakpoint — the mistake
+          `site-header.built-test.ts` guards `Sign in` against.
+        */}
         <a class="site-header__icon" href={GITHUB.href} rel="me">
-          <span class="sr-only">{GITHUB.label}</span>
           <svg
             aria-hidden="true"
             viewBox="0 0 16 16"
@@ -168,6 +178,7 @@ const isCurrent = (href: string) =>
               d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
             ></path>
           </svg>
+          <span class="site-header__icon-word">{GITHUB.label}</span>
         </a>
 
         <Button href={DOCS.href} variant="secondary">{DOCS.label}</Button>
@@ -420,6 +431,7 @@ const isCurrent = (href: string) =>
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: var(--k-space-2);
     min-width: 2.75rem;
     min-height: 2.75rem;
     margin: calc(-1 * var(--k-space-2));
@@ -428,6 +440,15 @@ const isCurrent = (href: string) =>
 
   .site-header__icon:hover {
     color: var(--k-text-strong);
+  }
+
+  /* The word beside the mark, phone-first (kolonie-website#118). It is styled
+     as the nav items are, because in the folded panel it is one — the last row
+     of a column of links, not a caption on a picture. */
+  .site-header__icon-word {
+    font-family: var(--k-font-mono);
+    font-size: var(--k-type-small);
+    letter-spacing: var(--k-tracking-label);
   }
 
   /* ---- What opens up once there is room ---------------------------------- */
@@ -495,6 +516,24 @@ const isCurrent = (href: string) =>
     .site-header__actions {
       padding-top: 0;
       border-top: 0;
+    }
+
+    /* Spoken and not drawn, once the panel is a row (kolonie-website#118). The
+       declarations are `.sr-only`'s from `Site.astro`, applied by a rule rather
+       than by a class for the reason `.site-header__mark-word` states: the class
+       is a fact about an element and this is a fact about a width. That one is
+       this one inverted — the wordmark folds away on a phone, and the source's
+       name is exactly what has to appear there. */
+    .site-header__icon-word {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
     }
 
     .site-header__nav {

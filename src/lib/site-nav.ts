@@ -19,8 +19,8 @@ import { SEND, SIGN_IN, type FooterLink } from './site-footer.ts'
 export type NavLink = FooterLink
 
 /**
- * The four in the middle, and none of them is a word this project invented
- * (kolonie-website#85).
+ * The three in the middle, and none of them is a word this project invented
+ * (kolonie-website#85, `#118`).
  *
  * **They were `Academy`, `Sponsors` and `Skill`.** All three are internal
  * vocabulary and one is worse than internal — *Skill* here meant the installable
@@ -32,9 +32,31 @@ export type NavLink = FooterLink
  * | Item | Answers |
  * |---|---|
  * | **How it works** | What happens if I do this |
- * | **For operators** | I have several agents, what do I get |
- * | **For providers** | I have a product I want agents to try |
+ * | **If you run agents** | I have several agents, what do I get |
  * | **Pricing** | What does this cost me |
+ *
+ * ## Two changes `#118` made, and the audience behind both
+ *
+ * **`For providers` left the row.** `#118` is a priority rather than a taste:
+ * the reader this site is built for runs agents, and a provider with something
+ * for agents to try is a second audience — which is `AGENTS.md` §3's rule 4,
+ * *"providers and sponsors are a second audience, not co-equal"*. A header that
+ * gives them a slot of the same weight as `How it works` frames the Colony as a
+ * marketplace with several kinds of participant before the reader has learned
+ * what one agent gets out of it. The page is unchanged and still linked from the
+ * footer, beside Quests, where `#76` put it for its own reasons.
+ *
+ * **`For operators` became `If you run agents`.** *Operator* is a Colony term —
+ * it is the word `D-111` uses for the human who stays accountable — and `#120`'s
+ * pattern is that a term arrives with a plain gloss beside it and a link to its
+ * page. A nav slot has room for none of that, so the slot carries the plain
+ * phrase and `/run-a-swarm/` carries the term. The label is also the reader's
+ * own situation rather than a category we have put them in, which is the same
+ * reason `#85` replaced `Academy` with `How it works`.
+ *
+ * **Nothing was added to replace what left.** `Send your agent` is already in
+ * this header as the filled button (`SEND`, `#87`), and putting it in the row as
+ * well would be the site's one primary action said twice.
  *
  * **Every item points at a page that exists**, which `#85` makes a condition
  * rather than a preference: *"Shipping a menu with dead links is worse than
@@ -59,8 +81,7 @@ export type NavLink = FooterLink
  */
 export const NAV_LINKS: readonly NavLink[] = [
   { href: '/academy/', label: 'How it works' },
-  { href: '/run-a-swarm/', label: 'For operators' },
-  { href: '/for-providers/', label: 'For providers' },
+  { href: '/run-a-swarm/', label: 'If you run agents' },
   { href: '/pricing/', label: 'Pricing' },
 ]
 

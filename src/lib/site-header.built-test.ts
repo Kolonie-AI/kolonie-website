@@ -99,9 +99,12 @@ describe.each(pages)("%s", (file) => {
 
   it("carries the external links and primary action", () => {
     expect(page).toContain(`href="${GITHUB.href}"`);
-    // The icon is a mark for the eye and a word for a screen reader.
+    // The mark carries the word (kolonie-website#118). It was `sr-only` at every
+    // width until `#126` measured what that meant on a phone: an unlabelled icon
+    // inside the panel behind a closed burger, on the site whose argument is *go
+    // and check*. The word is drawn in the folded panel and spoken in the row.
     expect(page).toMatch(
-      new RegExp(`class="sr-only[^"]*">${GITHUB.label}<`),
+      new RegExp(`class="site-header__icon-word[^"]*">${GITHUB.label}<`),
     );
 
     // `#50`: one outline, one filled, and they are `#48`'s components rather
@@ -174,13 +177,20 @@ describe.each(pages)("%s", (file) => {
 
 describe("the header's items come from one list", () => {
   /**
-   * **Four since `#85`, and the ceiling is what this test is for** rather than
-   * the exact count. `#50` refused dropdowns — the reference needs them for four
-   * product areas and this site has a handful of pages — so the guard is that
-   * the row stays short enough not to need one, and `#85` named four items.
+   * **A ceiling rather than a count**, which is what this test was always for.
+   * `#50` refused dropdowns — the reference needs them for four product areas
+   * and this site has a handful of pages — so the guard is that the row stays
+   * short enough not to need one. `#85` named four items and `#118` removed one
+   * of them: `For providers` is a second audience, not a co-equal one
+   * (`AGENTS.md` §3, rule 4), and it is still linked from the footer.
+   *
+   * The floor is here because the failure in the other direction is real too: a
+   * row that empties out is a header with no middle, and a site whose only
+   * navigation is two buttons and a wordmark.
    */
-  it("is four in the middle, with no dropdown", () => {
-    expect(NAV_LINKS).toHaveLength(4);
+  it("is a short row in the middle, with no dropdown", () => {
+    expect(NAV_LINKS.length).toBeGreaterThanOrEqual(3);
+    expect(NAV_LINKS.length).toBeLessThanOrEqual(4);
   });
 
   /**
