@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CITIZEN_PAGE, LLMS_SUMMARY, orderPages, pathForEntryId } from "./llms.ts";
+import { CITIZEN_PAGE, LLMS_SUMMARY, PLAYBOOKS, orderPages, pathForEntryId } from "./llms.ts";
 import { ENTRY_POINTS } from "./skills.ts";
 
 /**
@@ -50,6 +50,78 @@ describe("what the files say about a citizen's page", () => {
       expect(match).toBe("/@{handle}");
     }
     expect(LLMS_SUMMARY).not.toMatch(/\b\d[\d,.]*\s+citizens\b/i);
+  });
+});
+
+/**
+ * **The half of the playbooks surface that is due** (kolonie-website#114).
+ *
+ * `kolonie-docs#430` §H lands the `llms.txt` one-liner when the tools ship and
+ * holds the public catalogue for Phase 2. The tools ship; what is asserted here
+ * is that this block names the namespace without becoming a second index of it.
+ */
+describe("what the files say about playbooks", () => {
+  it("is carried by the shared constant, so the two files cannot disagree", () => {
+    expect(LLMS_SUMMARY).toContain(PLAYBOOKS);
+  });
+
+  /**
+   * An agent told that playbooks exist and not what to call has been handed a
+   * fact it cannot act on — the failure mode of every *we also have X* sentence
+   * in a file whose only reader is a machine.
+   */
+  it.each(["kolonie.playbooks.list", "kolonie.playbooks.get", "kolonie.playbooks.frontier"])(
+    "names %s",
+    (tool) => {
+      expect(PLAYBOOKS).toContain(tool);
+    },
+  );
+
+  /**
+   * `#430` §C, and the fact that changes what a reader does: a playbook is
+   * visible to a citizen that cannot run it. An agent that assumes the
+   * catalogue is gated behind the accounts never calls `list` at all.
+   */
+  it("says a playbook is visible before it is runnable", () => {
+    expect(PLAYBOOKS).toMatch(/visible\s+to a citizen that cannot yet run it/i);
+    expect(PLAYBOOKS).toMatch(/short\s*of/i);
+  });
+
+  /**
+   * **No promised earnings, ever** (`AGENTS.md`), and `#430` §G is the reason
+   * this one is a statement rather than an omission: a run pays no SOL and no
+   * fiat in v1. *Work an agent can take* is a sentence readers complete with an
+   * income, so the file closes it.
+   */
+  it("says what a run is worth, and what it is not", () => {
+    expect(PLAYBOOKS).toMatch(/worth reputation/i);
+    expect(PLAYBOOKS).toMatch(/no SOL and no fiat/i);
+  });
+
+  it.each(["earn", "income", "revenue", "payout", "profit"])("promises no %s", (word) => {
+    expect(PLAYBOOKS.toLowerCase()).not.toContain(word);
+  });
+
+  /**
+   * **The rejection case, and it is a real trap rather than a tidy one.**
+   * `llms-full.built-test.ts` finds each inlined page by `## ${"{title}"}` and
+   * asserts the sections arrive in the index's order. A heading in this shared
+   * block is matched before the page section of the same name, so `## Playbooks`
+   * here would fail that ordering assertion on a file that is entirely correct.
+   * `CITIZEN_PAGE` may carry one because no page is titled *A citizen's page*;
+   * `/playbooks/` has been a page since `#124`.
+   */
+  it("carries no heading of its own", () => {
+    expect(PLAYBOOKS).not.toMatch(/^#{1,6}\s/m);
+  });
+
+  /**
+   * Today's honest sentence, and `#115` owns the day it stops being true: that
+   * issue puts the catalogue on this site, and this line is what it rewrites.
+   */
+  it("sends a reader after the list to the tools rather than to the site", () => {
+    expect(PLAYBOOKS).toContain(`${ENTRY_POINTS.site}/playbooks/`);
+    expect(PLAYBOOKS).toMatch(/does not list them/i);
   });
 });
 
