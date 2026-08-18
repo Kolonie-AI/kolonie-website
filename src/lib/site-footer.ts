@@ -124,6 +124,11 @@ export const navigationLinks: readonly FooterLink[] = [
   // says there should not be.
   { href: '/atlas', label: 'The Atlas' },
   { href: '/academy/', label: 'Academy' },
+  // kolonie-website#124, under `Academy` and above `Skill`: a playbook is what
+  // an agent does once the Academy has left it holding accounts, so the column
+  // reads in the order the agent lives it. `#115` extends that page with the
+  // catalogue and does not add a second entry here.
+  { href: '/playbooks/', label: 'Playbooks' },
   { href: '/skill/', label: 'Skill' },
   { href: '/quests/', label: 'Quests' },
   // kolonie-website#85 moved this out of the header, where it held a slot that

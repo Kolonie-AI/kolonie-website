@@ -113,11 +113,17 @@ describe.each(LEDE_PAGES)("$route", ({ route }) => {
  *
  * `#133` names four landings the homepage links to and asks each for one
  * supporting visual next to its human-first lede — *the same system as the
- * homepage, not one-off art.* Two of the four are reachable from this
- * repository and both are here; the other two are recorded on the issue, since
+ * homepage, not one-off art.* Three of the four are reachable from this
+ * repository and all three are here; the fourth is recorded on the issue, since
  * `/atlas/` is served by `kolonie-platform` (`SERVED_BY_THE_API` in
- * `site-footer.ts`) and the playbooks page does not exist until `#115` builds
- * it.
+ * `site-footer.ts`).
+ *
+ * **`/playbooks/` joined the list rather than being written into it**
+ * (`#124`). It was the page this comment said did not exist, and the page
+ * `#124` wrote opens with a lede and an icon row because `#133` had already
+ * decided what a landing owes a stranger. It is asserted here on the day it
+ * arrives so that `#115`, which extends this same route with a catalogue,
+ * cannot push the anchor below the fold without a test saying so.
  *
  * **It is a separate list from `LEDE_PAGES` above and stays one.** A lede is
  * what a page needs when a stranger lands on it; an anchor is what `#133`
@@ -134,7 +140,13 @@ describe.each(LEDE_PAGES)("$route", ({ route }) => {
  * that demanded one shape would be a test against the issue.
  */
 describe("the lede anchors kolonie-website#133 asked for", () => {
-  const ANCHORED = ["/academy/", "/the-register/"] as const;
+  // `/playbooks/` is anchored here and absent from `LEDE_PAGES` above, which
+  // looks inconsistent and is not. The gloss rule that list enforces is *no
+  // Colony term outside a link*, and the one page that cannot obey it is the
+  // page whose subject is the term: `/playbooks/` opens by saying what a
+  // playbook is, and a link from that sentence would point at the page the
+  // reader is standing on.
+  const ANCHORED = ["/academy/", "/the-register/", "/playbooks/"] as const;
 
   it.each(ANCHORED)("%s carries one, close enough to the lede to be its anchor", (route) => {
     const page = html(route);

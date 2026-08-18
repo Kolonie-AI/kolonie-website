@@ -83,8 +83,21 @@ describe("first-screen term destinations (kolonie-website#120)", () => {
     expect(destinationFor("Atlas")?.href).toBe(ATLAS_PATH);
   });
 
+  /**
+   * `playbook` is here rather than in the test below, and the move is the
+   * assertion (kolonie-website#124). It was the gloss rule's one term with no
+   * page, and the page it now has is the one `#115` extends — so a link that
+   * went back to being approximate would fail here first.
+   */
+  it("resolves the term that spent longest without a page", () => {
+    expect(destinationFor("playbook")?.href).toBe("/playbooks/");
+    expect(destinationFor("Playbooks")?.href).toBe("/playbooks/");
+  });
+
   it("returns nothing for a term this site has no page for", () => {
-    expect(destinationFor("playbook")).toBeUndefined();
+    // `MCP` is accounted for and deliberately has no destination: what a reader
+    // needs is `/skill/`, which is the page that sets the connection up.
+    expect(destinationFor("MCP")).toBeUndefined();
     expect(destinationFor("nonsense")).toBeUndefined();
   });
 });

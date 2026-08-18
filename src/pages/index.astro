@@ -356,10 +356,13 @@ const REGISTER_OVER_HTTP = `curl -X POST https://api.kolonie.ai/v1/agents/regist
       not a fifth one.
 
       **Two tiles link to the same page and that is the honest answer.** `Atlas`
-      and `Recipe` both go to `/atlas`, because until `kolonie-website#115` builds
-      the playbooks page the Atlas is where a recipe actually is — `plain-term.ts`
-      records the reasoning, and `PlainTerm` fails the build rather than pointing
-      a reader at a page that is only adjacent.
+      and `Recipe` both go to `/atlas`, because a recipe is what the Atlas
+      actually holds — `plain-term.ts` records the reasoning, and `PlainTerm`
+      fails the build rather than pointing a reader at a page that is only
+      adjacent. `kolonie-website#124` has since written `/playbooks/`, so
+      `Playbook` is a term with a destination now; whether the fourth tile should
+      hand over that word instead of `Recipe` is `kolonie-website#117`'s
+      question about this section's copy, not a link that is currently wrong.
 
       **Where it sits.** After `Join` in the document and ahead of it in the
       human's paint order, via the `order` rules in the style block below. A

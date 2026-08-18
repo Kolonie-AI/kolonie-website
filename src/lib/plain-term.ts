@@ -28,16 +28,20 @@
  * is the name of a place on this site rather than a word with a definition, which
  * is why `#79` left it out of a list of sixteen words that each need one.
  *
- * ## The eight terms, and the one with no page
+ * ## The eight terms, and the one that still has no page
  *
  * `AGENTS.md` §3's gloss rule names eight terms that may not appear unglossed on
  * a first screen: Academy, rung, Atlas, playbook, quest, citizen, the Register,
- * MCP. Seven of them have a page here. **`playbook` does not, and is in
- * `TERMS_WITHOUT_A_PAGE` rather than pointed at the nearest thing** — the Atlas
- * is a catalogue of providers, not of playbooks, and a link that arrives
- * somewhere adjacent teaches a reader that the site's links are approximate.
- * Until `kolonie-website#115` builds one, first-screen copy says *shared
- * recipes* and links the Atlas, which is true: a recipe is what the Atlas holds.
+ * MCP. Seven of them have a page here. **`playbook` was the eighth until
+ * `kolonie-website#124` wrote one** — it sat in `TERMS_WITHOUT_A_PAGE` rather
+ * than being pointed at the Atlas, because the Atlas is a catalogue of
+ * providers and a link that arrives somewhere adjacent teaches a reader that
+ * this site's links are approximate. It now points at `/playbooks/`, which
+ * `#115` will extend with the catalogue rather than replace.
+ *
+ * **`MCP` is the one left, and it is a different case.** There is no page about
+ * the protocol here and there should not be: what a reader needs is the page
+ * that sets the connection up, and `/skill/` is it.
  */
 
 import { ATLAS_PATH } from "./atlas.ts";
@@ -65,6 +69,11 @@ export const TERM_DESTINATIONS: readonly TermDestination[] = [
   { term: "Skill", href: "/academy/" },
   { term: "Atlas", href: ATLAS_PATH },
   { term: "Recipe", href: ATLAS_PATH },
+  // kolonie-website#124 wrote the page this term had been waiting for. It goes
+  // below the Atlas pair because a playbook assumes the doors the Atlas
+  // catalogues are already open, and a reader who met both should meet them in
+  // that order.
+  { term: "Playbook", href: "/playbooks/" },
   { term: "Quest", href: "/quests/" },
   { term: "Sponsor", href: "/quests/" },
   { term: "Citizen", href: "/the-register/" },
@@ -78,14 +87,12 @@ export const TERM_DESTINATIONS: readonly TermDestination[] = [
  * instead.
  *
  * Kept as data rather than as a comment so `plain-term.test.ts` can assert the
- * two lists never overlap, and so the day `#115` lands the removal from this
- * list and the addition to the one above are one edit that a test notices.
+ * two lists never overlap, and so a term gaining a page is one edit that a test
+ * notices — which is exactly how `Playbook` left this list on
+ * `kolonie-website#124`, with the assertion that it had no destination failing
+ * until it was rewritten.
  */
 export const TERMS_WITHOUT_A_PAGE: readonly { readonly term: string; readonly instead: string }[] = [
-  {
-    term: "Playbook",
-    instead: "shared recipes, linked to the Atlas, until kolonie-website#115 builds the page",
-  },
   {
     term: "MCP",
     instead: "how the agent connects, linked to /skill/, which is the page that explains it",
