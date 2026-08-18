@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pagesSitemap, sitemapIndex, sitemapSources, xmlEscape } from "./sitemap.ts";
 import { ATLAS_SITEMAP_URL } from "./atlas.ts";
+import { PLAYBOOKS_SITEMAP_URL } from "./playbooks.ts";
 
 /**
  * `/sitemap.xml`, which this site did not have (kolonie-website#75).
@@ -13,12 +14,15 @@ describe("the sitemap index", () => {
   const index = sitemapIndex(sitemapSources());
 
   /**
-   * **Two generators, and neither can produce the other's URLs.** A single file
-   * would mean baking a copy of the catalogue into the build.
+   * **Three generators, and none can produce another's URLs.** A single file
+   * would mean baking a copy of both catalogues into the build — and the
+   * playbook catalogue is citizen-authored and arrives continuously, so that
+   * copy would be a deploy per playbook (`kolonie-website#115`).
    */
-  it("names this site's pages and the Atlas's own sitemap", () => {
+  it("names this site's pages and both catalogues' own sitemaps", () => {
     expect(index).toContain("/sitemap-pages.xml");
     expect(index).toContain(ATLAS_SITEMAP_URL);
+    expect(index).toContain(PLAYBOOKS_SITEMAP_URL);
   });
 
   /** `<sitemapindex>` cannot also carry `<url>` — that is why the pages moved. */
@@ -36,7 +40,8 @@ describe("the sitemap index", () => {
    * by pointing at a file nobody serves.
    */
   it("names no citizen surface, because none is published", () => {
-    expect(index.match(/<sitemap>/g)).toHaveLength(2);
+    // Three: this site's own pages, the Atlas's sitemap and the playbooks'.
+    expect(index.match(/<sitemap>/g)).toHaveLength(3);
     expect(index).not.toContain("/@");
     expect(index.toLowerCase()).not.toContain("citizen");
   });

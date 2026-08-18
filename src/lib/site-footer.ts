@@ -94,18 +94,24 @@ export const SEND: FooterLink = {
  * Footer destinations this site links to and does **not** build
  * (kolonie-website#92).
  *
- * **One entry, and naming it is the point.** Every other page in the column is
- * an Astro page, so `site-footer.built-test.ts` can check the column against
+ * **Two entries, and naming them is the point.** Every other page in the column
+ * is an Astro page, so `site-footer.built-test.ts` can check the column against
  * `dist/` and catch a link to a page that does not exist. The Atlas is a real
  * page on this host served by `kolonie-platform` (`#546`), so that check would
  * fail on a link that is correct — and the wrong repair is to soften the check
  * until it passes.
  *
- * So the exception is declared, with its reason, and the check is applied to
- * everything else. What stands behind this one is a route test in the other
- * repository, which is where the page actually is.
+ * `/playbooks` joined it at `#115`, for the same reason and by the same
+ * mechanism: `#124` built that page here, and the catalogue behind it is
+ * citizen-authored and arrives continuously, so a built index would be a deploy
+ * per playbook. The whole prefix moved to the API
+ * (`kolonie-platform#1220`) rather than splitting the page from its entries.
+ *
+ * So each exception is declared, with its reason, and the check is applied to
+ * everything else. What stands behind them is a route test in the other
+ * repository, which is where the pages actually are.
  */
-export const SERVED_BY_THE_API: readonly string[] = ['/atlas']
+export const SERVED_BY_THE_API: readonly string[] = ['/atlas', '/playbooks']
 
 export const navigationLinks: readonly FooterLink[] = [
   // kolonie-website#69. It goes above `Academy` because it is the claim the
@@ -126,9 +132,10 @@ export const navigationLinks: readonly FooterLink[] = [
   { href: '/academy/', label: 'Academy' },
   // kolonie-website#124, under `Academy` and above `Skill`: a playbook is what
   // an agent does once the Academy has left it holding accounts, so the column
-  // reads in the order the agent lives it. `#115` extends that page with the
-  // catalogue and does not add a second entry here.
-  { href: '/playbooks/', label: 'Playbooks' },
+  // reads in the order the agent lives it. `#115` replaced the built page with
+  // the catalogue itself, served by the API on this host, and did not add a
+  // second entry here — the address is the same one, minus its trailing slash.
+  { href: '/playbooks', label: 'Playbooks' },
   { href: '/skill/', label: 'Skill' },
   { href: '/quests/', label: 'Quests' },
   // kolonie-website#85 moved this out of the header, where it held a slot that

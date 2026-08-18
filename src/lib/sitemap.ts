@@ -1,4 +1,5 @@
 import { ATLAS_SITEMAP_URL } from "./atlas.ts";
+import { PLAYBOOKS_SITEMAP_URL } from "./playbooks.ts";
 import { ENTRY_POINTS } from "./skills.ts";
 
 /**
@@ -43,11 +44,16 @@ export function xmlEscape(value: string): string {
 }
 
 /**
- * The two sitemaps a crawler is pointed at.
+ * The three sitemaps a crawler is pointed at.
  *
  * The Atlas's is absolute and on this same host — Traefik routes `/atlas*` to
  * the API, so it is one origin from a crawler's point of view and no
- * cross-domain sitemap rule applies.
+ * cross-domain sitemap rule applies. The playbook catalogue joined it on exactly
+ * that argument (`kolonie-website#115`): `/playbooks*` is routed to the API for
+ * `kolonie-platform#546`'s reason, the entries are rendered from a table this
+ * build cannot see, and a crawler following links alone finds the index and none
+ * of the long tail. It is the third `loc` this file's own note below anticipated
+ * — the mechanism was already right, and nothing else here changed.
  *
  * ## There is no third entry for citizen pages, and that is decided
  *
@@ -75,7 +81,11 @@ export function xmlEscape(value: string): string {
  * `kolonie-website#109`.
  */
 export function sitemapSources(): readonly SitemapSource[] {
-  return [{ loc: `${ENTRY_POINTS.site}/sitemap-pages.xml` }, { loc: ATLAS_SITEMAP_URL }];
+  return [
+    { loc: `${ENTRY_POINTS.site}/sitemap-pages.xml` },
+    { loc: ATLAS_SITEMAP_URL },
+    { loc: PLAYBOOKS_SITEMAP_URL },
+  ];
 }
 
 export function sitemapIndex(sources: readonly SitemapSource[]): string {

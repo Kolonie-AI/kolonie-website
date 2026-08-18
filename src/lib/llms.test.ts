@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CITIZEN_PAGE, LLMS_SUMMARY, PLAYBOOKS, orderPages, pathForEntryId } from "./llms.ts";
+import { PLAYBOOKS_URL } from "./playbooks.ts";
 import { ENTRY_POINTS } from "./skills.ts";
 
 /**
@@ -108,20 +109,26 @@ describe("what the files say about playbooks", () => {
    * asserts the sections arrive in the index's order. A heading in this shared
    * block is matched before the page section of the same name, so `## Playbooks`
    * here would fail that ordering assertion on a file that is entirely correct.
-   * `CITIZEN_PAGE` may carry one because no page is titled *A citizen's page*;
-   * `/playbooks/` has been a page since `#124`.
+   * `CITIZEN_PAGE` may carry one because no page is titled *A citizen's page*.
+   * `/playbooks` is no longer a page in this repository — `#115` moved the
+   * route to the API — but the trap it set is kept described rather than
+   * deleted: a heading here would be found before any page section, whatever
+   * that section happens to be called.
    */
   it("carries no heading of its own", () => {
     expect(PLAYBOOKS).not.toMatch(/^#{1,6}\s/m);
   });
 
   /**
-   * Today's honest sentence, and `#115` owns the day it stops being true: that
-   * issue puts the catalogue on this site, and this line is what it rewrites.
+   * `#115` is the day the old sentence stopped being true. The catalogue is on
+   * this host now, so the line names the address — and names it in the one form
+   * that is canonical, since the API answers `/playbooks/` with a `301` and a
+   * published file should carry the destination rather than the detour.
    */
-  it("sends a reader after the list to the tools rather than to the site", () => {
-    expect(PLAYBOOKS).toContain(`${ENTRY_POINTS.site}/playbooks/`);
-    expect(PLAYBOOKS).toMatch(/does not list them/i);
+  it("names the catalogue's own address, in its canonical form", () => {
+    expect(PLAYBOOKS).toContain(PLAYBOOKS_URL);
+    expect(PLAYBOOKS).not.toContain(`${PLAYBOOKS_URL}/`);
+    expect(PLAYBOOKS).not.toMatch(/does not list them/i);
   });
 });
 

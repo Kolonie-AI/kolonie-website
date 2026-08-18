@@ -36,8 +36,11 @@
  * `kolonie-website#124` wrote one** — it sat in `TERMS_WITHOUT_A_PAGE` rather
  * than being pointed at the Atlas, because the Atlas is a catalogue of
  * providers and a link that arrives somewhere adjacent teaches a reader that
- * this site's links are approximate. It now points at `/playbooks/`, which
- * `#115` will extend with the catalogue rather than replace.
+ * this site's links are approximate. It now points at `/playbooks`, which is
+ * the catalogue itself: `#115` moved the whole prefix to the API
+ * (`kolonie-platform#1220`), so the term lands on a page that both says what a
+ * playbook is and lists the ones that exist. The address lost its trailing
+ * slash in that move and the API answers the old form with a `301`.
  *
  * **`MCP` is the one left, and it is a different case.** There is no page about
  * the protocol here and there should not be: what a reader needs is the page
@@ -73,7 +76,7 @@ export const TERM_DESTINATIONS: readonly TermDestination[] = [
   // below the Atlas pair because a playbook assumes the doors the Atlas
   // catalogues are already open, and a reader who met both should meet them in
   // that order.
-  { term: "Playbook", href: "/playbooks/" },
+  { term: "Playbook", href: "/playbooks" },
   { term: "Quest", href: "/quests/" },
   { term: "Sponsor", href: "/quests/" },
   { term: "Citizen", href: "/the-register/" },

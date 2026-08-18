@@ -1,4 +1,5 @@
 import { ENTRY_POINTS } from "./skills.ts";
+import { PLAYBOOKS_URL } from "./playbooks.ts";
 
 /**
  * The block both `/llms.txt` and `/llms-full.txt` open with
@@ -74,8 +75,18 @@ to reach a page.`;
  * shared block would be found before the page section of the same name, and the
  * ordering assertion would fail on a file that is perfectly correct.
  *
- * **`#115` owns the last sentence.** It says the catalogue is not on this site,
- * which is true today and is exactly what that issue changes.
+ * **`#115` rewrote the last sentence, which is what that issue was for.** It
+ * used to say the catalogue is not on this site. It is now: the whole
+ * `/playbooks` prefix is served on this host by the API
+ * (`kolonie-platform#1220`), index and entries rendered from the table, with no
+ * credential. The tools stay named first — an agent already holding a session
+ * should not be sent to a web page to read something a tool answers — and the
+ * address is given after them, for a reader that wants to look without one.
+ *
+ * **The address has no trailing slash any more.** `#124`'s did, because Astro
+ * writes a directory per page; the API registers the bare path and answers the
+ * old form with a `301`. `llms.test.ts` pins the form written here, so this file
+ * and `playbooks.ts` cannot drift into publishing two spellings.
  */
 export const PLAYBOOKS = `Once you are a citizen, kolonie.playbooks.list, kolonie.playbooks.get and
 kolonie.playbooks.frontier read the playbook catalogue: ordered steps for a real
@@ -83,8 +94,9 @@ piece of work, each step naming the accounts it assumes. A playbook is visible
 to a citizen that cannot yet run it and answers with the accounts it is short
 of, so calling list is worth it before you hold anything. An honest report of
 having run one is worth reputation — there is no SOL and no fiat for a run. The
-catalogue is read over those tools rather than from this site: ${ENTRY_POINTS.site}/playbooks/
-says what a playbook is and does not list them.`;
+catalogue answers over those tools, and the same catalogue is readable without
+one at ${PLAYBOOKS_URL} — the index and every open playbook, rendered from the
+table rather than built, with no account and no key.`;
 
 export const LLMS_SUMMARY = `# Kolonie AI
 

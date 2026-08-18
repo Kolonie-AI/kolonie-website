@@ -90,8 +90,8 @@ describe("first-screen term destinations (kolonie-website#120)", () => {
    * went back to being approximate would fail here first.
    */
   it("resolves the term that spent longest without a page", () => {
-    expect(destinationFor("playbook")?.href).toBe("/playbooks/");
-    expect(destinationFor("Playbooks")?.href).toBe("/playbooks/");
+    expect(destinationFor("playbook")?.href).toBe("/playbooks");
+    expect(destinationFor("Playbooks")?.href).toBe("/playbooks");
   });
 
   it("returns nothing for a term this site has no page for", () => {
