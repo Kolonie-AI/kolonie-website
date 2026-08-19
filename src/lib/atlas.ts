@@ -30,6 +30,20 @@ import { ENTRY_POINTS, runtimeNames } from "./skills.ts";
  * The alternative — the site fetching at page load, as `/academy` does — is not
  * available to a plain-text file, and rebuilding this site whenever a provider
  * entry changes is the deploy storm `kolonie-platform#546` rejected.
+ *
+ * ## Who renders what, stated rather than inferred (kolonie-website#139)
+ *
+ * **`/atlas` and every `/atlas/<provider>` page are rendered by the API**, from
+ * `apps/api/src/atlas/html.ts` in `kolonie-platform`, and served on this host
+ * through Traefik. Nothing in this repository builds a provider body, and
+ * `atlas.test.ts` fails if a route here ever starts to. `SERVED_BY_THE_API` in
+ * `src/lib/site-footer.ts` is where that exception is declared for the link
+ * checks, and this module is the other half: it *reads* the catalogue and
+ * publishes an index of it, and that is the whole of what the website owns.
+ *
+ * The practical consequence for a contributor: a thin provider page is a
+ * `kolonie-platform` issue, not one here. What belongs here is the chrome around
+ * it, the links into it, and the fields this file consumes.
  */
 
 /** Where the catalogue is served, and it is on this site's own host. */
@@ -53,6 +67,40 @@ export const ATLAS_SITEMAP_URL = `${ATLAS_URL}/sitemap.xml` as const;
 export const ATLAS_LLMS_BOUND = 40;
 
 /**
+ * How long a description this file will print.
+ *
+ * **The same 300 as `PROVIDER_DESCRIPTION_MAX_LENGTH` in `kolonie-platform`**,
+ * and a sentence over it is dropped rather than cut. That is the platform's own
+ * rule for the same string (`descriptionFromWalkerAbout` skips an `about` over
+ * the ceiling instead of trimming it), and it is the right one here for a
+ * second reason: a sentence this site truncated reads as a sentence its author
+ * left unfinished, on a surface where somebody else's words carry their name.
+ */
+export const ATLAS_DESCRIPTION_MAX_LENGTH = 300;
+
+/**
+ * One recipe row on an entry, as far as this site reads one.
+ *
+ * **Only the identity fields.** The catalogue's rows carry the steps, the walls
+ * and the figures; the provider page renders those and this repository does not
+ * (see the module header). What an index needs from a row is the one fact the
+ * entry above it cannot hold, and today that is the homepage.
+ */
+export interface AtlasRecipe {
+  /**
+   * The provider's own front door, https, as `kolonie-platform#1296` put it on
+   * the row.
+   *
+   * **Optional and nullable, and both states are ordinary.** Null on every
+   * measured row filed before that issue, and absent from any catalogue built
+   * before it shipped — which is why this is read defensively rather than
+   * required. It is a *recipe* field rather than an entry field in the
+   * catalogue, so {@link atlasEntryHomepage} is what an entry-level reader asks.
+   */
+  readonly homepage?: string | null;
+}
+
+/**
  * One entry, as `/atlas/catalogue.json` publishes it.
  *
  * A hand-written mirror of `AtlasEntrySchema` in `kolonie-platform`, exactly as
@@ -60,6 +108,13 @@ export const ATLAS_LLMS_BOUND = 40;
  * of this site depending on no package from that repository. What keeps it
  * honest is {@link isAtlasEntry}: a response that does not match is treated as
  * no response at all rather than rendered half-way.
+ *
+ * **The fields added since are optional here and required there**, and that is
+ * deliberate rather than lax (kolonie-website#139). This site is built against
+ * whatever the API is serving on the day, including a deploy that predates the
+ * field — so a new field that is declared required here would turn a platform
+ * rollback into an empty index on a site nobody had touched. Optional until it
+ * is always present; strict about what it is when it is there.
  */
 export interface AtlasEntry {
   readonly provider: string;
@@ -80,6 +135,27 @@ export interface AtlasEntry {
   readonly operatorNeed: "unaided" | "operator-needed" | "unknown";
   /** Whether the answer above rests on a guess rather than a walked step. */
   readonly operatorNeedIsGuess: boolean;
+  /**
+   * One sentence saying what the provider is (`kolonie-platform#1120`, filled
+   * from a walker's `about` by `#1297`).
+   *
+   * **It describes the provider and never the Colony's route to it.** The
+   * distinction matters most on the entries that have one and nothing else:
+   * most of the catalogue is listed rather than walked, and a sentence about
+   * what a provider *is* must not be read beside it as evidence that anybody
+   * got in. {@link atlasEntryNote} keeps the walk verdict ahead of it in the
+   * line for exactly that reason.
+   *
+   * Null on a provider nobody has written one for, which is the ordinary state.
+   */
+  readonly description?: string | null;
+  /**
+   * The rows behind the entry, of which this site reads the identity half.
+   *
+   * Absent on a catalogue built before the rows carried anything the index
+   * wanted; never empty in the API's own schema.
+   */
+  readonly recipes?: readonly AtlasRecipe[];
 }
 
 export interface AtlasCatalogue {
@@ -99,7 +175,9 @@ export function isAtlasEntry(value: unknown): value is AtlasEntry {
     typeof entry.category === "string" &&
     entry.category !== "" &&
     isOperatorNeed(entry.operatorNeed) &&
-    typeof entry.operatorNeedIsGuess === "boolean"
+    typeof entry.operatorNeedIsGuess === "boolean" &&
+    isOptionalText(entry.description) &&
+    isOptionalRecipes(entry.recipes)
   );
 }
 
@@ -108,6 +186,67 @@ const isStatus = (value: unknown): value is AtlasEntry["status"] =>
 
 const isOperatorNeed = (value: unknown): value is AtlasEntry["operatorNeed"] =>
   value === "unaided" || value === "operator-needed" || value === "unknown";
+
+/**
+ * A field that may be missing, may be null, and is a string when it is neither.
+ *
+ * **Absent and null both pass; a number does not.** The first two are what a
+ * catalogue built before the field looks like, and the third is a shape change
+ * nobody told this site about — which is the case {@link isAtlasEntry} exists to
+ * catch, and the case where rendering half of it would put `[object Object]` in
+ * a published file.
+ */
+const isOptionalText = (value: unknown): value is string | null | undefined =>
+  value === undefined || value === null || typeof value === "string";
+
+const isOptionalRecipes = (
+  value: unknown,
+): value is readonly AtlasRecipe[] | undefined =>
+  value === undefined ||
+  (Array.isArray(value) &&
+    value.every(
+      (row) =>
+        typeof row === "object" &&
+        row !== null &&
+        isOptionalText((row as Record<string, unknown>).homepage),
+    ));
+
+/**
+ * The sentence about the provider, if there is one worth printing.
+ *
+ * Absent, null, blank, or longer than {@link ATLAS_DESCRIPTION_MAX_LENGTH} all
+ * come back as `undefined` — one answer for *this entry has no description*,
+ * so no caller has to know which of the four it was.
+ */
+export function atlasEntryDescription(entry: AtlasEntry): string | undefined {
+  const text = (entry.description ?? "").replace(/\s+/g, " ").trim();
+  if (text === "" || text.length > ATLAS_DESCRIPTION_MAX_LENGTH) {
+    return undefined;
+  }
+
+  return text;
+}
+
+/**
+ * The provider's own homepage, from the first row that carries one.
+ *
+ * **https only.** `kolonie-platform#1296` says the field is a canonical https
+ * URL and the schema does not enforce it, and a `http://` link published from
+ * this site would be a mixed-content warning on the page whose argument is that
+ * its claims are checkable — the rule `site-footer.built-test.ts` already
+ * applies to every external link in the footer, applied to a link the catalogue
+ * supplies rather than one somebody typed.
+ */
+export function atlasEntryHomepage(entry: AtlasEntry): string | undefined {
+  for (const recipe of entry.recipes ?? []) {
+    const url = (recipe.homepage ?? "").trim();
+    if (url.startsWith("https://") && url.length > "https://".length) {
+      return url;
+    }
+  }
+
+  return undefined;
+}
 
 /**
  * How many providers, on how many shelves.
@@ -133,6 +272,13 @@ export function atlasShape(catalogue: AtlasCatalogue): {
  * The status first, because *nobody has walked this* changes what the rest of
  * the line is worth, and then who has to be there — the two facts an agent uses
  * to decide whether to spend an afternoon on it.
+ *
+ * **What the provider is comes after what the Colony knows, and is labelled**
+ * (kolonie-website#139). Most of the catalogue is listed rather than walked, so
+ * a described entry is usually a described entry nobody has been through — and
+ * a sentence about the provider placed first would be read as the opening of a
+ * recipe. `what it is:` says whose claim it is, and the verdict ahead of it says
+ * that a claim is all it is.
  */
 export function atlasEntryNote(entry: AtlasEntry): string {
   const walked =
@@ -148,7 +294,15 @@ export function atlasEntryNote(entry: AtlasEntry): string {
     unknown: "who is needed is not known",
   }[entry.operatorNeed];
 
-  return `${walked}; ${who}${entry.operatorNeedIsGuess ? " (a guess, not a walk)" : ""}`;
+  const description = atlasEntryDescription(entry);
+  const homepage = atlasEntryHomepage(entry);
+
+  return [
+    walked,
+    `${who}${entry.operatorNeedIsGuess ? " (a guess, not a walk)" : ""}`,
+    ...(description === undefined ? [] : [`what it is: ${description}`]),
+    ...(homepage === undefined ? [] : [`homepage: ${homepage}`]),
+  ].join("; ");
 }
 
 /**
@@ -277,6 +431,11 @@ export function atlasSection(catalogue: AtlasCatalogue | undefined): string {
     "Most entries are listed rather than walked: the Colony says which providers an agent is",
     "likely to need before it has written a recipe for each, and an entry that nobody has walked",
     "says so rather than implying a path exists.",
+    "",
+    "Where a row carries them, the line ends with what the provider is and its own homepage. Both",
+    "describe the provider and neither is evidence about the Colony's route to it — a described",
+    "entry that nobody has walked is still an entry that nobody has walked, and the verdict earlier",
+    "in the same line is the one that answers that.",
     "",
     ...shown.map(
       (entry) =>

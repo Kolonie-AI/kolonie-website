@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -54,5 +54,21 @@ describe("what the build shipped", () => {
 
   it("points robots.txt at the sitemap index", () => {
     expect(read("robots.txt")).toContain("Sitemap: https://kolonie.ai/sitemap.xml");
+  });
+
+  /**
+   * **The build ships no Atlas page, and that is the point**
+   * (kolonie-website#139).
+   *
+   * `/atlas` and every `/atlas/<provider>` page are rendered by the API from
+   * `apps/api/src/atlas/html.ts` in `kolonie-platform` and served on this host
+   * through Traefik. A page of the same name in `dist/` would be served instead
+   * of the catalogue by the nginx in front of it — a real outage, from a
+   * plausible mistake, and the reason this is checked against the built output
+   * rather than only against the source.
+   */
+  it("ships no page under the Atlas prefix, which the API serves", () => {
+    expect(existsSync(join(dist, "atlas"))).toBe(false);
+    expect(existsSync(join(dist, "atlas.html"))).toBe(false);
   });
 });

@@ -1,18 +1,24 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   ATLAS_CATALOGUE_URL,
+  ATLAS_DESCRIPTION_MAX_LENGTH,
   ATLAS_ENDPOINT_LINE,
   ATLAS_LLMS_BOUND,
+  ATLAS_PATH,
   ATLAS_URL,
+  atlasEntryDescription,
+  atlasEntryHomepage,
+  atlasEntryNote,
   atlasSection,
   atlasShape,
   loadAtlas,
   type AtlasCatalogue,
   type AtlasEntry,
 } from "./atlas.ts";
+import { SERVED_BY_THE_API } from "./site-footer.ts";
 import { runtimeNames } from "./skills.ts";
 
 const entry = (
@@ -77,6 +83,176 @@ describe("reading the catalogue", () => {
     }) as unknown as typeof fetch;
 
     expect(await loadAtlas(refusing)).toBeUndefined();
+  });
+
+  /**
+   * **The fields `kolonie-platform#1296` and `#1297` added are optional here and
+   * required there** (kolonie-website#139). This site is built against whatever
+   * the API is serving on the day, so an entry that predates a field has to
+   * survive the read — otherwise a platform rollback empties the index of a site
+   * nobody touched.
+   */
+  it("takes an entry that predates description and the recipe rows", async () => {
+    const catalogue = await loadAtlas(
+      answering({
+        generatedAt: "2026-08-08T00:00:00.000Z",
+        entries: [
+          {
+            provider: "somewhere",
+            path: "/atlas/somewhere",
+            title: "Somewhere",
+            status: "unwritten",
+            category: "mailbox",
+            operatorNeed: "unknown",
+            operatorNeedIsGuess: true,
+          },
+        ],
+      }),
+    );
+
+    expect(catalogue?.entries).toHaveLength(1);
+    expect(catalogue?.entries[0]?.description).toBeUndefined();
+  });
+
+  it("takes the description and the recipe homepage when the catalogue carries them", async () => {
+    const catalogue = await loadAtlas(
+      answering({
+        generatedAt: "2026-08-08T00:00:00.000Z",
+        entries: [
+          {
+            ...entry("somewhere"),
+            description: "A mailbox provider.",
+            recipes: [{ homepage: "https://example.test" }],
+          },
+        ],
+      }),
+    );
+
+    expect(catalogue?.entries[0]?.description).toBe("A mailbox provider.");
+    expect(atlasEntryHomepage(catalogue?.entries[0] as AtlasEntry)).toBe(
+      "https://example.test",
+    );
+  });
+
+  /** Null is what the API sends for a provider nobody has written one for. */
+  it("takes a null description as an entry with none", async () => {
+    const catalogue = await loadAtlas(
+      answering({
+        generatedAt: "",
+        entries: [{ ...entry("somewhere"), description: null, recipes: [{ homepage: null }] }],
+      }),
+    );
+
+    expect(catalogue?.entries).toHaveLength(1);
+    expect(atlasEntryDescription(catalogue?.entries[0] as AtlasEntry)).toBeUndefined();
+  });
+
+  /**
+   * Optional about being absent, strict about what it is when it is there: a
+   * field of the wrong type is a shape change nobody told this site about, and
+   * printing half of it would put `[object Object]` in a published file.
+   */
+  it("treats a description of the wrong type as no entry", async () => {
+    expect(
+      await loadAtlas(
+        answering({ entries: [{ ...entry("somewhere"), description: 42 }] }),
+      ),
+    ).toBeUndefined();
+
+    expect(
+      await loadAtlas(
+        answering({ entries: [{ ...entry("somewhere"), recipes: [{ homepage: 42 }] }] }),
+      ),
+    ).toBeUndefined();
+  });
+});
+
+/**
+ * The two identity fields the catalogue grew, read defensively
+ * (kolonie-website#139, from `kolonie-platform#1296` and `#1297`).
+ */
+describe("what an entry says about the provider", () => {
+  it("says nothing when there is nothing to say", () => {
+    expect(atlasEntryDescription(entry("somewhere"))).toBeUndefined();
+    expect(
+      atlasEntryDescription(entry("somewhere", { description: "   " })),
+    ).toBeUndefined();
+    expect(atlasEntryHomepage(entry("somewhere"))).toBeUndefined();
+  });
+
+  it("reads the sentence as one line", () => {
+    expect(
+      atlasEntryDescription(
+        entry("somewhere", { description: "  A mailbox\n  provider.  " }),
+      ),
+    ).toBe("A mailbox provider.");
+  });
+
+  /**
+   * **Dropped rather than cut**, which is the platform's own rule for the same
+   * string: a sentence this site truncated reads as one its author left
+   * unfinished, on a surface where somebody else's words carry their name.
+   */
+  it("drops a sentence longer than the ceiling instead of trimming it", () => {
+    const long = "x".repeat(ATLAS_DESCRIPTION_MAX_LENGTH + 1);
+
+    expect(
+      atlasEntryDescription(entry("somewhere", { description: long })),
+    ).toBeUndefined();
+    expect(
+      atlasEntryDescription(
+        entry("somewhere", { description: "y".repeat(ATLAS_DESCRIPTION_MAX_LENGTH) }),
+      ),
+    ).toHaveLength(ATLAS_DESCRIPTION_MAX_LENGTH);
+  });
+
+  /** The homepage is a recipe field, and the entry-level reader takes the first. */
+  it("takes the first row that carries an https homepage", () => {
+    expect(
+      atlasEntryHomepage(
+        entry("somewhere", {
+          recipes: [{ homepage: null }, { homepage: "https://example.test/join" }],
+        }),
+      ),
+    ).toBe("https://example.test/join");
+  });
+
+  /**
+   * **https only.** A `http://` link published from this site would be a
+   * mixed-content warning on the page whose argument is that its claims are
+   * checkable — the rule the footer's external links already follow, applied to
+   * a link the catalogue supplied rather than one somebody typed.
+   */
+  it("ignores a homepage that is not https", () => {
+    for (const homepage of ["http://example.test", "example.test", "https://"]) {
+      expect(
+        atlasEntryHomepage(entry("somewhere", { recipes: [{ homepage }] })),
+      ).toBeUndefined();
+    }
+  });
+
+  /**
+   * **The verdict first and the provider's own claim last, labelled.** Most of
+   * the catalogue is listed rather than walked, so a described entry is usually
+   * one nobody has been through, and a sentence about the provider placed first
+   * would be read as the opening of a recipe.
+   */
+  it("keeps the walk verdict ahead of what the provider says about itself", () => {
+    const note = atlasEntryNote(
+      entry("somewhere", {
+        status: "unwritten",
+        operatorNeed: "unknown",
+        description: "A mailbox provider.",
+        recipes: [{ homepage: "https://example.test" }],
+      }),
+    );
+
+    expect(note.indexOf("listed, nobody has walked it yet")).toBe(0);
+    expect(note).toContain("what it is: A mailbox provider.");
+    expect(note).toContain("homepage: https://example.test");
+    expect(note.indexOf("what it is:")).toBeGreaterThan(
+      note.indexOf("who is needed is not known"),
+    );
   });
 });
 
@@ -252,6 +428,45 @@ describe("the Atlas section of /llms-full.txt", () => {
     for (const name of runtimeNames()) {
       expect(section).toContain(name);
     }
+  });
+});
+
+/**
+ * **The provider page is the API's, and this repository does not render one**
+ * (kolonie-website#139).
+ *
+ * `/atlas` and every `/atlas/<provider>` page come from
+ * `apps/api/src/atlas/html.ts` in `kolonie-platform`, served on this host
+ * through Traefik. The issue that revised this one found the website's own notes
+ * ambiguous about that, and an ambiguity about ownership is how the same page
+ * gets written twice — so it is asserted here rather than described.
+ *
+ * What is checked is the thing that would actually go wrong: a route in this
+ * repository claiming the prefix. `SERVED_BY_THE_API` is the declaration the
+ * link checks read, and this is the other side of it.
+ */
+describe("who renders the provider page", () => {
+  const src = fileURLToPath(new URL("..", import.meta.url));
+
+  it("declares the Atlas prefix as the API's", () => {
+    expect(SERVED_BY_THE_API).toContain(ATLAS_PATH);
+  });
+
+  /**
+   * Routes and content pages both, because `[...slug].astro` renders the
+   * collection: an `atlas.mdx` beside the other pages would take the prefix
+   * without a route file ever being added.
+   */
+  it("builds no route or page under the Atlas prefix", () => {
+    const claiming = [
+      ...readdirSync(join(src, "pages"), { recursive: true, encoding: "utf8" }),
+      ...readdirSync(join(src, "content/pages"), {
+        recursive: true,
+        encoding: "utf8",
+      }),
+    ].filter((name) => /(^|\/)atlas($|[./])/.test(name));
+
+    expect(claiming).toEqual([]);
   });
 });
 
