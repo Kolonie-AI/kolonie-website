@@ -51,6 +51,30 @@ const config = readFileSync(
   "utf8",
 );
 
+/**
+ * The package that declares the Node built-ins the checked TypeScript imports
+ * (kolonie-website#145). Named once here so the assertion and the rejection
+ * case cannot drift apart.
+ */
+const NODE_TYPES = "@types/node";
+
+type Manifest = { devDependencies?: Record<string, string> };
+
+const packageManifest = JSON.parse(
+  readFileSync(
+    fileURLToPath(new URL("../../package.json", import.meta.url)),
+    "utf8",
+  ),
+) as Manifest;
+
+function assertNodeTypesDeclared(manifest: Manifest): void {
+  if (!(NODE_TYPES in (manifest.devDependencies ?? {}))) {
+    throw new Error(
+      `${NODE_TYPES} is not a direct development dependency: the checked TypeScript files import Node built-ins, and a lockfile rewrite is free to drop an undeclared optional peer.`,
+    );
+  }
+}
+
 function labelsIn(document: string): readonly string[] {
   const labels: string[] = [];
   for (const line of document.split("\n")) {
@@ -71,6 +95,45 @@ function assertKnownLabels(document: string): void {
     }
   }
 }
+
+/**
+ * The Node type contract survives a lockfile rewrite (kolonie-website#145).
+ *
+ * The failure being prevented is quiet in the same way the label one is, and
+ * it stops the check before a single test runs. Checked TypeScript here
+ * imports `node:fs`, `node:path` and `node:url` directly — this file does, on
+ * its first two lines — but `@types/node` was only ever arriving as an
+ * *optional peer* of Vite/Vitest. Nothing declared it, so a resolution that
+ * chose not to install it was allowed to: both grouped npm Dependabot pull
+ * requests of 2026-08-27 dropped `@types/node` and `undici-types` from the
+ * lockfile, and `astro check` then reported 291 errors led by
+ * `Cannot find module 'node:fs'` (#142 run 33064979165, #144 run
+ * 33064996192).
+ *
+ * A direct development dependency is the whole fix. The alternatives — a
+ * `skipLibCheck`, an ambient `declare module`, an exclusion from `astro check`
+ * — all hide the errors while leaving the contract undeclared, which is the
+ * state that produced them.
+ */
+describe("the dependency contracts a lockfile rewrite must preserve", () => {
+  it("declares the Node types the checked TypeScript files import", () => {
+    expect(() => assertNodeTypesDeclared(packageManifest)).not.toThrow();
+  });
+
+  /**
+   * **The rejection case.** The assertion above passes against a checker that
+   * never looks, so this one proves it has teeth: a manifest with the
+   * declaration removed — exactly the shape #142 and #144 installed against —
+   * fails it, and the failure names the package.
+   */
+  it("rejects a manifest that has lost the declaration", () => {
+    const devDependencies = { ...packageManifest.devDependencies };
+    delete devDependencies[NODE_TYPES];
+    expect(() => assertNodeTypesDeclared({ devDependencies })).toThrow(
+      NODE_TYPES,
+    );
+  });
+});
 
 describe("the labels dependabot.yml applies", () => {
   it("are all in this repository's vocabulary", () => {
