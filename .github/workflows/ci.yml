@@ -10,18 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The blog renders decision records that live in kolonie-docs, and no copy
       # of one exists in this repository (kolonie-website#15). Inside the tree
       # because the image build's Docker context is this directory and cannot
       # reach outside it; the same path is what `docsCheckout()` looks for.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: Kolonie-AI/kolonie-docs
           path: .kolonie-docs
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -37,7 +37,7 @@ jobs:
       # The cache is what keeps it from being a download per run. The key is the
       # lockfile, because the browser build Playwright wants is pinned by the
       # Playwright version in it.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
